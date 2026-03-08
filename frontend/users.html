@@ -204,7 +204,32 @@
         // Read the logged-in user's role to control delete button visibility
         const currentUserRole = (localStorage.getItem('role') || localStorage.getItem('user_role') || '').toLowerCase();
         const isOwner = currentUserRole === 'owner';
+        async function loadUserProfile() {
+    try {
+        const response = await fetch(`${CONFIG.API_URL}/users/`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
         
+        if (response.ok) {
+            const users = await response.json();
+            const currentUser = users.find(u => u.username === localStorage.getItem('username'));
+            
+            if (currentUser && currentUser.profile) {
+                document.getElementById('userRole').textContent = 
+                    currentUser.profile.role.charAt(0).toUpperCase() + 
+                    currentUser.profile.role.slice(1);
+            } else {
+                document.getElementById('userRole').textContent = 'Butcher';
+            }
+        }
+    } catch (error) {
+        console.error('Error loading profile:', error);
+        document.getElementById('userRole').textContent = 'User';
+    }
+}
+
+// Call this after setting user info
+loadUserProfile();
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebarOverlay');
