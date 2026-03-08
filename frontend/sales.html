@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#dc2626">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Record Sale - NyamaTrack</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* ── Meat Type Tiles (matches stock-entry) ── */
+        .tile-section-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .meat-type-tiles {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 4px;
+        }
+
+        .meat-type-tile {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            width: 88px;
+            height: 78px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            background: #fff;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            color: #6b7280;
+            transition: all 0.18s ease;
+            padding: 8px;
+            text-align: center;
+            user-select: none;
+        }
+        .meat-type-tile i {
+            font-size: 22px;
+            color: #9ca3af;
+            transition: color 0.18s;
+        }
+        .meat-type-tile:hover {
+            border-color: #dc2626;
+            color: #dc2626;
+            background: #fff5f5;
+        }
+        .meat-type-tile:hover i { color: #dc2626; }
+        .meat-type-tile.active {
+            border-color: #dc2626;
+            background: #dc2626;
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(220, 38, 38, 0.3);
+        }
+        .meat-type-tile.active i { color: #fff; }
+
+        .tiles-loading,
+        .tiles-empty {
+            font-size: 13px;
+            color: #9ca3af;
+            padding: 4px 0;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        /* ── Cut Cards Grid ── */
+        .cuts-section {
+            margin-top: 24px;
+            display: none;
+        }
+
+        .cuts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .cut-card {
+            background: #fff;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.18s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .cut-card:hover {
+            border-color: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(220, 38, 38, 0.1);
+            background: #fff5f5;
+        }
+        .cut-card.selected {
+            border-color: #dc2626;
+            background: #fff5f5;
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
+        }
+        .cut-card.selected::after {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            top: 10px; right: 12px;
+            color: #dc2626;
+            font-size: 13px;
+        }
+        .cut-card-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: #111;
+            margin-bottom: 8px;
+            padding-right: 18px;
+        }
+        .cut-card-weight {
+            font-size: 22px;
+            font-weight: 800;
+            color: #dc2626;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+        .cut-card-weight span {
+            font-size: 12px;
+            font-weight: 500;
+            color: #9ca3af;
+        }
+        .cut-card-meta {
+            font-size: 11.5px;
+            color: #9ca3af;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 6px;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            font-size: 11px;
+            padding: 3px 9px;
+            border-radius: 999px;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+        .badge-success { background: #dcfce7; color: #166534; }
+        .badge-warning { background: #fef9c3; color: #854d0e; }
+        .badge-danger  { background: #fee2e2; color: #991b1b; }
+
+        /* ── Sale Panel ── */
+        .sale-panel {
+            display: none;
+            margin-top: 24px;
+            border-top: 2px solid #f3f4f6;
+            padding-top: 24px;
+        }
+        .sale-panel.visible { display: block; }
+
+        .selected-info-box {
+            background: #fff5f5;
+            border: 1.5px solid #fca5a5;
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-bottom: 18px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px 24px;
+        }
+        .selected-info-box.spoilage {
+            background: #fee2e2;
+            border-color: #dc2626;
+        }
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .info-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #9ca3af;
+        }
+        .info-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #111;
+        }
+        .spoilage-warning {
+            width: 100%;
+            font-size: 13px;
+            font-weight: 600;
+            color: #dc2626;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Empty/loading */
+        .cuts-empty {
+            text-align: center;
+            padding: 36px 20px;
+            color: #9ca3af;
+            grid-column: 1 / -1;
+        }
+        .cuts-empty i { font-size: 30px; margin-bottom: 10px; display: block; opacity: 0.5; }
+        .cuts-empty p { font-size: 13px; }
+    </style>
+</head>
+<body>
+    <!-- Mobile Header -->
+    <header class="mobile-header">
+        <div class="mobile-logo">
+            <div class="mobile-logo-icon"><i class="fas fa-drumstick-bite"></i></div>
+            NyamaTrack
+        </div>
+        <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleSidebar()">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+        </button>
+    </header>
+
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <div class="app-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">
+                    <div class="sidebar-brand-icon"><i class="fas fa-drumstick-bite"></i></div>
+                    NyamaTrack
+                </div>
+            </div>
+            <nav class="nav-menu">
+                <a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
+                <a href="stock-entry.html" class="nav-item"><i class="fas fa-plus-circle"></i> Record Stock</a>
+                <a href="sales.html" class="nav-item active"><i class="fas fa-cash-register"></i> Record Sale</a>
+                <a href="reports.html" class="nav-item"><i class="fas fa-chart-bar"></i> Reports</a>
+                <a href="users.html" class="nav-item"><i class="fas fa-users"></i> Users</a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <div class="user-details">
+                        <h4 id="userName">User</h4>
+                        <p id="userRole">Role</p>
+                    </div>
+                </div>
+                <button onclick="logout()" class="btn btn-secondary" style="margin-top: 12px; font-size: 14px;">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="page-header">
+                <h1>Record Sale</h1>
+                <p>Process customer transactions quickly</p>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+
+                    <!-- Step 1: Meat Type Tiles -->
+                    <div class="form-section" style="margin-bottom: 0;">
+                        <h3 style="margin-bottom: 14px;"><i class="fas fa-filter"></i> Step 1 — Select Meat Type</h3>
+                        <div class="tile-section-label">
+                            <i class="fas fa-tag" style="color:#dc2626;font-size:11px;"></i>
+                            Meat Type
+                        </div>
+                        <div class="meat-type-tiles" id="typeTiles">
+                            <div class="tiles-loading">
+                                <i class="fas fa-circle-notch fa-spin"></i> Loading…
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Cut Cards -->
+                    <div class="cuts-section" id="cutsSection">
+                        <h3 style="margin-bottom: 0;"><i class="fas fa-box"></i> Step 2 — Select a Cut</h3>
+                        <div class="cuts-grid" id="cutsGrid"></div>
+                    </div>
+
+                    <!-- Step 3: Sale Details -->
+                    <div class="sale-panel" id="salePanel">
+                        <h3 style="margin-bottom: 16px;"><i class="fas fa-calculator"></i> Step 3 — Enter Sale Details</h3>
+
+                        <div class="selected-info-box" id="selectedInfoBox"></div>
+
+                        <form id="saleForm">
+                            <input type="hidden" id="selectedStockId">
+
+                            <div class="form-grid" style="margin-bottom: 0;">
+                                <div class="form-group">
+                                    <label class="form-label">Weight to Sell (kg) *</label>
+                                    <input type="number" step="0.01" class="form-input" id="weightSold"
+                                           placeholder="0.00" required oninput="calculateTotal()">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Price per kg (KES)</label>
+                                    <input type="number" step="0.01" class="form-input" id="pricePerKg"
+                                           placeholder="0.00" oninput="calculateTotal()">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Total Amount (KES) *</label>
+                                    <input type="number" step="0.01" class="form-input" id="totalPrice"
+                                           placeholder="0.00" required
+                                           style="font-size: 18px; font-weight: 700; color: var(--primary);">
+                                </div>
+                            </div>
+
+                            <div style="margin-top: 20px; display: flex; gap: 12px; flex-wrap: wrap;">
+                                <button type="submit" class="action-btn action-btn-primary"
+                                        style="font-size: 16px; padding: 16px 32px;">
+                                    <i class="fas fa-check-circle"></i>
+                                    Complete Sale
+                                </button>
+                                <button type="button" class="action-btn action-btn-secondary" onclick="resetAll()">
+                                    <i class="fas fa-undo"></i>
+                                    Clear
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="mobile-nav">
+        <a href="dashboard.html" class="mobile-nav-item"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="stock-entry.html" class="mobile-nav-item"><i class="fas fa-plus-circle"></i><span>Stock</span></a>
+        <a href="sales.html" class="mobile-nav-item active"><i class="fas fa-cash-register"></i><span>Sale</span></a>
+        <a href="reports.html" class="mobile-nav-item"><i class="fas fa-chart-bar"></i><span>Reports</span></a>
+        <a href="users.html" class="mobile-nav-item"><i class="fas fa-users"></i><span>Users</span></a>
+    </nav>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="js/config.js"></script>
+    <script>
+        const API_URL = CONFIG.API_URL;
+        const token = localStorage.getItem('access_token');
+
+        if (!token) window.location.href = 'login.html';
+
+        document.getElementById('userName').textContent = localStorage.getItem('username') || 'User';
+        document.getElementById('userAvatar').textContent = (localStorage.getItem('username') || 'U')[0].toUpperCase();
+
+        let allStock = [];
+        let meatTypes = [];
+        let selectedTypeId = null;
+        let selectedStockItem = null;
+
+        // Icon map — same logic as stock-entry
+        const typeIcons = {
+            'beef':    'fa-cow',
+            'pork':    'fa-piggy-bank',
+            'chicken': 'fa-feather-alt',
+            'lamb':    'fa-horse',
+            'goat':    'fa-horse',
+            'fish':    'fa-fish',
+            'default': 'fa-drumstick-bite'
+        };
+        async function loadUserProfile() {
+    try {
+        const response = await fetch(`${CONFIG.API_URL}/users/`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            const users = await response.json();
+            const currentUser = users.find(u => u.username === localStorage.getItem('username'));
+            
+            if (currentUser && currentUser.profile) {
+                document.getElementById('userRole').textContent = 
+                    currentUser.profile.role.charAt(0).toUpperCase() + 
+                    currentUser.profile.role.slice(1);
+            } else {
+                document.getElementById('userRole').textContent = 'Butcher';
+            }
+        }
+    } catch (error) {
+        console.error('Error loading profile:', error);
+        document.getElementById('userRole').textContent = 'User';
+    }
+}
+
+// Call this after setting user info
+loadUserProfile();
+        function getTypeIcon(name) {
+            const key = (name || '').toLowerCase();
+            for (const [k, icon] of Object.entries(typeIcons)) {
+                if (key.includes(k)) return icon;
+            }
+            return typeIcons.default;
+        }
+
+        // ── Navigation ──
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.getElementById('sidebarOverlay').classList.toggle('show');
+            document.getElementById('hamburgerBtn').classList.toggle('active');
+        }
+        function logout() { localStorage.clear(); window.location.href = 'login.html'; }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'exclamation-circle'}"></i>
+                <span>${message}</span>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // ── Load Data ──
+        async function loadData() {
+            try {
+                const [typesRes, stockRes] = await Promise.all([
+                    fetch(`${API_URL}/meat-types/`, { headers: { 'Authorization': `Bearer ${token}` } }),
+                    fetch(`${API_URL}/stock/`,       { headers: { 'Authorization': `Bearer ${token}` } })
+                ]);
+                meatTypes = await typesRes.json();
+                allStock  = await stockRes.json();
+
+                // Debug: inspect stock item shape in browser console
+                if (allStock.length) {
+                    console.log('[NyamaTrack] Stock count:', allStock.length);
+                    console.log('[NyamaTrack] Sample stock item:', JSON.stringify(allStock[0], null, 2));
+                }
+
+                renderTypeTiles();
+                if (selectedTypeId) renderCuts(selectedTypeId);
+            } catch {
+                showToast('Failed to load data', 'error');
+            }
+        }
+
+        // ── Meat Type Tiles ──
+        function renderTypeTiles() {
+            const container = document.getElementById('typeTiles');
+            if (!meatTypes.length) {
+                container.innerHTML = '<span class="tiles-empty">No meat types found</span>';
+                return;
+            }
+            container.innerHTML = meatTypes.map(type => `
+                <div class="meat-type-tile ${selectedTypeId == type.id ? 'active' : ''}"
+                     onclick="selectType(${type.id}, this)">
+                    <i class="fas ${getTypeIcon(type.name)}"></i>
+                    ${type.name}
+                </div>
+            `).join('');
+        }
+
+        function selectType(typeId, el) {
+            selectedTypeId = typeId;
+            document.querySelectorAll('.meat-type-tile').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+
+            // Clear cut & sale selection
+            selectedStockItem = null;
+            document.getElementById('salePanel').classList.remove('visible');
+            document.getElementById('saleForm').reset();
+
+            renderCuts(typeId);
+        }
+
+        // ── Cut Cards ──
+        function renderCuts(typeId) {
+            const section = document.getElementById('cutsSection');
+            const grid    = document.getElementById('cutsGrid');
+            const filtered = allStock.filter(item => {
+                const details = item.meat_cut_details || {};
+                // Handle all possible shapes the API might return
+                const mt = details.meat_type ?? details.meat_type_id ?? details.meat_type_details?.id ?? null;
+                return String(mt) === String(typeId);
+            });
+
+            section.style.display = 'block';
+
+            if (!filtered.length) {
+                grid.innerHTML = `
+                    <div class="cuts-empty">
+                        <i class="fas fa-box-open"></i>
+                        <p>No stock available for this meat type</p>
+                    </div>`;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(item => {
+                const statusClass = item.is_spoilage_warning ? 'badge-danger'
+                                  : item.is_low_stock        ? 'badge-warning'
+                                  :                            'badge-success';
+                const statusLabel = item.is_spoilage_warning ? 'Spoilage Risk'
+                                  : item.is_low_stock        ? 'Low Stock'
+                                  :                            'Good';
+                const isSelected  = selectedStockItem && selectedStockItem.id === item.id;
+                return `
+                    <div class="cut-card ${isSelected ? 'selected' : ''}"
+                         id="cut-card-${item.id}"
+                         onclick="selectCut(${item.id})">
+                        <div class="cut-card-name">${item.meat_cut_details.name}</div>
+                        <div class="cut-card-weight">${item.current_weight} <span>kg left</span></div>
+                        <div class="cut-card-meta">
+                            <i class="fas fa-clock"></i> ${item.days_since_received} days old
+                        </div>
+                        <span class="badge ${statusClass}">${statusLabel}</span>
+                    </div>`;
+            }).join('');
+        }
+
+        // ── Select a Cut ──
+        function selectCut(stockId) {
+            const item = allStock.find(s => s.id === stockId);
+            if (!item) return;
+
+            selectedStockItem = item;
+            document.querySelectorAll('.cut-card').forEach(c => c.classList.remove('selected'));
+            const card = document.getElementById(`cut-card-${stockId}`);
+            if (card) card.classList.add('selected');
+
+            document.getElementById('selectedStockId').value = stockId;
+
+            // Info box
+            const infoBox = document.getElementById('selectedInfoBox');
+            infoBox.className = 'selected-info-box' + (item.is_spoilage_warning ? ' spoilage' : '');
+            infoBox.innerHTML = `
+                <div class="info-item">
+                    <span class="info-label">Cut</span>
+                    <span class="info-value">${item.meat_cut_details.name}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Available</span>
+                    <span class="info-value">${item.current_weight} kg</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Received</span>
+                    <span class="info-value">${new Date(item.receive_date).toLocaleDateString()}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Age</span>
+                    <span class="info-value">${item.days_since_received} days</span>
+                </div>
+                ${item.is_spoilage_warning
+                    ? '<div class="spoilage-warning"><i class="fas fa-exclamation-triangle"></i> Spoilage risk — sell immediately</div>'
+                    : ''}
+            `;
+
+            const panel = document.getElementById('salePanel');
+            panel.classList.add('visible');
+            panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setTimeout(() => document.getElementById('weightSold').focus(), 400);
+
+            showToast(`${item.meat_cut_details.name} selected — enter weight to sell.`, 'success');
+        }
+
+        // ── Calculations ──
+        function calculateTotal() {
+            const weight = parseFloat(document.getElementById('weightSold').value) || 0;
+            const price  = parseFloat(document.getElementById('pricePerKg').value)  || 0;
+            document.getElementById('totalPrice').value = (weight * price).toFixed(2);
+        }
+
+        // ── Reset ──
+        function resetAll() {
+            selectedStockItem = null;
+            document.getElementById('saleForm').reset();
+            document.getElementById('salePanel').classList.remove('visible');
+            document.querySelectorAll('.cut-card').forEach(c => c.classList.remove('selected'));
+        }
+
+        // ── Submit ──
+        document.getElementById('saleForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const stockId    = parseInt(document.getElementById('selectedStockId').value);
+            const weightSold = parseFloat(document.getElementById('weightSold').value);
+            const totalPrice = parseFloat(document.getElementById('totalPrice').value);
+
+            if (!selectedStockItem) { showToast('Please select a cut first', 'error'); return; }
+            if (weightSold > selectedStockItem.current_weight) {
+                showToast(`Insufficient stock. Only ${selectedStockItem.current_weight} kg available`, 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/sales/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ stock: stockId, weight_sold: weightSold, sale_price: totalPrice })
+                });
+
+                if (response.ok) {
+                    showToast('Sale recorded successfully!', 'success');
+                    resetAll();
+                    await loadData();
+                } else {
+                    const err = await response.json();
+                    showToast(err.error || err.detail || 'Failed to record sale', 'error');
+                }
+            } catch {
+                showToast('Connection error', 'error');
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 1024) {
+                document.getElementById('sidebar').classList.remove('open');
+                document.getElementById('sidebarOverlay').classList.remove('show');
+                document.getElementById('hamburgerBtn').classList.remove('active');
+            }
+        });
+
+        loadData();
+    </script>
+</body>
+</html>

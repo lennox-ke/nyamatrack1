@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#dc2626">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Dashboard - NyamaTrack</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Mobile Header with Modern Hamburger -->
+    <header class="mobile-header">
+        <div class="mobile-logo">
+            <div class="mobile-logo-icon">
+                <i class="fas fa-drumstick-bite"></i>
+            </div>
+            NyamaTrack
+        </div>
+        <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleSidebar()">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+        </button>
+    </header>
+
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <div class="app-container">
+        <!-- Sidebar (Desktop + Mobile Drawer) -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">
+                    <div class="sidebar-brand-icon">
+                        <i class="fas fa-drumstick-bite"></i>
+                    </div>
+                    NyamaTrack
+                </div>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="dashboard.html" class="nav-item active">
+                    <i class="fas fa-home"></i>
+                    Dashboard
+                </a>
+                <a href="stock-entry.html" class="nav-item">
+                    <i class="fas fa-plus-circle"></i>
+                    Record Stock
+                </a>
+                <a href="sales.html" class="nav-item">
+                    <i class="fas fa-cash-register"></i>
+                    Record Sale
+                </a>
+                <a href="reports.html" class="nav-item">
+                    <i class="fas fa-chart-bar"></i>
+                    Reports
+                </a>
+                <a href="users.html" class="nav-item">
+                    <i class="fas fa-users"></i>
+                    Users
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <div class="user-details">
+                        <h4 id="userName">User</h4>
+                        <p id="userRole">Role</p>
+                    </div>
+                </div>
+                <button onclick="logout()" class="btn btn-secondary" style="margin-top: 12px; font-size: 14px;">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <h1>Dashboard</h1>
+                <p>Overview of your butcher shop inventory</p>
+            </div>
+
+            <!-- Alerts -->
+            <div id="alertsContainer"></div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <a href="stock-entry.html" class="quick-action-btn">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Record New Stock</span>
+                </a>
+                <a href="sales.html" class="quick-action-btn">
+                    <i class="fas fa-cash-register"></i>
+                    <span>Record Sale</span>
+                </a>
+                <a href="reports.html" class="quick-action-btn">
+                    <i class="fas fa-file-alt"></i>
+                    <span>View Reports</span>
+                </a>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon primary">
+                        <i class="fas fa-weight-hanging"></i>
+                    </div>
+                    <div class="stat-value" id="totalStock">0 kg</div>
+                    <div class="stat-label">Total Stock Available</div>
+                </div>
+                
+                <div class="stat-card success">
+                    <div class="stat-icon success">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <div class="stat-value" id="todaySales">KES 0</div>
+                    <div class="stat-label">Today's Revenue</div>
+                </div>
+                
+                <div class="stat-card" style="border-left: 4px solid var(--primary);">
+                    <div class="stat-icon primary">
+                        <i class="fas fa-balance-scale"></i>
+                    </div>
+                    <div class="stat-value" id="todayWeight">0 kg</div>
+                    <div class="stat-label">Total KG Sold Today</div>
+                </div>
+                
+                <div class="stat-card warning">
+                    <div class="stat-icon warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="stat-value" id="lowStockCount">0</div>
+                    <div class="stat-label">Low Stock Alerts</div>
+                </div>
+                
+                <div class="stat-card danger">
+                    <div class="stat-icon danger">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-value" id="spoilageCount">0</div>
+                    <div class="stat-label">Spoilage Warnings</div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-history"></i> Recent Sales</h2>
+                    <a href="reports.html" class="action-btn action-btn-secondary">View All</a>
+                </div>
+                <div class="card-body">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Meat Cut</th>
+                                <th>Weight</th>
+                                <th>Amount</th>
+                                <th>Sold By</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentSalesTable">
+                            <tr>
+                                <td colspan="5" class="empty-state">
+                                    <i class="fas fa-inbox"></i>
+                                    <p>No sales recorded yet</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modern Bottom Navigation -->
+    <nav class="mobile-nav">
+        <a href="dashboard.html" class="mobile-nav-item active" onclick="setActiveNav(this)">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </a>
+        <a href="stock-entry.html" class="mobile-nav-item" onclick="setActiveNav(this)">
+            <i class="fas fa-plus-circle"></i>
+            <span>Stock</span>
+        </a>
+        <a href="sales.html" class="mobile-nav-item" onclick="setActiveNav(this)">
+            <i class="fas fa-cash-register"></i>
+            <span>Sale</span>
+        </a>
+        <a href="reports.html" class="mobile-nav-item" onclick="setActiveNav(this)">
+            <i class="fas fa-chart-bar"></i>
+            <span>Reports</span>
+        </a>
+        <a href="users.html" class="mobile-nav-item" onclick="setActiveNav(this)">
+            <i class="fas fa-users"></i>
+            <span>Users</span>
+        </a>
+    </nav>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="js/config.js"></script>
+    <script>
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+            window.location.href = 'login.html';
+        }
+        
+        document.getElementById('userName').textContent = localStorage.getItem('username') || 'User';
+        document.getElementById('userAvatar').textContent = (localStorage.getItem('username') || 'U')[0].toUpperCase();
+        async function loadUserProfile() {
+    try {
+        const response = await fetch(`${CONFIG.API_URL}/users/`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            const users = await response.json();
+            const currentUser = users.find(u => u.username === localStorage.getItem('username'));
+            
+            if (currentUser && currentUser.profile) {
+                document.getElementById('userRole').textContent = 
+                    currentUser.profile.role.charAt(0).toUpperCase() + 
+                    currentUser.profile.role.slice(1);
+            } else {
+                document.getElementById('userRole').textContent = 'Butcher';
+            }
+        }
+    } catch (error) {
+        console.error('Error loading profile:', error);
+        document.getElementById('userRole').textContent = 'User';
+    }
+}
+
+// Call this after setting user info
+loadUserProfile();
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const hamburger = document.getElementById('hamburgerBtn');
+            
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
+            hamburger.classList.toggle('active');
+        }
+        
+        function setActiveNav(element) {
+            document.querySelectorAll('.mobile-nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            element.classList.add('active');
+        }
+        
+        async function fetchDashboard() {
+            try {
+                const response = await fetch(`${CONFIG.API_URL}/dashboard/`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    document.getElementById('totalStock').textContent = `${parseFloat(data.total_stock).toFixed(1)} kg`;
+                    document.getElementById('todaySales').textContent = `KES ${parseFloat(data.total_sales_today).toFixed(0)}`;
+                    document.getElementById('todayWeight').textContent = `${parseFloat(data.total_weight_sold_today).toFixed(1)} kg`;
+                    document.getElementById('lowStockCount').textContent = data.low_stock_count;
+                    document.getElementById('spoilageCount').textContent = data.spoilage_warnings;
+                    
+                    if (data.recent_sales && data.recent_sales.length > 0) {
+                        const tbody = document.getElementById('recentSalesTable');
+                        tbody.innerHTML = data.recent_sales.map(sale => `
+                            <tr>
+                                <td>${new Date(sale.sale_date).toLocaleTimeString()}</td>
+                                <td>${sale.meat_cut_name}</td>
+                                <td>${sale.weight_sold} kg</td>
+                                <td>KES ${sale.sale_price}</td>
+                                <td>${sale.username}</td>
+                            </tr>
+                        `).join('');
+                    }
+                    
+                    showAlerts(data.low_stock_count, data.spoilage_warnings);
+                } else if (response.status === 401) {
+                    localStorage.clear();
+                    window.location.href = 'login.html';
+                }
+            } catch (error) {
+                console.error('Error fetching dashboard:', error);
+                showToast('Failed to load dashboard data', 'error');
+            }
+        }
+        
+        function showAlerts(lowStock, spoilage) {
+            const container = document.getElementById('alertsContainer');
+            let html = '';
+            
+            if (spoilage > 0) {
+                html += `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span><strong>${spoilage} items</strong> are approaching spoilage. Please check your inventory!</span>
+                    </div>
+                `;
+            }
+            
+            if (lowStock > 0) {
+                html += `
+                    <div class="alert alert-warning">
+                        <i class="fas fa-bell"></i>
+                        <span><strong>${lowStock} items</strong> are running low on stock. Consider restocking soon.</span>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = html;
+        }
+        
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                <span>${message}</span>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+        
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+        
+        // Close sidebar on window resize to desktop
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 1024) {
+                document.getElementById('sidebar').classList.remove('open');
+                document.getElementById('sidebarOverlay').classList.remove('show');
+                document.getElementById('hamburgerBtn').classList.remove('active');
+            }
+        });
+        
+        fetchDashboard();
+        setInterval(fetchDashboard, 30000);
+    </script>
+</body>
+</html>

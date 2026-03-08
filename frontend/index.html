@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#dc2626">
+    <title>NyamaTrack - Smart Butcher Shop Inventory</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .landing-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* ── Hero background image ── */
+        .landing-hero-bg {
+            position: absolute;
+            inset: 0;
+            background-image: url('https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?auto=format&fit=crop&w=1600&q=80');
+            background-size: cover;
+            background-position: center;
+            z-index: 0;
+        }
+
+        /* Dark red overlay so text stays readable */
+        .landing-hero-bg::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                135deg,
+                rgba(127, 29, 29, 0.88) 0%,
+                rgba(153, 27, 27, 0.80) 50%,
+                rgba(30, 10, 10, 0.75) 100%
+            );
+        }
+
+        .landing-nav,
+        .landing-hero {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .landing-nav {
+            padding: 24px 48px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        @media (max-width: 768px) {
+            .landing-nav {
+                padding: 16px 24px;
+            }
+        }
+        
+        .landing-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+            font-size: 28px;
+            font-weight: 800;
+            text-decoration: none;
+        }
+        
+        @media (max-width: 480px) {
+            .landing-logo {
+                font-size: 22px;
+            }
+        }
+        
+        .landing-logo-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 28px;
+        }
+        
+        @media (max-width: 480px) {
+            .landing-logo-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 22px;
+            }
+        }
+        
+        .landing-nav-links {
+            display: flex;
+            gap: 32px;
+        }
+        
+        @media (max-width: 768px) {
+            .landing-nav-links {
+                gap: 16px;
+            }
+        }
+        
+        .landing-nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            opacity: 0.9;
+            transition: opacity 0.3s;
+            padding: 10px 20px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+        }
+        
+        @media (max-width: 480px) {
+            .landing-nav-links a {
+                padding: 8px 16px;
+                font-size: 14px;
+            }
+        }
+        
+        .landing-nav-links a:hover {
+            opacity: 1;
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .landing-hero {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 48px;
+            gap: 64px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        @media (max-width: 968px) {
+            .landing-hero {
+                flex-direction: column;
+                text-align: center;
+                padding: 32px 24px;
+                gap: 32px;
+            }
+        }
+        
+        .landing-content {
+            flex: 1;
+            color: white;
+        }
+
+        /* Subtle badge above the headline */
+        .landing-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: #fecaca;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            padding: 6px 14px;
+            border-radius: 999px;
+            margin-bottom: 20px;
+        }
+        
+        .landing-content h1 {
+            font-size: 56px;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 24px;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        }
+        
+        @media (max-width: 768px) {
+            .landing-content h1 {
+                font-size: 36px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .landing-content h1 {
+                font-size: 28px;
+            }
+        }
+        
+        .landing-content p {
+            font-size: 20px;
+            opacity: 0.95;
+            margin-bottom: 32px;
+            line-height: 1.6;
+            max-width: 500px;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        
+        @media (max-width: 968px) {
+            .landing-content p {
+                max-width: 100%;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .landing-content p {
+                font-size: 16px;
+            }
+        }
+        
+        .landing-cta {
+            display: flex;
+            gap: 16px;
+        }
+        
+        @media (max-width: 480px) {
+            .landing-cta {
+                flex-direction: column;
+                gap: 12px;
+            }
+        }
+        
+        .btn-landing-primary {
+            background: white;
+            color: #991b1b;
+            padding: 18px 36px;
+            border-radius: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        @media (max-width: 480px) {
+            .btn-landing-primary {
+                padding: 16px 24px;
+                justify-content: center;
+            }
+        }
+        
+        .btn-landing-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        }
+        
+        .btn-landing-secondary {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            padding: 18px 36px;
+            border-radius: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            border: 2px solid rgba(255,255,255,0.3);
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        @media (max-width: 480px) {
+            .btn-landing-secondary {
+                padding: 16px 24px;
+                justify-content: center;
+            }
+        }
+        
+        .btn-landing-secondary:hover {
+            background: rgba(255,255,255,0.25);
+            border-color: rgba(255,255,255,0.5);
+        }
+        
+        .landing-visual {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        @media (max-width: 968px) {
+            .landing-visual {
+                display: none;
+            }
+        }
+        
+        .phone-mockup {
+            width: 300px;
+            height: 600px;
+            background: white;
+            border-radius: 40px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+            padding: 20px;
+            position: relative;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: #f9fafb;
+            border-radius: 30px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .phone-header {
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+            padding: 20px;
+            color: white;
+        }
+        
+        .phone-stats {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .phone-stat {
+            background: white;
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .phone-stat-value {
+            font-size: 24px;
+            font-weight: 800;
+            color: #dc2626;
+        }
+        
+        .phone-stat-label {
+            font-size: 12px;
+            color: #6b7280;
+        }
+        
+        /* ── Features section ── */
+        .features-section {
+            background: white;
+            padding: 80px 48px;
+        }
+        
+        @media (max-width: 768px) {
+            .features-section {
+                padding: 60px 24px;
+            }
+        }
+        
+        .features-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 32px;
+        }
+        
+        @media (max-width: 768px) {
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+        }
+        
+        .feature-card {
+            padding: 32px;
+            border-radius: 16px;
+            background: #f9fafb;
+            transition: transform 0.3s;
+        }
+        
+        @media (max-width: 480px) {
+            .feature-card {
+                padding: 24px;
+            }
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-4px);
+        }
+        
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+        
+        .feature-card h3 {
+            font-size: 20px;
+            margin-bottom: 12px;
+            color: #111827;
+        }
+        
+        .feature-card p {
+            color: #6b7280;
+            line-height: 1.6;
+        }
+        
+        .landing-footer {
+            background: #1f2937;
+            color: white;
+            text-align: center;
+            padding: 40px;
+        }
+        
+        @media (max-width: 480px) {
+            .landing-footer {
+                padding: 24px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="landing-container">
+
+        <!-- ── Full-bleed hero background image ── -->
+        <div class="landing-hero-bg"></div>
+
+        <nav class="landing-nav">
+            <a href="index.html" class="landing-logo">
+                <div class="landing-logo-icon">
+                    <i class="fas fa-drumstick-bite"></i>
+                </div>
+                NyamaTrack
+            </a>
+            <div class="landing-nav-links">
+                <a href="login.html">Login</a>
+                <a href="login.html">Get Started</a>
+            </div>
+        </nav>
+        
+        <div class="landing-hero">
+            <div class="landing-content">
+                <div class="landing-badge">
+                    <i class="fas fa-map-marker-alt"></i> Built for Kenyan Butcher Shops
+                </div>
+                <h1>Smart Inventory Management for Butcher Shops</h1>
+                <p>Track your meat stock, reduce waste, and increase profits with our simple mobile solution designed specifically for Kenyan butcher shops. Works offline, supports Swahili &amp; English.</p>
+                <div class="landing-cta">
+                    <a href="login.html" class="btn-landing-primary">
+                        <i class="fas fa-rocket"></i> Get Started Free
+                    </a>
+                    <a href="#features" class="btn-landing-secondary">
+                        <i class="fas fa-info-circle"></i> Learn More
+                    </a>
+                </div>
+            </div>
+            
+            <div class="landing-visual">
+                <div class="phone-mockup">
+                    <div class="phone-screen">
+                        <div class="phone-header">
+                            <div style="font-size: 12px; opacity: 0.8;">Welcome back,</div>
+                            <div style="font-size: 18px; font-weight: 700;">John's Butchery</div>
+                        </div>
+                        <div class="phone-stats">
+                            <div class="phone-stat">
+                                <div class="phone-stat-value">156kg</div>
+                                <div class="phone-stat-label">Total Stock</div>
+                            </div>
+                            <div class="phone-stat">
+                                <div class="phone-stat-value">KES 12K</div>
+                                <div class="phone-stat-label">Today's Sales</div>
+                            </div>
+                            <div class="phone-stat">
+                                <div class="phone-stat-value" style="color: #f59e0b;">3</div>
+                                <div class="phone-stat-label">Low Stock</div>
+                            </div>
+                            <div class="phone-stat">
+                                <div class="phone-stat-value" style="color: #ef4444;">1</div>
+                                <div class="phone-stat-label">Spoilage Alert</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <section class="features-section" id="features">
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-mobile-alt"></i>
+                </div>
+                <h3>Mobile First</h3>
+                <p>Designed for cheap Android phones with large buttons and simple interface. Works perfectly on small screens.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-wifi-slash"></i>
+                </div>
+                <h3>Works Offline</h3>
+                <p>No internet? No problem. Record sales and stock entries offline, sync when connection returns.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <h3>Smart Alerts</h3>
+                <p>Get notified when stock is running low or meat is approaching spoilage. Never lose money to waste again.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3>Business Insights</h3>
+                <p>Track which cuts sell best, monitor revenue trends, and make data-driven ordering decisions.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-language"></i>
+                </div>
+                <h3>Swahili &amp; English</h3>
+                <p>Switch between languages easily. Perfect for markets like Wakulima, Kibuye, and Kongowea.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3>Secure &amp; Free</h3>
+                <p>Your data is protected with JWT authentication. Free tier available for small shops.</p>
+            </div>
+        </div>
+    </section>
+    
+    <footer class="landing-footer">
+        <p>&copy; 2026 NyamaTrack. Built for Zetech University Software Engineering Diploma.</p>
+    </footer>
+
+    <script>
+        if (localStorage.getItem('access_token')) {
+            window.location.href = 'dashboard.html';
+        }
+    </script>
+</body>
+</html>
