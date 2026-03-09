@@ -11,12 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* ─────────────────────────────────────────
-           MOBILE-FIRST RESPONSIVE OVERRIDES
-           All rules below layer on top of styles.css
-           ───────────────────────────────────────── */
-
-        /* ── Daily report summary cards ── */
+        /* ── Summary cards ── */
         .summary-cards {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -31,56 +26,33 @@
             text-align: center;
         }
         .summary-card h4 {
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--text-secondary, #6b7280);
-            font-weight: 600;
-            margin-bottom: 6px;
+            font-size: 11px; text-transform: uppercase;
+            letter-spacing: 0.05em; color: var(--text-secondary, #6b7280);
+            font-weight: 600; margin-bottom: 6px;
         }
         .summary-card .value {
-            font-size: 18px;
-            font-weight: 800;
-            color: var(--primary, #dc2626);
-            line-height: 1.2;
+            font-size: 18px; font-weight: 800;
+            color: var(--primary, #dc2626); line-height: 1.2;
         }
 
         /* ── Stats grid ── */
-        .stats-grid {
-            display: grid;
-            gap: 14px;
-        }
+        .stats-grid { display: grid; gap: 14px; }
 
-        /* ── Date range filter row ── */
+        /* ── Filter rows ── */
         .filter-row {
-            display: flex;
-            gap: 12px;
-            align-items: flex-end;
-            flex-wrap: wrap;
+            display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;
         }
-        .filter-row .form-group {
-            margin: 0;
-            flex: 1;
-            min-width: 130px;
-        }
-        .filter-row .btn-group {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
+        .filter-row .form-group { margin: 0; flex: 1; min-width: 130px; }
+        .filter-row .btn-group  { display: flex; gap: 8px; flex-wrap: wrap; }
 
-        /* ── Daily report lookup row ── */
+        /* ── Daily lookup ── */
         .daily-lookup-row {
-            display: grid;
-            grid-template-columns: 1fr auto;
-            gap: 12px;
-            align-items: flex-end;
+            display: grid; grid-template-columns: 1fr auto;
+            gap: 12px; align-items: flex-end;
         }
-        .daily-lookup-row .form-group {
-            margin: 0;
-        }
+        .daily-lookup-row .form-group { margin: 0; }
 
-        /* ── Sales-by-type grid ── */
+        /* ── Sales by type ── */
         .sales-by-type-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -88,198 +60,162 @@
         }
         .type-stat-card {
             background: var(--background, #f8f9fa);
-            padding: 14px;
-            border-radius: 10px;
+            padding: 14px; border-radius: 10px;
             border-left: 4px solid var(--primary, #dc2626);
         }
-        .type-stat-card strong {
-            font-size: 13px;
-            color: var(--primary, #dc2626);
-            display: block;
-            margin-bottom: 4px;
+        .type-stat-card strong { font-size: 13px; color: var(--primary, #dc2626); display: block; margin-bottom: 4px; }
+        .type-stat-card small  { font-size: 12px; color: var(--text-secondary, #6b7280); }
+
+        /* ── Section heading ── */
+        .section-heading {
+            font-size: 14px; font-weight: 700;
+            color: var(--text-primary, #111);
+            margin: 20px 0 10px;
+            display: flex; align-items: center; gap: 8px;
         }
-        .type-stat-card small {
-            font-size: 12px;
-            color: var(--text-secondary, #6b7280);
+
+        /* ── Scrollable tables ── */
+        .table-scroll {
+            overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 8px;
         }
+        .table-scroll .data-table { min-width: 480px; }
 
         /* ── Alerts grid ── */
         .alerts-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
         }
-        .alert-item {
-            padding: 12px 14px;
-            border-radius: 10px;
+
+        /* ── Alert item card ── */
+        .alert-card {
+            border-radius: 12px; padding: 14px 16px;
+            margin-bottom: 10px; border-left: 4px solid;
+        }
+        .alert-card.spoilage  { background: #fff5f5; border-color: #dc2626; }
+        .alert-card.low-stock { background: #fefce8; border-color: #f59e0b; }
+        .alert-card.past-spoilage { background: #fee2e2; border-color: #991b1b; }
+
+        .alert-card-header {
+            display: flex; align-items: center;
+            justify-content: space-between; gap: 10px;
             margin-bottom: 8px;
-            border-left: 4px solid;
         }
-        .alert-item.spoilage {
-            background: #fee2e2;
-            border-color: var(--danger, #dc2626);
+        .alert-card-title {
+            font-size: 14px; font-weight: 700; color: #111;
         }
-        .alert-item.low-stock {
-            background: #fef3c7;
-            border-color: var(--warning, #f59e0b);
+        .alert-urgency {
+            font-size: 11px; font-weight: 700; padding: 3px 9px;
+            border-radius: 20px; white-space: nowrap;
         }
-        .alert-item strong { font-size: 13px; display: block; margin-bottom: 2px; }
-        .alert-item small  { font-size: 12px; color: #6b7280; }
+        .alert-urgency.danger  { background: #fee2e2; color: #991b1b; }
+        .alert-urgency.warning { background: #fef9c3; color: #854d0e; }
+        .alert-urgency.low     { background: #fef9c3; color: #854d0e; }
 
-        /* ── Scrollable tables on small screens ── */
-        .table-scroll {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            border-radius: 8px;
+        .alert-card-meta {
+            font-size: 12px; color: #6b7280;
+            display: flex; flex-direction: column; gap: 3px;
+            margin-bottom: 10px;
         }
-        .table-scroll .data-table {
-            min-width: 480px;
-        }
+        .alert-card-meta span { display: flex; align-items: center; gap: 5px; }
 
-        /* ── Section headings inside cards ── */
-        .section-heading {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--text-primary, #111);
-            margin: 20px 0 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        /* Remove button on alert card */
+        .alert-remove-btn {
+            width: 100%; padding: 8px; border: none; border-radius: 8px;
+            background: #dc2626; color: #fff;
+            font-size: 12px; font-weight: 700; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            transition: background 0.15s;
         }
+        .alert-remove-btn:hover { background: #b91c1c; }
 
-        /* ══════════════════════════════════════════
-           TABLET  (≤ 768px)
-           ══════════════════════════════════════════ */
+        /* ── Removal history cards ── */
+        .removal-card {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 16px; border: 1.5px solid #e5e7eb;
+            border-radius: 10px; margin-bottom: 8px; background: #fff; gap: 12px;
+        }
+        .removal-card-info h4 { font-size: 13px; font-weight: 700; color: #111; margin-bottom: 4px; }
+        .removal-card-info p  { font-size: 12px; color: #6b7280; display: flex; flex-direction: column; gap: 2px; }
+        .removal-card-info p span { display: flex; align-items: center; gap: 5px; }
+        .removal-badge {
+            font-size: 11px; font-weight: 700; padding: 4px 10px;
+            border-radius: 20px; white-space: nowrap; flex-shrink: 0; text-transform: capitalize;
+        }
+        .removal-badge.spoiled { background: #fee2e2; color: #991b1b; }
+        .removal-badge.damaged { background: #fef3c7; color: #92400e; }
+        .removal-badge.expired { background: #ede9fe; color: #5b21b6; }
+        .removal-badge.other   { background: #f3f4f6; color: #374151; }
+
+        .removal-totals {
+            padding: 14px 16px; background: #f8f9fa;
+            border: 1px solid #e5e7eb; border-radius: 10px;
+            font-size: 13px; font-weight: 600; color: #374151;
+            margin-bottom: 14px; display: flex; gap: 20px; flex-wrap: wrap;
+        }
+        .removal-totals span { color: #dc2626; font-weight: 800; }
+
+        /* ── Removal Modal ── */
+        .modal-backdrop {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.6); z-index: 10000;
+            align-items: center; justify-content: center; padding: 20px;
+        }
+        .modal-backdrop.open { display: flex; }
+        .modal-box {
+            background: #fff; border-radius: 16px; padding: 24px;
+            max-width: 400px; width: 100%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        .modal-box h3 { margin-bottom: 12px; color: #dc2626; font-size: 16px; }
+        .modal-box p  { margin-bottom: 18px; color: #6b7280; font-size: 13px; }
+        .modal-field  { margin-bottom: 14px; }
+        .modal-field label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px; }
+        .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+        .modal-actions button { flex: 1; }
+
+        /* ── Responsive ── */
         @media (max-width: 768px) {
-
-            /* Stats strip: 3 in a row, smaller */
-            .stats-grid {
-                grid-template-columns: repeat(3, 1fr) !important;
-                gap: 10px;
-            }
-            .stat-card {
-                padding: 14px 10px;
-            }
-            .stat-value {
-                font-size: 18px !important;
-            }
-            .stat-label {
-                font-size: 10px !important;
-            }
-            .stat-icon {
-                width: 36px !important;
-                height: 36px !important;
-                font-size: 14px !important;
-            }
-
-            /* Summary cards: 3 in a row still fine */
-            .summary-card .value {
-                font-size: 16px;
-            }
-
-            /* Alerts: stack vertically */
-            .alerts-grid {
-                grid-template-columns: 1fr;
-                gap: 16px;
-            }
-
-            /* Filter row: dates side by side, buttons below */
-            .filter-row {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .filter-row .form-group {
-                min-width: unset;
-            }
-            .filter-row .btn-group {
-                flex-direction: row;
-            }
-            .filter-row .btn-group .action-btn {
-                flex: 1;
-                justify-content: center;
-            }
+            .stats-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 10px; }
+            .stat-card  { padding: 14px 10px; }
+            .stat-value { font-size: 18px !important; }
+            .stat-label { font-size: 10px !important; }
+            .stat-icon  { width: 36px !important; height: 36px !important; font-size: 14px !important; }
+            .alerts-grid { grid-template-columns: 1fr; gap: 16px; }
+            .filter-row  { flex-direction: column; align-items: stretch; }
+            .filter-row .form-group { min-width: unset; }
+            .filter-row .btn-group .action-btn { flex: 1; justify-content: center; }
         }
-
-        /* ══════════════════════════════════════════
-           MOBILE  (≤ 480px)
-           ══════════════════════════════════════════ */
         @media (max-width: 480px) {
-
-            /* Page header */
             .page-header h1 { font-size: 22px; }
-            .page-header p  { font-size: 13px; }
-
-            /* Card body padding tighter */
-            .card-body { padding: 14px !important; }
+            .card-body   { padding: 14px !important; }
             .card-header { padding: 14px 16px !important; }
-
-            /* Daily lookup: stack vertically */
-            .daily-lookup-row {
-                grid-template-columns: 1fr;
-            }
-            .daily-lookup-row button {
-                width: 100%;
-                justify-content: center;
-            }
-
-            /* Summary cards: 3 across but more compact */
-            .summary-cards {
-                gap: 8px;
-            }
-            .summary-card {
-                padding: 12px 8px;
-            }
-            .summary-card h4  { font-size: 10px; }
+            .daily-lookup-row { grid-template-columns: 1fr; }
+            .daily-lookup-row button { width: 100%; justify-content: center; }
+            .summary-cards { gap: 8px; }
+            .summary-card  { padding: 12px 8px; }
+            .summary-card h4    { font-size: 10px; }
             .summary-card .value { font-size: 15px; }
-
-            /* Stats strip: still 3 across, ultra compact */
-            .stats-grid {
-                grid-template-columns: repeat(3, 1fr) !important;
-                gap: 8px;
-            }
-            .stat-card { padding: 12px 8px; }
-            .stat-value { font-size: 15px !important; }
-            .stat-label { font-size: 9px !important; }
-            .stat-icon  { display: none !important; }
-
-            /* Sales-by-type: single column */
-            .sales-by-type-grid {
-                grid-template-columns: 1fr;
-            }
-
-            /* Date range filter: full width stacked */
-            .filter-row .form-group { width: 100%; }
-            .filter-row .btn-group  { width: 100%; }
+            .stats-grid  { grid-template-columns: repeat(3,1fr) !important; gap: 8px; }
+            .stat-card   { padding: 12px 8px; }
+            .stat-value  { font-size: 15px !important; }
+            .stat-label  { font-size: 9px !important; }
+            .stat-icon   { display: none !important; }
+            .sales-by-type-grid { grid-template-columns: 1fr; }
+            .filter-row .btn-group { width: 100%; }
             .filter-row .btn-group .action-btn { flex: 1; font-size: 13px; }
-
-            /* Daily report date heading */
-            #reportDate { font-size: 14px; }
-
-            /* Reduce card border radius on mobile */
-            .card { border-radius: 12px; }
-
-            /* Bottom nav safe area */
             .main-content { padding-bottom: 80px; }
         }
-
-        /* ══════════════════════════════════════════
-           VERY SMALL  (≤ 360px)
-           ══════════════════════════════════════════ */
         @media (max-width: 360px) {
             .summary-card .value { font-size: 13px; }
             .stat-value { font-size: 13px !important; }
-            .card-body { padding: 12px !important; }
+            .card-body  { padding: 12px !important; }
             .action-btn { padding: 10px 14px; font-size: 12px; }
         }
     </style>
 </head>
 <body>
-    <!-- Mobile Header with Modern Hamburger -->
     <header class="mobile-header">
         <div class="mobile-logo">
-            <div class="mobile-logo-icon">
-                <i class="fas fa-drumstick-bite"></i>
-            </div>
+            <div class="mobile-logo-icon"><i class="fas fa-drumstick-bite"></i></div>
             NyamaTrack
         </div>
         <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleSidebar()">
@@ -289,43 +225,23 @@
         </button>
     </header>
 
-    <!-- Sidebar Overlay -->
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
     <div class="app-container">
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-brand">
-                    <div class="sidebar-brand-icon">
-                        <i class="fas fa-drumstick-bite"></i>
-                    </div>
+                    <div class="sidebar-brand-icon"><i class="fas fa-drumstick-bite"></i></div>
                     NyamaTrack
                 </div>
             </div>
-            
             <nav class="nav-menu">
-                <a href="dashboard.html" class="nav-item">
-                    <i class="fas fa-home"></i>
-                    Dashboard
-                </a>
-                <a href="stock-entry.html" class="nav-item">
-                    <i class="fas fa-plus-circle"></i>
-                    Record Stock
-                </a>
-                <a href="sales.html" class="nav-item">
-                    <i class="fas fa-cash-register"></i>
-                    Record Sale
-                </a>
-                <a href="reports.html" class="nav-item active">
-                    <i class="fas fa-chart-bar"></i>
-                    Reports
-                </a>
-                <a href="users.html" class="nav-item">
-                    <i class="fas fa-users"></i>
-                    Users
-                </a>
+                <a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
+                <a href="stock-entry.html" class="nav-item"><i class="fas fa-plus-circle"></i> Record Stock</a>
+                <a href="sales.html" class="nav-item"><i class="fas fa-cash-register"></i> Record Sale</a>
+                <a href="reports.html" class="nav-item active"><i class="fas fa-chart-bar"></i> Reports</a>
+                <a href="users.html" class="nav-item"><i class="fas fa-users"></i> Users</a>
             </nav>
-            
             <div class="sidebar-footer">
                 <div class="user-info">
                     <div class="user-avatar" id="userAvatar">U</div>
@@ -334,7 +250,7 @@
                         <p id="userRole">Role</p>
                     </div>
                 </div>
-                <button onclick="logout()" class="btn btn-secondary" style="margin-top: 12px; font-size: 14px;">
+                <button onclick="logout()" class="btn btn-secondary" style="margin-top:12px;font-size:14px;">
                     <i class="fas fa-sign-out-alt"></i> Logout
                 </button>
             </div>
@@ -346,64 +262,36 @@
                 <p>View sales history and inventory reports</p>
             </div>
 
-            <!-- ── Daily Report Lookup ── -->
-            <div class="card" style="border: 2px solid var(--primary); margin-bottom: 20px;">
-                <div class="card-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white;">
+            <!-- ── Daily Report ── -->
+            <div class="card" style="border:2px solid var(--primary);margin-bottom:20px;">
+                <div class="card-header" style="background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);color:#fff;">
                     <h2><i class="fas fa-calendar-day"></i> Daily Report Lookup</h2>
                 </div>
                 <div class="card-body">
                     <div class="daily-lookup-row">
                         <div class="form-group">
-                            <label class="form-label" style="font-weight: 600;">Select Specific Date</label>
-                            <input type="date" class="form-input" id="specificDate" style="border-color: var(--primary);">
+                            <label class="form-label" style="font-weight:600;">Select Specific Date</label>
+                            <input type="date" class="form-input" id="specificDate" style="border-color:var(--primary);">
                         </div>
-                        <button onclick="loadDailyReport()" class="action-btn action-btn-primary" style="padding: 13px 22px;">
-                            <i class="fas fa-search"></i>
-                            View Report
+                        <button onclick="loadDailyReport()" class="action-btn action-btn-primary" style="padding:13px 22px;">
+                            <i class="fas fa-search"></i> View Report
                         </button>
                     </div>
-
-                    <div id="dailyReportResults" style="margin-top: 20px; display: none;">
-                        <h3 style="color: var(--primary); margin-bottom: 14px; font-size: 16px;">
+                    <div id="dailyReportResults" style="margin-top:20px;display:none;">
+                        <h3 style="color:var(--primary);margin-bottom:14px;font-size:16px;">
                             Report for <span id="reportDate"></span>
                         </h3>
-
                         <div class="summary-cards">
-                            <div class="summary-card">
-                                <h4>Revenue</h4>
-                                <div class="value" id="dailyRevenue">KES 0</div>
-                            </div>
-                            <div class="summary-card">
-                                <h4>Weight</h4>
-                                <div class="value" id="dailyWeight">0 kg</div>
-                            </div>
-                            <div class="summary-card">
-                                <h4>Sales</h4>
-                                <div class="value" id="dailyTransactions">0</div>
-                            </div>
+                            <div class="summary-card"><h4>Revenue</h4><div class="value" id="dailyRevenue">KES 0</div></div>
+                            <div class="summary-card"><h4>Weight</h4><div class="value" id="dailyWeight">0 kg</div></div>
+                            <div class="summary-card"><h4>Sales</h4><div class="value" id="dailyTransactions">0</div></div>
                         </div>
-
-                        <div class="section-heading">
-                            <i class="fas fa-drumstick-bite" style="color:var(--primary);font-size:13px;"></i>
-                            Sales by Meat Type
-                        </div>
+                        <div class="section-heading"><i class="fas fa-drumstick-bite" style="color:var(--primary);font-size:13px;"></i> Sales by Meat Type</div>
                         <div class="sales-by-type-grid" id="salesByType"></div>
-
-                        <div class="section-heading">
-                            <i class="fas fa-receipt" style="color:var(--primary);font-size:13px;"></i>
-                            Transaction Detail
-                        </div>
+                        <div class="section-heading"><i class="fas fa-receipt" style="color:var(--primary);font-size:13px;"></i> Transaction Detail</div>
                         <div class="table-scroll">
                             <table class="data-table">
-                                <thead>
-                                    <tr>
-                                        <th>Time</th>
-                                        <th>Cut</th>
-                                        <th>Weight</th>
-                                        <th>Price</th>
-                                        <th>By</th>
-                                    </tr>
-                                </thead>
+                                <thead><tr><th>Time</th><th>Cut</th><th>Weight</th><th>Price</th><th>By</th></tr></thead>
                                 <tbody id="dailyTransactionsTable"></tbody>
                             </table>
                         </div>
@@ -412,81 +300,48 @@
             </div>
 
             <!-- ── Date Range Filter ── -->
-            <div class="card" style="margin-bottom: 20px;">
-                <div class="card-header">
-                    <h2><i class="fas fa-filter"></i> Date Range Filter</h2>
-                </div>
+            <div class="card" style="margin-bottom:20px;">
+                <div class="card-header"><h2><i class="fas fa-filter"></i> Date Range Filter</h2></div>
                 <div class="card-body">
                     <div class="filter-row">
-                        <div class="form-group">
-                            <label class="form-label">From</label>
-                            <input type="date" class="form-input" id="dateFrom">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">To</label>
-                            <input type="date" class="form-input" id="dateTo">
-                        </div>
+                        <div class="form-group"><label class="form-label">From</label><input type="date" class="form-input" id="dateFrom"></div>
+                        <div class="form-group"><label class="form-label">To</label><input type="date" class="form-input" id="dateTo"></div>
                         <div class="btn-group">
-                            <button onclick="loadReports()" class="action-btn action-btn-primary">
-                                <i class="fas fa-filter"></i> Filter
-                            </button>
-                            <button onclick="exportReport()" class="action-btn action-btn-secondary">
-                                <i class="fas fa-download"></i> CSV
-                            </button>
+                            <button onclick="loadReports()" class="action-btn action-btn-primary"><i class="fas fa-filter"></i> Filter</button>
+                            <button onclick="exportReport()" class="action-btn action-btn-secondary"><i class="fas fa-download"></i> CSV</button>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- ── Summary Stats ── -->
-            <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 20px;">
+            <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px;">
                 <div class="stat-card">
-                    <div class="stat-icon primary">
-                        <i class="fas fa-shopping-cart"></i>
-                    </div>
+                    <div class="stat-icon primary"><i class="fas fa-shopping-cart"></i></div>
                     <div class="stat-value" id="totalSales">0</div>
                     <div class="stat-label">Transactions</div>
                 </div>
                 <div class="stat-card success">
-                    <div class="stat-icon success">
-                        <i class="fas fa-money-bill-wave"></i>
-                    </div>
+                    <div class="stat-icon success"><i class="fas fa-money-bill-wave"></i></div>
                     <div class="stat-value" id="totalRevenue">KES 0</div>
                     <div class="stat-label">Revenue</div>
                 </div>
                 <div class="stat-card warning">
-                    <div class="stat-icon warning">
-                        <i class="fas fa-weight"></i>
-                    </div>
+                    <div class="stat-icon warning"><i class="fas fa-weight"></i></div>
                     <div class="stat-value" id="totalWeight">0 kg</div>
                     <div class="stat-label">Weight Sold</div>
                 </div>
             </div>
 
             <!-- ── Sales History ── -->
-            <div class="card" style="margin-bottom: 20px;">
-                <div class="card-header">
-                    <h2><i class="fas fa-list-alt"></i> Sales History</h2>
-                </div>
+            <div class="card" style="margin-bottom:20px;">
+                <div class="card-header"><h2><i class="fas fa-list-alt"></i> Sales History</h2></div>
                 <div class="card-body">
                     <div class="table-scroll">
                         <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Date & Time</th>
-                                    <th>Cut</th>
-                                    <th>Weight</th>
-                                    <th>Price</th>
-                                    <th>By</th>
-                                </tr>
-                            </thead>
+                            <thead><tr><th>Date & Time</th><th>Cut</th><th>Weight</th><th>Price</th><th>By</th></tr></thead>
                             <tbody id="salesTable">
-                                <tr>
-                                    <td colspan="5" class="empty-state">
-                                        <i class="fas fa-inbox"></i>
-                                        <p>Select date range to view reports</p>
-                                    </td>
-                                </tr>
+                                <tr><td colspan="5" class="empty-state"><i class="fas fa-inbox"></i><p>Select date range to view reports</p></td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -494,47 +349,33 @@
             </div>
 
             <!-- ── Inventory Alerts ── -->
-            <div class="card" style="margin-bottom: 20px;">
-                <div class="card-header">
-                    <h2><i class="fas fa-bell"></i> Inventory Alerts</h2>
-                </div>
+            <div class="card" style="margin-bottom:20px;">
+                <div class="card-header"><h2><i class="fas fa-bell"></i> Inventory Alerts</h2></div>
                 <div class="card-body">
                     <div class="alerts-grid">
                         <div>
-                            <h3 style="margin-bottom: 12px; color: var(--danger); font-size: 14px;">
+                            <h3 style="margin-bottom:12px;color:var(--danger);font-size:14px;">
                                 <i class="fas fa-exclamation-triangle"></i> Spoilage Warnings
                             </h3>
-                            <div id="spoilageList">
-                                <p style="color: var(--text-secondary); font-size: 13px;">Loading...</p>
-                            </div>
+                            <div id="spoilageList"><p style="color:var(--text-secondary);font-size:13px;">Loading…</p></div>
                         </div>
                         <div>
-                            <h3 style="margin-bottom: 12px; color: var(--warning); font-size: 14px;">
+                            <h3 style="margin-bottom:12px;color:var(--warning);font-size:14px;">
                                 <i class="fas fa-arrow-down"></i> Low Stock
                             </h3>
-                            <div id="lowStockList">
-                                <p style="color: var(--text-secondary); font-size: 13px;">Loading...</p>
-                            </div>
+                            <div id="lowStockList"><p style="color:var(--text-secondary);font-size:13px;">Loading…</p></div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- NEW: Stock Removal History Report -->
+            <!-- ── Stock Removal History ── -->
             <div class="card">
-                <div class="card-header">
-                    <h2><i class="fas fa-trash-alt"></i> Stock Removal History</h2>
-                </div>
+                <div class="card-header"><h2><i class="fas fa-trash-alt"></i> Stock Removal History</h2></div>
                 <div class="card-body">
-                    <div class="filter-row" style="margin-bottom: 16px;">
-                        <div class="form-group">
-                            <label class="form-label">From</label>
-                            <input type="date" class="form-input" id="removalDateFrom">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">To</label>
-                            <input type="date" class="form-input" id="removalDateTo">
-                        </div>
+                    <div class="filter-row" style="margin-bottom:16px;">
+                        <div class="form-group"><label class="form-label">From</label><input type="date" class="form-input" id="removalDateFrom"></div>
+                        <div class="form-group"><label class="form-label">To</label><input type="date" class="form-input" id="removalDateTo"></div>
                         <div class="form-group">
                             <label class="form-label">Reason</label>
                             <select class="form-input" id="removalReasonFilter">
@@ -545,63 +386,71 @@
                                 <option value="other">Other</option>
                             </select>
                         </div>
-                        <button onclick="loadRemovalHistory()" class="action-btn action-btn-primary">
-                            <i class="fas fa-filter"></i> Filter
-                        </button>
+                        <div class="btn-group">
+                            <button onclick="loadRemovalHistory()" class="action-btn action-btn-primary"><i class="fas fa-filter"></i> Filter</button>
+                        </div>
                     </div>
                     <div id="removalHistoryList">
-                        <p style="color: var(--text-secondary); font-size: 13px;">Select filters to view removal history...</p>
+                        <p style="color:var(--text-secondary);font-size:13px;">Loading…</p>
                     </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- Modern Bottom Navigation -->
     <nav class="mobile-nav">
-        <a href="dashboard.html" class="mobile-nav-item">
-            <i class="fas fa-home"></i>
-            <span>Home</span>
-        </a>
-        <a href="stock-entry.html" class="mobile-nav-item">
-            <i class="fas fa-plus-circle"></i>
-            <span>Stock</span>
-        </a>
-        <a href="sales.html" class="mobile-nav-item">
-            <i class="fas fa-cash-register"></i>
-            <span>Sale</span>
-        </a>
-        <a href="reports.html" class="mobile-nav-item active">
-            <i class="fas fa-chart-bar"></i>
-            <span>Reports</span>
-        </a>
-        <a href="users.html" class="mobile-nav-item">
-            <i class="fas fa-users"></i>
-            <span>Users</span>
-        </a>
+        <a href="dashboard.html" class="mobile-nav-item"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="stock-entry.html" class="mobile-nav-item"><i class="fas fa-plus-circle"></i><span>Stock</span></a>
+        <a href="sales.html" class="mobile-nav-item"><i class="fas fa-cash-register"></i><span>Sale</span></a>
+        <a href="reports.html" class="mobile-nav-item active"><i class="fas fa-chart-bar"></i><span>Reports</span></a>
+        <a href="users.html" class="mobile-nav-item"><i class="fas fa-users"></i><span>Users</span></a>
     </nav>
 
     <div class="toast-container" id="toastContainer"></div>
 
+    <!-- Remove Spoiled Stock Modal -->
+    <div class="modal-backdrop" id="removeModal">
+        <div class="modal-box">
+            <h3><i class="fas fa-exclamation-triangle"></i> Remove Spoiled Stock</h3>
+            <p>This action cannot be undone and will be logged for reference.</p>
+            <div class="modal-field">
+                <label>Reason for Removal</label>
+                <select id="modalReason" class="form-input">
+                    <option value="spoiled">Spoiled</option>
+                    <option value="damaged">Damaged</option>
+                    <option value="expired">Expired</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div class="modal-field">
+                <label>Notes (Optional)</label>
+                <textarea id="modalNotes" rows="3" class="form-input" style="resize:vertical;" placeholder="Add any notes…"></textarea>
+            </div>
+            <div class="modal-actions">
+                <button onclick="closeRemoveModal()" class="action-btn action-btn-secondary">Cancel</button>
+                <button onclick="confirmRemove()" class="action-btn action-btn-primary" style="background:#dc2626;">Remove Stock</button>
+            </div>
+        </div>
+    </div>
+
     <script src="js/config.js"></script>
     <script>
         const API_URL = CONFIG.API_URL;
-        const token = localStorage.getItem('access_token');
-
+        const token   = localStorage.getItem('access_token');
         if (!token) window.location.href = 'login.html';
 
-        document.getElementById('userName').textContent = localStorage.getItem('username') || 'User';
+        document.getElementById('userName').textContent   = localStorage.getItem('username') || 'User';
         document.getElementById('userAvatar').textContent = (localStorage.getItem('username') || 'U')[0].toUpperCase();
 
         const today    = new Date();
         const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-        document.getElementById('dateTo').value       = today.toISOString().split('T')[0];
-        document.getElementById('dateFrom').value     = lastWeek.toISOString().split('T')[0];
-        document.getElementById('specificDate').value = today.toISOString().split('T')[0];
-        
-        // Set default dates for removal history
+        document.getElementById('dateTo').value          = today.toISOString().split('T')[0];
+        document.getElementById('dateFrom').value        = lastWeek.toISOString().split('T')[0];
+        document.getElementById('specificDate').value    = today.toISOString().split('T')[0];
         document.getElementById('removalDateTo').value   = today.toISOString().split('T')[0];
         document.getElementById('removalDateFrom').value = lastWeek.toISOString().split('T')[0];
+
+        let stockToRemove = null;
 
         // ── Navigation ──
         function toggleSidebar() {
@@ -609,270 +458,262 @@
             document.getElementById('sidebarOverlay').classList.toggle('show');
             document.getElementById('hamburgerBtn').classList.toggle('active');
         }
-
-        function logout() {
-            localStorage.clear();
-            window.location.href = 'login.html';
-        }
+        function logout() { localStorage.clear(); window.location.href = 'login.html'; }
 
         function showToast(message, type = 'success') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerHTML = `
-                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
-                <span>${message}</span>
-            `;
-            container.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
+            const c = document.getElementById('toastContainer');
+            const t = document.createElement('div');
+            t.className = `toast ${type}`;
+            t.innerHTML = `<i class="fas fa-${type==='success'?'check-circle':'exclamation-circle'}"></i><span>${message}</span>`;
+            c.appendChild(t);
+            setTimeout(() => t.remove(), 3000);
         }
+
+        // ── Remove modal ──
+        function openRemoveModal(stockId) {
+            stockToRemove = stockId;
+            document.getElementById('modalReason').value = 'spoiled';
+            document.getElementById('modalNotes').value  = '';
+            document.getElementById('removeModal').classList.add('open');
+        }
+        function closeRemoveModal() {
+            stockToRemove = null;
+            document.getElementById('removeModal').classList.remove('open');
+        }
+        async function confirmRemove() {
+            if (!stockToRemove) return;
+            try {
+                const res = await fetch(`${API_URL}/stock/${stockToRemove}/remove_spoiled/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({
+                        reason: document.getElementById('modalReason').value,
+                        notes:  document.getElementById('modalNotes').value
+                    })
+                });
+                if (res.ok) {
+                    showToast('Spoiled stock removed successfully', 'success');
+                    closeRemoveModal();
+                    loadAlerts();
+                    loadRemovalHistory();
+                } else {
+                    const e = await res.json();
+                    showToast(e.error || e.detail || 'Failed to remove stock', 'error');
+                }
+            } catch { showToast('Connection error', 'error'); }
+        }
+
+        // Close modal on backdrop click
+        document.getElementById('removeModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('removeModal')) closeRemoveModal();
+        });
 
         // ── Daily Report ──
         async function loadDailyReport() {
             const date = document.getElementById('specificDate').value;
             if (!date) { showToast('Please select a date', 'warning'); return; }
-
             try {
-                const response = await fetch(`${API_URL}/reports/daily/?date=${date}`, {
+                const res = await fetch(`${API_URL}/reports/daily/?date=${date}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
+                if (!res.ok) { showToast('Failed to load daily report', 'error'); return; }
+                const data = await res.json();
 
-                if (!response.ok) { showToast('Failed to load daily report', 'error'); return; }
-
-                const data = await response.json();
                 document.getElementById('dailyReportResults').style.display = 'block';
                 document.getElementById('reportDate').textContent = new Date(date).toLocaleDateString('en-KE', {
                     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
                 });
-
-                document.getElementById('dailyRevenue').textContent      = `KES ${parseFloat(data.summary.total_revenue).toFixed(0)}`;
-                document.getElementById('dailyWeight').textContent        = `${parseFloat(data.summary.total_weight_sold).toFixed(1)} kg`;
-                document.getElementById('dailyTransactions').textContent  = data.summary.total_transactions;
+                document.getElementById('dailyRevenue').textContent     = `KES ${parseFloat(data.summary.total_revenue).toFixed(0)}`;
+                document.getElementById('dailyWeight').textContent       = `${parseFloat(data.summary.total_weight_sold).toFixed(1)} kg`;
+                document.getElementById('dailyTransactions').textContent = data.summary.total_transactions;
 
                 const typeContainer = document.getElementById('salesByType');
-                if (!Object.keys(data.sales_by_type).length) {
-                    typeContainer.innerHTML = '<p style="color:var(--text-secondary);font-size:13px;">No sales for this date</p>';
-                } else {
-                    typeContainer.innerHTML = Object.entries(data.sales_by_type).map(([type, stats]) => `
+                typeContainer.innerHTML = !Object.keys(data.sales_by_type).length
+                    ? '<p style="color:var(--text-secondary);font-size:13px;">No sales for this date</p>'
+                    : Object.entries(data.sales_by_type).map(([type, stats]) => `
                         <div class="type-stat-card">
                             <strong>${type}</strong>
                             <small>${stats.transactions} sales · ${stats.total_weight.toFixed(1)} kg · KES ${stats.total_revenue.toFixed(0)}</small>
-                        </div>
-                    `).join('');
-                }
+                        </div>`).join('');
 
                 const tbody = document.getElementById('dailyTransactionsTable');
-                if (!data.transactions.length) {
-                    tbody.innerHTML = `<tr><td colspan="5" class="empty-state" style="padding:32px;"><i class="fas fa-inbox"></i><p>No transactions on this date</p></td></tr>`;
-                } else {
-                    tbody.innerHTML = data.transactions.map(t => `
+                tbody.innerHTML = !data.transactions.length
+                    ? `<tr><td colspan="5" class="empty-state" style="padding:32px;"><i class="fas fa-inbox"></i><p>No transactions on this date</p></td></tr>`
+                    : data.transactions.map(t => `
                         <tr>
-                            <td>${new Date(t.sale_date).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</td>
+                            <td>${new Date(t.sale_date).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</td>
                             <td>${t.meat_cut_name}</td>
                             <td>${t.weight_sold} kg</td>
                             <td>KES ${t.sale_price}</td>
                             <td>${t.username}</td>
-                        </tr>
-                    `).join('');
-                }
+                        </tr>`).join('');
 
                 document.getElementById('dailyReportResults').scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-            } catch (error) {
-                console.error(error);
-                showToast('Connection error', 'error');
-            }
+            } catch(e) { console.error(e); showToast('Connection error', 'error'); }
         }
 
         // ── Range Reports ──
         async function loadReports() {
             const from = document.getElementById('dateFrom').value;
             const to   = document.getElementById('dateTo').value;
-
             try {
                 let url = `${API_URL}/sales/`;
                 if (from && to) url += `?from=${from}&to=${to}`;
-
-                const response = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
-                const sales = await response.json();
+                const res   = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+                const sales = await res.json();
 
                 document.getElementById('totalSales').textContent   = sales.length;
-                const totalRevenue = sales.reduce((s, x) => s + parseFloat(x.sale_price), 0);
-                const totalWeight  = sales.reduce((s, x) => s + parseFloat(x.weight_sold), 0);
-                document.getElementById('totalRevenue').textContent = `KES ${totalRevenue.toFixed(0)}`;
-                document.getElementById('totalWeight').textContent  = `${totalWeight.toFixed(1)} kg`;
+                const rev = sales.reduce((s,x) => s + parseFloat(x.sale_price), 0);
+                const wt  = sales.reduce((s,x) => s + parseFloat(x.weight_sold),  0);
+                document.getElementById('totalRevenue').textContent = `KES ${rev.toFixed(0)}`;
+                document.getElementById('totalWeight').textContent  = `${wt.toFixed(1)} kg`;
 
                 const tbody = document.getElementById('salesTable');
-                if (!sales.length) {
-                    tbody.innerHTML = `<tr><td colspan="5" class="empty-state"><i class="fas fa-inbox"></i><p>No sales found for selected period</p></td></tr>`;
-                } else {
-                    tbody.innerHTML = sales.map(sale => `
+                tbody.innerHTML = !sales.length
+                    ? `<tr><td colspan="5" class="empty-state"><i class="fas fa-inbox"></i><p>No sales found for selected period</p></td></tr>`
+                    : sales.map(s => `
                         <tr>
-                            <td>${new Date(sale.sale_date).toLocaleString([], {dateStyle:'short',timeStyle:'short'})}</td>
-                            <td>${sale.meat_cut_name}</td>
-                            <td>${sale.weight_sold} kg</td>
-                            <td>KES ${sale.sale_price}</td>
-                            <td>${sale.username}</td>
-                        </tr>
-                    `).join('');
-                }
-            } catch {
-                showToast('Failed to load reports', 'error');
-            }
+                            <td>${new Date(s.sale_date).toLocaleString([],{dateStyle:'short',timeStyle:'short'})}</td>
+                            <td>${s.meat_cut_name}</td>
+                            <td>${s.weight_sold} kg</td>
+                            <td>KES ${s.sale_price}</td>
+                            <td>${s.username}</td>
+                        </tr>`).join('');
+            } catch { showToast('Failed to load reports', 'error'); }
         }
 
-        // ── Alerts ──
+        // ── Alerts — with remove buttons on spoilage items ──
         async function loadAlerts() {
             try {
-                // Load spoilage alerts
-                const spoilageRes = await fetch(`${API_URL}/alerts/spoilage/`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const spoilage = await spoilageRes.json();
-                
-                const spoilageDiv = document.getElementById('spoilageList');
-                if (spoilage.length === 0) {
-                    spoilageDiv.innerHTML = '<p style="color: var(--success);"><i class="fas fa-check-circle"></i> No spoilage warnings - all fresh!</p>';
+                // Spoilage
+                const spoilRes  = await fetch(`${API_URL}/alerts/spoilage/`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const spoilage  = await spoilRes.json();
+                const spoilDiv  = document.getElementById('spoilageList');
+
+                if (!spoilage.length) {
+                    spoilDiv.innerHTML = '<p style="color:var(--success);font-size:13px;"><i class="fas fa-check-circle"></i> No spoilage warnings — all fresh!</p>';
                 } else {
-                    spoilageDiv.innerHTML = spoilage.map(item => `
-                        <div class="alert-item-detailed spoilage">
-                            <div class="alert-item-header">
-                                <span class="alert-item-title">${item.meat_cut}</span>
-                                <span style="font-size: 12px; color: #991b1b; font-weight: 600;">
-                                    ${item.is_past_spoilage ? 'PAST SPOILAGE!' : item.days_until_spoilage + ' days left'}
-                                </span>
+                    spoilDiv.innerHTML = spoilage.map(item => {
+                        const isPast    = item.is_past_spoilage || item.days_until_spoilage <= 0;
+                        const cardClass = isPast ? 'past-spoilage' : 'spoilage';
+                        const urgency   = isPast
+                            ? '<span class="alert-urgency danger">PAST SPOILAGE</span>'
+                            : `<span class="alert-urgency warning">${item.days_until_spoilage} days left</span>`;
+                        return `
+                        <div class="alert-card ${cardClass}">
+                            <div class="alert-card-header">
+                                <span class="alert-card-title">${item.meat_cut}</span>
+                                ${urgency}
                             </div>
-                            <div class="alert-item-meta">
-                                <strong><i class="fas fa-weight-hanging"></i> ${item.current_weight.toFixed(2)} kg</strong> currently at risk<br>
-                                <i class="fas fa-calendar"></i> Stocked: ${new Date(item.receive_date).toLocaleDateString()}<br>
-                                <i class="fas fa-clock"></i> Age: ${item.days_old} days (spoils at ${item.spoilage_days})<br>
-                                <i class="fas fa-user"></i> Added by: ${item.added_by}
+                            <div class="alert-card-meta">
+                                <span><i class="fas fa-weight-hanging"></i> ${parseFloat(item.current_weight).toFixed(2)} kg at risk</span>
+                                <span><i class="fas fa-calendar"></i> Stocked: ${new Date(item.receive_date).toLocaleDateString()}</span>
+                                <span><i class="fas fa-clock"></i> Age: ${item.days_old} days (limit: ${item.spoilage_days})</span>
+                                <span><i class="fas fa-user"></i> Added by: ${item.added_by}</span>
                             </div>
-                        </div>
-                    `).join('');
+                            <button class="alert-remove-btn" onclick="openRemoveModal(${item.stock_id || item.id})">
+                                <i class="fas fa-trash-alt"></i> Remove This Stock
+                            </button>
+                        </div>`;
+                    }).join('');
                 }
-                
-                // Load low stock alerts
-                const lowStockRes = await fetch(`${API_URL}/alerts/low-stock/`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const lowStock = await lowStockRes.json();
-                
-                const lowStockDiv = document.getElementById('lowStockList');
-                if (lowStock.length === 0) {
-                    lowStockDiv.innerHTML = '<p style="color: var(--success);"><i class="fas fa-check-circle"></i> All stock levels healthy!</p>';
+
+                // Low stock
+                const lowRes   = await fetch(`${API_URL}/alerts/low-stock/`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const lowStock = await lowRes.json();
+                const lowDiv   = document.getElementById('lowStockList');
+
+                if (!lowStock.length) {
+                    lowDiv.innerHTML = '<p style="color:var(--success);font-size:13px;"><i class="fas fa-check-circle"></i> All stock levels healthy!</p>';
                 } else {
-                    lowStockDiv.innerHTML = lowStock.map(item => `
-                        <div class="alert-item-detailed low-stock">
-                            <div class="alert-item-header">
-                                <span class="alert-item-title">${item.meat_cut}</span>
-                                <span style="font-size: 12px; color: #92400e; font-weight: 600;">
-                                    ${item.total_weight.toFixed(2)} / ${item.threshold} kg
-                                </span>
+                    lowDiv.innerHTML = lowStock.map(item => `
+                        <div class="alert-card low-stock">
+                            <div class="alert-card-header">
+                                <span class="alert-card-title">${item.meat_cut}</span>
+                                <span class="alert-urgency low">${parseFloat(item.total_weight).toFixed(1)} / ${item.threshold} kg</span>
                             </div>
-                            <div class="alert-item-meta">
-                                <strong>Total weight: ${item.total_weight.toFixed(2)} kg</strong> (threshold: ${item.threshold} kg)<br>
-                                <i class="fas fa-boxes"></i> ${item.stock_items.length} stock batches:<br>
-                                ${item.stock_items.map(subItem => `
-                                    <small style="display: block; margin-left: 16px; margin-top: 4px;">
-                                        • ${subItem.weight.toFixed(2)} kg (added ${new Date(subItem.receive_date).toLocaleDateString()}, ${subItem.days_old} days old)
-                                    </small>
-                                `).join('')}
+                            <div class="alert-card-meta">
+                                <span><i class="fas fa-boxes"></i> ${(item.stock_items||[]).length} batch${(item.stock_items||[]).length!==1?'es':''}</span>
+                                ${(item.stock_items||[]).map(s => `
+                                    <span style="padding-left:12px;">
+                                        <i class="fas fa-circle" style="font-size:6px;color:#f59e0b;"></i>
+                                        ${parseFloat(s.weight).toFixed(2)} kg · ${new Date(s.receive_date).toLocaleDateString()} · ${s.days_old} days old
+                                    </span>`).join('')}
                             </div>
-                        </div>
-                    `).join('');
+                        </div>`).join('');
                 }
-                
-            } catch (error) {
-                console.error('Error loading alerts:', error);
-            }
+            } catch(e) { console.error('Alerts error:', e); }
         }
 
-        // ── NEW: Load Stock Removal History ──
+        // ── Removal History — auto-loads, filter button refines ──
         async function loadRemovalHistory() {
-            const from = document.getElementById('removalDateFrom').value;
-            const to = document.getElementById('removalDateTo').value;
+            const from   = document.getElementById('removalDateFrom').value;
+            const to     = document.getElementById('removalDateTo').value;
             const reason = document.getElementById('removalReasonFilter').value;
-            
+
+            const container = document.getElementById('removalHistoryList');
+            container.innerHTML = '<p style="color:#9ca3af;font-size:13px;">Loading…</p>';
+
             try {
                 let url = `${API_URL}/stock-removals/`;
                 const params = new URLSearchParams();
-                if (from) params.append('from', from);
-                if (to) params.append('to', to);
+                if (from)   params.append('from', from);
+                if (to)     params.append('to', to);
                 if (reason) params.append('reason', reason);
                 if (params.toString()) url += `?${params.toString()}`;
-                
-                const response = await fetch(url, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                
-                if (!response.ok) throw new Error('Failed to load removal history');
-                
-                const removals = await response.json();
-                const container = document.getElementById('removalHistoryList');
-                
+
+                const res      = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (!res.ok) throw new Error();
+                const removals = await res.json();
+
                 if (!removals.length) {
-                    container.innerHTML = `
-                        <div class="empty-state" style="padding: 40px 20px;">
-                            <i class="fas fa-clipboard-check"></i>
-                            <p>No stock removals found for selected filters</p>
-                        </div>`;
+                    container.innerHTML = `<div class="empty-state" style="padding:40px 20px;"><i class="fas fa-clipboard-check"></i><p>No stock removals found for selected filters</p></div>`;
                     return;
                 }
-                
-                // Calculate totals
-                const totalWeight = removals.reduce((sum, r) => sum + parseFloat(r.weight_removed), 0);
-                
+
+                const totalWeight = removals.reduce((s,r) => s + parseFloat(r.weight_removed), 0);
                 let html = `
-                    <div style="margin-bottom: 20px; padding: 16px; background: var(--background); border-radius: 10px;">
-                        <strong>Total Removals: ${removals.length} | Total Weight: ${totalWeight.toFixed(2)} kg</strong>
-                    </div>
-                `;
-                
-                html += removals.map(removal => `
-                    <div class="removal-history-card">
-                        <div class="removal-history-info">
-                            <h4>${removal.meat_cut_name}</h4>
+                    <div class="removal-totals">
+                        <span>Total Removals: <span>${removals.length}</span></span>
+                        <span>Total Weight: <span>${totalWeight.toFixed(2)} kg</span></span>
+                    </div>`;
+
+                html += removals.map(r => `
+                    <div class="removal-card">
+                        <div class="removal-card-info">
+                            <h4>${r.meat_cut_name}</h4>
                             <p>
-                                <i class="fas fa-weight-hanging"></i> ${parseFloat(removal.weight_removed).toFixed(2)} kg removed
-                                <br><i class="fas fa-calendar"></i> ${new Date(removal.removal_date).toLocaleString()}
-                                <br><i class="fas fa-user"></i> By: ${removal.username}
-                                <br><i class="fas fa-clock"></i> Stock was ${removal.days_at_removal} days old when removed
-                                ${removal.notes ? `<br><i class="fas fa-sticky-note"></i> ${removal.notes}` : ''}
+                                <span><i class="fas fa-weight-hanging"></i> ${parseFloat(r.weight_removed).toFixed(2)} kg removed</span>
+                                <span><i class="fas fa-calendar"></i> ${new Date(r.removal_date).toLocaleString()}</span>
+                                <span><i class="fas fa-user"></i> By: ${r.username}</span>
+                                ${r.days_at_removal != null ? `<span><i class="fas fa-clock"></i> Stock was ${r.days_at_removal} days old</span>` : ''}
+                                ${r.notes ? `<span><i class="fas fa-sticky-note"></i> ${r.notes}</span>` : ''}
                             </p>
                         </div>
-                        <span class="removal-history-badge ${removal.reason}">
-                            ${removal.reason}
-                        </span>
-                    </div>
-                `).join('');
-                
+                        <span class="removal-badge ${r.reason}">${r.reason}</span>
+                    </div>`).join('');
+
                 container.innerHTML = html;
-                
-            } catch (error) {
-                console.error('Error loading removal history:', error);
-                document.getElementById('removalHistoryList').innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <p>Failed to load removal history</p>
-                    </div>`;
+            } catch(e) {
+                console.error('Removal history error:', e);
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Failed to load removal history</p></div>`;
             }
         }
 
         // ── User Profile ──
         async function loadUserProfile() {
+            const cached = localStorage.getItem('role');
+            if (cached) document.getElementById('userRole').textContent = cached.charAt(0).toUpperCase() + cached.slice(1);
             try {
-                const response = await fetch(`${API_URL}/users/`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (response.ok) {
-                    const raw   = await response.json();
-                    const users = Array.isArray(raw) ? raw : (raw.results ?? []);
-                    const currentUser = users.find(u => u.username === localStorage.getItem('username'));
-                    if (currentUser?.profile?.role) {
-                        const role = currentUser.profile.role;
-                        document.getElementById('userRole').textContent = role.charAt(0).toUpperCase() + role.slice(1);
-                    }
+                const res = await fetch(`${API_URL}/users/`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (!res.ok) return;
+                const raw   = await res.json();
+                const users = Array.isArray(raw) ? raw : (raw.results ?? []);
+                const me    = users.find(u => u.username === localStorage.getItem('username'));
+                if (me?.profile?.role) {
+                    const role = me.profile.role;
+                    document.getElementById('userRole').textContent = role.charAt(0).toUpperCase() + role.slice(1);
+                    localStorage.setItem('role', role.toLowerCase());
                 }
             } catch { document.getElementById('userRole').textContent = 'User'; }
         }
@@ -885,9 +726,7 @@
             let csv = 'Date,Meat Cut,Weight,Price,Sold By\n';
             rows.forEach(row => {
                 const cells = row.querySelectorAll('td');
-                if (cells.length === 5) {
-                    csv += Array.from(cells).map(c => c.textContent.replace(/,/g, '')).join(',') + '\n';
-                }
+                if (cells.length === 5) csv += Array.from(cells).map(c => c.textContent.replace(/,/g,'')).join(',') + '\n';
             });
             const blob = new Blob([csv], { type: 'text/csv' });
             const url  = window.URL.createObjectURL(blob);
@@ -904,11 +743,11 @@
             }
         });
 
-        // Initialize
+        // ── Init ──
         loadUserProfile();
         loadReports();
         loadAlerts();
-        loadRemovalHistory();
+        loadRemovalHistory(); // auto-loads on page open, no need to press Filter first
     </script>
 </body>
 </html>
