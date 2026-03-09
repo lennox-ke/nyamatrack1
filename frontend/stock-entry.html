@@ -342,6 +342,31 @@
         let selectedTypeId = null;
         let selectedCutId = null;
 
+        // ── Load role from API and display in sidebar ──
+        async function loadUserProfile() {
+            try {
+                const response = await fetch(`${API_URL}/users/`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (response.ok) {
+                    const raw   = await response.json();
+                    const users = Array.isArray(raw) ? raw : (raw.results ?? []);
+                    const currentUser = users.find(u => u.username === localStorage.getItem('username'));
+                    if (currentUser) {
+                        const profile = currentUser.profile || currentUser.user_profile || {};
+                        const role    = (profile.role || currentUser.role || '').toLowerCase();
+                        if (role) {
+                            document.getElementById('userRole').textContent =
+                                role.charAt(0).toUpperCase() + role.slice(1);
+                            localStorage.setItem('role', role);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading user profile:', error);
+            }
+        }
+
         // Map meat type names to Font Awesome icons
         const typeIcons = {
             'beef':    'fa-cow',
@@ -427,14 +452,12 @@
             document.getElementById('meatTypeHidden').value = typeId;
             document.getElementById('meatCutHidden').value = '';
 
-            // Reset cuts section
             const wrapper = document.getElementById('cutTilesWrapper');
             const cutContainer = document.getElementById('cutTiles');
             wrapper.classList.add('disabled');
             cutContainer.innerHTML = '<div class="cut-tiles-loading"><i class="fas fa-circle-notch fa-spin"></i> Loading cuts…</div>';
 
             try {
-                // Only fetch once
                 if (!allCuts.length) {
                     const response = await fetch(`${API_URL}/meat-cuts/`, {
                         headers: { 'Authorization': `Bearer ${token}` }
@@ -574,6 +597,7 @@
             }
         });
 
+        loadUserProfile();
         loadMeatTypes();
         loadStock();
     </script>
