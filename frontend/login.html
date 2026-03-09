@@ -389,13 +389,13 @@
                     localStorage.setItem('refresh_token', data.refresh);
                     localStorage.setItem('username', username);
 
-                    // Fetch & cache role NOW so every other page skips its own /users/ call
-                    // Fire-and-forget — don't block the redirect
-                    fetchAndCacheRole(data.access, username).finally(() => {
-                        window.location.replace('dashboard.html');
-                    });
-
                     toast('Login successful!', 'success');
+
+                    // Redirect immediately — never block on role fetch
+                    window.location.replace('dashboard.html');
+
+                    // Best-effort background cache of role for other pages
+                    fetchAndCacheRole(data.access, username);
                 } else {
                     const err = await res.json().catch(() => ({}));
                     toast(err.detail || 'Invalid credentials', 'error');
