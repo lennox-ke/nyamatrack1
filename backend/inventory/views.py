@@ -42,6 +42,7 @@ class StockViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
+        # Only return active stock for listing
         queryset = Stock.objects.filter(is_active=True)
         meat_type = self.request.query_params.get('meat_type', None)
         if meat_type:
@@ -50,6 +51,11 @@ class StockViewSet(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+    
+    def perform_destroy(self, instance):
+        # Soft delete - mark as inactive instead of deleting
+        instance.is_active = False
+        instance.save()
 
 class SaleViewSet(viewsets.ModelViewSet):
     serializer_class = SaleSerializer
@@ -94,7 +100,7 @@ class SaleViewSet(viewsets.ModelViewSet):
 def dashboard_stats(request):
     today = timezone.now().date()
     
-    # Total active stock
+    # Total active stock (only non-zero stock)
     total_stock = Stock.objects.filter(is_active=True).aggregate(
         total=Sum('current_weight')
     )['total'] or 0
@@ -107,16 +113,19 @@ def dashboard_stats(request):
     today_revenue = today_sales_data['total_revenue'] or 0
     today_weight = today_sales_data['total_weight'] or 0
     
-    # Low stock count
-    low_stock = Stock.objects.filter(is_active=True).filter(
-        current_weight__lte=5
+    # Low stock count - ONLY count if current_weight > 0 and <= threshold
+    low_stock = Stock.objects.filter(
+        is_active=True,
+        current_weight__gt=0,  # Must have some stock
+        current_weight__lte=5  # Below threshold
     ).count()
     
-    # Spoilage warnings (meat older than 2 days)
-    spoilage_date = timezone.now() - timedelta(days=2)
+    # Spoilage warnings - ONLY for active stock with meat older than spoilage days
     spoilage_warnings = Stock.objects.filter(
         is_active=True,
-        receive_date__lte=spoilage_date
+        current_weight__gt=0,  # Must have some stock
+    ).select_related('meat_cut').filter(
+        receive_date__lte=timezone.now() - timezone.timedelta(days=2)  # Older than 2 days
     ).count()
     
     # Recent sales
@@ -137,7 +146,10 @@ def dashboard_stats(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def low_stock_alerts(request):
-    alerts = Stock.objects.filter(is_active=True).filter(
+    # Only get alerts for active stock with weight > 0
+    alerts = Stock.objects.filter(
+        is_active=True,
+        current_weight__gt=0,
         current_weight__lte=5
     ).select_related('meat_cut')
     
@@ -153,28 +165,32 @@ def low_stock_alerts(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def spoilage_alerts(request):
+    # Only get alerts for active stock with weight > 0 and actually spoiled
     spoilage_date = timezone.now() - timedelta(days=2)
     alerts = Stock.objects.filter(
         is_active=True,
+        current_weight__gt=0,
         receive_date__lte=spoilage_date
     ).select_related('meat_cut')
     
-    data = [{
-        'id': stock.id,
-        'meat_cut': stock.meat_cut.name,
-        'receive_date': stock.receive_date,
-        'days_old': (timezone.now() - stock.receive_date).days
-    } for stock in alerts]
+    data = []
+    for stock in alerts:
+        days_old = (timezone.now() - stock.receive_date).days
+        # Only alert if older than the meat type's spoilage days
+        if days_old >= stock.meat_cut.spoilage_days - 1:
+            data.append({
+                'id': stock.id,
+                'meat_cut': stock.meat_cut.name,
+                'receive_date': stock.receive_date,
+                'days_old': days_old,
+                'spoilage_days': stock.meat_cut.spoilage_days
+            })
     
     return Response(data)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def daily_report(request):
-    """
-    Get detailed report for a specific day
-    Query params: date (YYYY-MM-DD)
-    """
     date_str = request.query_params.get('date', None)
     
     if not date_str:
@@ -188,16 +204,13 @@ def daily_report(request):
                 status=status.HTTP_400_BAD_REQUEST
             )
     
-    # Sales for that day
     day_sales = Sale.objects.filter(sale_date__date=target_date).order_by('-sale_date')
     
-    # Aggregates
     aggregates = day_sales.aggregate(
         total_revenue=Sum('sale_price'),
         total_weight=Sum('weight_sold')
     )
     
-    # Sales by meat type
     sales_by_type = {}
     for sale in day_sales:
         meat_type = sale.stock.meat_cut.meat_type.name
@@ -211,7 +224,6 @@ def daily_report(request):
         sales_by_type[meat_type]['total_revenue'] += float(sale.sale_price)
         sales_by_type[meat_type]['transactions'] += 1
     
-    # Sales by user
     sales_by_user = {}
     for sale in day_sales:
         username = sale.user.username

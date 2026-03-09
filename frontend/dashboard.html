@@ -248,7 +248,31 @@ loadUserProfile();
             overlay.classList.toggle('show');
             hamburger.classList.toggle('active');
         }
+        // Add this function in the JavaScript section
+async function refreshAlerts() {
+    try {
+        // Fetch fresh dashboard data
+        const response = await fetch(`${CONFIG.API_URL}/dashboard/`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
         
+        if (response.ok) {
+            const data = await response.json();
+            
+            // Update alert counts
+            document.getElementById('lowStockCount').textContent = data.low_stock_count;
+            document.getElementById('spoilageCount').textContent = data.spoilage_warnings;
+            
+            // Show/hide alert banners
+            showAlerts(data.low_stock_count, data.spoilage_warnings);
+        }
+    } catch (error) {
+        console.error('Error refreshing alerts:', error);
+    }
+}
+
+// Call refreshAlerts() after any stock operation
+// Add this to your existing fetchDashboard or call it separately
         function setActiveNav(element) {
             document.querySelectorAll('.mobile-nav-item').forEach(item => {
                 item.classList.remove('active');

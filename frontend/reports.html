@@ -684,37 +684,53 @@
 
         // ── Alerts ──
         async function loadAlerts() {
-            try {
-                const [spoilageRes, lowStockRes] = await Promise.all([
-                    fetch(`${API_URL}/alerts/spoilage/`,   { headers: { 'Authorization': `Bearer ${token}` } }),
-                    fetch(`${API_URL}/alerts/low-stock/`,  { headers: { 'Authorization': `Bearer ${token}` } })
-                ]);
-
-                const spoilage = await spoilageRes.json();
-                const spoilageDiv = document.getElementById('spoilageList');
-                spoilageDiv.innerHTML = spoilage.length
-                    ? spoilage.map(item => `
-                        <div class="alert-item spoilage">
-                            <strong>${item.meat_cut}</strong>
-                            <small>${item.days_old} days old · ${new Date(item.receive_date).toLocaleDateString()}</small>
-                        </div>`).join('')
-                    : '<p style="color:var(--success);font-size:13px;"><i class="fas fa-check"></i> No spoilage warnings</p>';
-
-                const lowStock = await lowStockRes.json();
-                const lowStockDiv = document.getElementById('lowStockList');
-                lowStockDiv.innerHTML = lowStock.length
-                    ? lowStock.map(item => `
-                        <div class="alert-item low-stock">
-                            <strong>${item.meat_cut}</strong>
-                            <small>${item.current_weight} kg left · threshold: ${item.threshold} kg</small>
-                        </div>`).join('')
-                    : '<p style="color:var(--success);font-size:13px;"><i class="fas fa-check"></i> All stock levels healthy</p>';
-
-            } catch (error) {
-                console.error('Error loading alerts:', error);
-            }
+    try {
+        // Load spoilage alerts
+        const spoilageRes = await fetch(`${API_URL}/alerts/spoilage/`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const spoilage = await spoilageRes.json();
+        
+        const spoilageDiv = document.getElementById('spoilageList');
+        if (spoilage.length === 0) {
+            spoilageDiv.innerHTML = '<p style="color: var(--success);"><i class="fas fa-check-circle"></i> No spoilage warnings - all fresh!</p>';
+        } else {
+            spoilageDiv.innerHTML = spoilage.map(item => `
+                <div style="padding: 12px; background: #fee2e2; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid var(--danger);">
+                    <strong style="color: var(--danger);">${item.meat_cut}</strong>
+                    <div style="font-size: 12px; color: #991b1b; margin-top: 4px;">
+                        <i class="fas fa-clock"></i> ${item.days_old} days old (spoilage: ${item.spoilage_days} days)
+                        <br><small>Received: ${new Date(item.receive_date).toLocaleDateString()}</small>
+                    </div>
+                </div>
+            `).join('');
         }
-
+        
+        // Load low stock alerts
+        const lowStockRes = await fetch(`${API_URL}/alerts/low-stock/`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const lowStock = await lowStockRes.json();
+        
+        const lowStockDiv = document.getElementById('lowStockList');
+        if (lowStock.length === 0) {
+            lowStockDiv.innerHTML = '<p style="color: var(--success);"><i class="fas fa-check-circle"></i> All stock levels healthy!</p>';
+        } else {
+            lowStockDiv.innerHTML = lowStock.map(item => `
+                <div style="padding: 12px; background: #fef3c7; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid var(--warning);">
+                    <strong style="color: #92400e;">${item.meat_cut}</strong>
+                    <div style="font-size: 12px; color: #92400e; margin-top: 4px;">
+                        <i class="fas fa-weight-hanging"></i> ${item.current_weight} kg remaining
+                        <br><small>Threshold: ${item.threshold} kg</small>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+    } catch (error) {
+        console.error('Error loading alerts:', error);
+    }
+}
         // ── User Profile ──
         async function loadUserProfile() {
             try {
