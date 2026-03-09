@@ -11,135 +11,198 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* ── Tile Selector Styles only — everything else comes from css/styles.css ── */
-
+        /* ── Tile Selector ── */
         .tile-section-label {
-            font-size: 13px;
-            font-weight: 600;
-            color: #374151;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            font-size: 13px; font-weight: 600; color: #374151;
+            margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
         }
-
-        /* Meat type tiles */
-        .meat-type-tiles {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 4px;
-        }
-
+        .meat-type-tiles { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 4px; }
         .meat-type-tile {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            width: 88px;
-            height: 78px;
-            border: 2px solid #e5e7eb;
-            border-radius: 12px;
-            background: #fff;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 600;
-            color: #6b7280;
-            transition: all 0.18s ease;
-            padding: 8px;
-            text-align: center;
-            user-select: none;
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; gap: 6px;
+            width: 88px; height: 78px;
+            border: 2px solid #e5e7eb; border-radius: 12px;
+            background: #fff; cursor: pointer;
+            font-size: 12px; font-weight: 600; color: #6b7280;
+            transition: all 0.18s ease; padding: 8px;
+            text-align: center; user-select: none;
         }
-
-        .meat-type-tile i {
-            font-size: 22px;
-            color: #9ca3af;
-            transition: color 0.18s;
-        }
-
-        .meat-type-tile:hover {
-            border-color: #dc2626;
-            color: #dc2626;
-            background: #fff5f5;
-        }
-
+        .meat-type-tile i { font-size: 22px; color: #9ca3af; transition: color 0.18s; }
+        .meat-type-tile:hover { border-color: #dc2626; color: #dc2626; background: #fff5f5; }
         .meat-type-tile:hover i { color: #dc2626; }
-
         .meat-type-tile.selected {
-            border-color: #dc2626;
-            background: #dc2626;
-            color: #fff;
-            box-shadow: 0 4px 14px rgba(220, 38, 38, 0.3);
+            border-color: #dc2626; background: #dc2626; color: #fff;
+            box-shadow: 0 4px 14px rgba(220,38,38,0.3);
         }
-
         .meat-type-tile.selected i { color: #fff; }
 
-        /* Cut tiles */
-        .cut-tiles-wrapper {
-            margin-top: 4px;
-            transition: opacity 0.2s;
-        }
-
-        .cut-tiles-wrapper.disabled {
-            opacity: 0.4;
-            pointer-events: none;
-        }
-
-        .cut-tiles {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
+        .cut-tiles-wrapper { margin-top: 4px; transition: opacity 0.2s; }
+        .cut-tiles-wrapper.disabled { opacity: 0.4; pointer-events: none; }
+        .cut-tiles { display: flex; flex-wrap: wrap; gap: 8px; }
         .cut-tile {
-            padding: 8px 16px;
-            border: 2px solid #e5e7eb;
-            border-radius: 8px;
-            background: #fff;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 500;
-            color: #374151;
-            transition: all 0.15s ease;
-            user-select: none;
-            white-space: nowrap;
+            padding: 8px 16px; border: 2px solid #e5e7eb; border-radius: 8px;
+            background: #fff; cursor: pointer; font-size: 13px; font-weight: 500;
+            color: #374151; transition: all 0.15s ease; user-select: none; white-space: nowrap;
         }
-
-        .cut-tile:hover {
-            border-color: #dc2626;
-            color: #dc2626;
-            background: #fff5f5;
-        }
-
+        .cut-tile:hover { border-color: #dc2626; color: #dc2626; background: #fff5f5; }
         .cut-tile.selected {
-            border-color: #dc2626;
-            background: #dc2626;
-            color: #fff;
-            box-shadow: 0 2px 8px rgba(220, 38, 38, 0.25);
+            border-color: #dc2626; background: #dc2626; color: #fff;
+            box-shadow: 0 2px 8px rgba(220,38,38,0.25);
         }
-
-        .cut-tiles-loading,
-        .cut-tiles-empty {
-            font-size: 13px;
-            color: #9ca3af;
-            padding: 4px 0;
-            display: flex;
-            align-items: center;
-            gap: 7px;
+        .cut-tiles-loading, .cut-tiles-empty {
+            font-size: 13px; color: #9ca3af; padding: 4px 0;
+            display: flex; align-items: center; gap: 7px;
         }
-
-        /* Hide the backing hidden inputs */
         #meatTypeHidden, #meatCutHidden { display: none; }
+
+        /* ── Stock Overview: compact cut rows ── */
+        .cut-row {
+            border: 1.5px solid #e5e7eb;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            overflow: hidden;
+            transition: border-color 0.18s;
+        }
+        .cut-row:hover { border-color: #fca5a5; }
+        .cut-row.has-spoiled { border-color: #fca5a5; }
+
+        /* The always-visible header bar */
+        .cut-row-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 13px 16px; cursor: pointer; background: #fff;
+            user-select: none; gap: 12px;
+            transition: background 0.15s;
+        }
+        .cut-row-header:hover { background: #fafafa; }
+        .cut-row-header.open { background: #fff5f5; }
+
+        .cut-row-left { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+        .cut-row-icon {
+            width: 36px; height: 36px; border-radius: 9px;
+            background: #fee2e2; color: #dc2626;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 15px; flex-shrink: 0;
+        }
+        .cut-row-name {
+            font-size: 14px; font-weight: 700; color: #111;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .cut-row-type { font-size: 11px; color: #9ca3af; margin-top: 1px; }
+
+        .cut-row-stats {
+            display: flex; align-items: center; gap: 16px; flex-shrink: 0;
+        }
+        .cut-row-stat { text-align: right; }
+        .cut-row-stat-val { font-size: 15px; font-weight: 800; line-height: 1; }
+        .cut-row-stat-lbl { font-size: 10px; color: #9ca3af; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.04em; }
+        .stat-good    { color: #16a34a; }
+        .stat-spoiled { color: #dc2626; }
+        .stat-total   { color: #374151; }
+
+        .cut-row-badges { display: flex; gap: 6px; flex-shrink: 0; }
+        .cut-badge {
+            font-size: 10px; font-weight: 700; padding: 3px 8px;
+            border-radius: 20px; white-space: nowrap;
+        }
+        .cut-badge.low   { background: #fef9c3; color: #854d0e; }
+        .cut-badge.spoil { background: #fee2e2; color: #991b1b; }
+
+        .cut-row-chevron {
+            font-size: 12px; color: #9ca3af; flex-shrink: 0;
+            transition: transform 0.22s ease;
+        }
+        .cut-row-header.open .cut-row-chevron { transform: rotate(180deg); }
+
+        /* Expandable detail panel */
+        .cut-row-body {
+            display: none;
+            border-top: 1px solid #f3f4f6;
+            padding: 16px;
+            background: #fafafa;
+        }
+        .cut-row-body.open { display: block; }
+
+        /* Stock item cards inside the panel */
+        .stock-items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .stock-item-card {
+            background: #fff; border: 1.5px solid #e5e7eb;
+            border-radius: 10px; padding: 12px 14px;
+        }
+        .stock-item-card.good    { border-color: #bbf7d0; }
+        .stock-item-card.warning { border-color: #fde68a; }
+        .stock-item-card.spoiled { border-color: #fca5a5; background: #fff5f5; }
+
+        .stock-item-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .stock-item-weight { font-size: 18px; font-weight: 800; color: #111; }
+        .stock-item-card.spoiled .stock-item-weight { color: #dc2626; }
+
+        .stock-item-meta { font-size: 12px; color: #6b7280; display: flex; flex-direction: column; gap: 3px; }
+        .stock-item-meta span { display: flex; align-items: center; gap: 5px; }
+
+        .stock-category-label {
+            font-size: 11px; font-weight: 700; letter-spacing: 0.07em;
+            text-transform: uppercase; margin-bottom: 8px;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .stock-category-label.unspoiled { color: #16a34a; }
+        .stock-category-label.spoiled   { color: #dc2626; }
+
+        .mark-spoiled-btn {
+            font-size: 11px; font-weight: 600; padding: 4px 10px;
+            border-radius: 6px; border: 1.5px solid #f59e0b;
+            background: #fef9c3; color: #92400e; cursor: pointer;
+            transition: all 0.15s;
+        }
+        .mark-spoiled-btn:hover { background: #f59e0b; color: #fff; }
+
+        .remove-spoiled-btn {
+            width: 100%; margin-top: 10px; padding: 8px;
+            border-radius: 8px; border: none;
+            background: #dc2626; color: #fff;
+            font-size: 12px; font-weight: 700; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            transition: background 0.15s;
+        }
+        .remove-spoiled-btn:hover { background: #b91c1c; }
+
+        /* ── Removal history ── */
+        .removal-card {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 16px; border: 1.5px solid #e5e7eb;
+            border-radius: 10px; margin-bottom: 8px; background: #fff; gap: 12px;
+        }
+        .removal-card-info h4 { font-size: 13px; font-weight: 700; color: #111; margin-bottom: 4px; }
+        .removal-card-info p  { font-size: 12px; color: #6b7280; display: flex; flex-direction: column; gap: 2px; }
+        .removal-badge {
+            font-size: 11px; font-weight: 700; padding: 4px 10px;
+            border-radius: 20px; white-space: nowrap; flex-shrink: 0;
+            text-transform: capitalize;
+        }
+        .removal-badge.spoiled  { background: #fee2e2; color: #991b1b; }
+        .removal-badge.damaged  { background: #fef3c7; color: #92400e; }
+        .removal-badge.expired  { background: #ede9fe; color: #5b21b6; }
+        .removal-badge.other    { background: #f3f4f6; color: #374151; }
+
+        @media (max-width: 480px) {
+            .cut-row-stats { gap: 10px; }
+            .cut-row-stat-val { font-size: 13px; }
+            .cut-row-badges { display: none; } /* shown in expanded panel on mobile */
+            .stock-items-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
-    <!-- Mobile Header with Modern Hamburger -->
     <header class="mobile-header">
         <div class="mobile-logo">
-            <div class="mobile-logo-icon">
-                <i class="fas fa-drumstick-bite"></i>
-            </div>
+            <div class="mobile-logo-icon"><i class="fas fa-drumstick-bite"></i></div>
             NyamaTrack
         </div>
         <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleSidebar()">
@@ -149,44 +212,23 @@
         </button>
     </header>
 
-    <!-- Sidebar Overlay -->
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
     <div class="app-container">
-        <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-brand">
-                    <div class="sidebar-brand-icon">
-                        <i class="fas fa-drumstick-bite"></i>
-                    </div>
+                    <div class="sidebar-brand-icon"><i class="fas fa-drumstick-bite"></i></div>
                     NyamaTrack
                 </div>
             </div>
-            
             <nav class="nav-menu">
-                <a href="dashboard.html" class="nav-item">
-                    <i class="fas fa-home"></i>
-                    Dashboard
-                </a>
-                <a href="stock-entry.html" class="nav-item active">
-                    <i class="fas fa-plus-circle"></i>
-                    Record Stock
-                </a>
-                <a href="sales.html" class="nav-item">
-                    <i class="fas fa-cash-register"></i>
-                    Record Sale
-                </a>
-                <a href="reports.html" class="nav-item">
-                    <i class="fas fa-chart-bar"></i>
-                    Reports
-                </a>
-                <a href="users.html" class="nav-item">
-                    <i class="fas fa-users"></i>
-                    Users
-                </a>
+                <a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
+                <a href="stock-entry.html" class="nav-item active"><i class="fas fa-plus-circle"></i> Record Stock</a>
+                <a href="sales.html" class="nav-item"><i class="fas fa-cash-register"></i> Record Sale</a>
+                <a href="reports.html" class="nav-item"><i class="fas fa-chart-bar"></i> Reports</a>
+                <a href="users.html" class="nav-item"><i class="fas fa-users"></i> Users</a>
             </nav>
-            
             <div class="sidebar-footer">
                 <div class="user-info">
                     <div class="user-avatar" id="userAvatar">U</div>
@@ -195,7 +237,7 @@
                         <p id="userRole">Role</p>
                     </div>
                 </div>
-                <button onclick="logout()" class="btn btn-secondary" style="margin-top: 12px; font-size: 14px;">
+                <button onclick="logout()" class="btn btn-secondary" style="margin-top:12px;font-size:14px;">
                     <i class="fas fa-sign-out-alt"></i> Logout
                 </button>
             </div>
@@ -207,32 +249,25 @@
                 <p>Add incoming meat deliveries to inventory</p>
             </div>
 
+            <!-- Form card -->
             <div class="card">
                 <div class="card-body">
                     <form id="stockForm">
                         <div class="form-grid">
                             <div class="form-section">
                                 <h3><i class="fas fa-info-circle"></i> Meat Details</h3>
-
-                                <!-- Meat Type Tiles -->
                                 <div class="form-group">
                                     <div class="tile-section-label">
-                                        <i class="fas fa-tag" style="color:#dc2626;font-size:11px;"></i>
-                                        Meat Type *
+                                        <i class="fas fa-tag" style="color:#dc2626;font-size:11px;"></i> Meat Type *
                                     </div>
                                     <div class="meat-type-tiles" id="meatTypeTiles">
-                                        <div class="cut-tiles-loading">
-                                            <i class="fas fa-circle-notch fa-spin"></i> Loading…
-                                        </div>
+                                        <div class="cut-tiles-loading"><i class="fas fa-circle-notch fa-spin"></i> Loading…</div>
                                     </div>
                                     <input type="text" id="meatTypeHidden" required>
                                 </div>
-
-                                <!-- Cut Tiles -->
                                 <div class="form-group">
                                     <div class="tile-section-label">
-                                        <i class="fas fa-cut" style="color:#dc2626;font-size:11px;"></i>
-                                        Cut Name *
+                                        <i class="fas fa-cut" style="color:#dc2626;font-size:11px;"></i> Cut Name *
                                     </div>
                                     <div class="cut-tiles-wrapper disabled" id="cutTilesWrapper">
                                         <div class="cut-tiles" id="cutTiles">
@@ -242,51 +277,44 @@
                                     <input type="text" id="meatCutHidden" required>
                                 </div>
                             </div>
-                            
                             <div class="form-section">
                                 <h3><i class="fas fa-weight"></i> Quantity</h3>
-                                
                                 <div class="form-group">
                                     <label class="form-label">Weight (kg) *</label>
                                     <input type="number" step="0.01" class="form-input" id="weight" placeholder="0.00" required>
                                 </div>
-                                
                                 <div class="form-group">
                                     <label class="form-label">Receive Date</label>
                                     <input type="datetime-local" class="form-input" id="receiveDate">
                                 </div>
                             </div>
                         </div>
-                        
-                        <div style="margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap;">
+                        <div style="margin-top:24px;display:flex;gap:12px;flex-wrap:wrap;">
                             <button type="submit" class="action-btn action-btn-primary">
-                                <i class="fas fa-save"></i>
-                                Save Stock Entry
+                                <i class="fas fa-save"></i> Save Stock Entry
                             </button>
                             <button type="button" class="action-btn action-btn-secondary" onclick="resetForm()">
-                                <i class="fas fa-undo"></i>
-                                Clear Form
+                                <i class="fas fa-undo"></i> Clear Form
                             </button>
                         </div>
                     </form>
                 </div>
             </div>
 
-            <!-- NEW: Current Stock Overview with Spoiled/Unspoiled Categories -->
+            <!-- Stock Overview — collapsible rows -->
             <div class="card">
                 <div class="card-header">
                     <h2><i class="fas fa-warehouse"></i> Current Stock Overview</h2>
                 </div>
                 <div class="card-body" id="stockOverviewContainer">
-                    <!-- Content loaded dynamically -->
                     <div class="empty-state">
                         <i class="fas fa-spinner fa-spin"></i>
-                        <p>Loading stock overview...</p>
+                        <p>Loading stock overview…</p>
                     </div>
                 </div>
             </div>
 
-            <!-- NEW: Stock Removal History -->
+            <!-- Removal History -->
             <div class="card">
                 <div class="card-header">
                     <h2><i class="fas fa-trash-alt"></i> Stock Removal History</h2>
@@ -294,60 +322,44 @@
                 <div class="card-body" id="removalHistoryContainer">
                     <div class="empty-state">
                         <i class="fas fa-spinner fa-spin"></i>
-                        <p>Loading removal history...</p>
+                        <p>Loading removal history…</p>
                     </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- Modern Bottom Navigation -->
     <nav class="mobile-nav">
-        <a href="dashboard.html" class="mobile-nav-item">
-            <i class="fas fa-home"></i>
-            <span>Home</span>
-        </a>
-        <a href="stock-entry.html" class="mobile-nav-item active">
-            <i class="fas fa-plus-circle"></i>
-            <span>Stock</span>
-        </a>
-        <a href="sales.html" class="mobile-nav-item">
-            <i class="fas fa-cash-register"></i>
-            <span>Sale</span>
-        </a>
-        <a href="reports.html" class="mobile-nav-item">
-            <i class="fas fa-chart-bar"></i>
-            <span>Reports</span>
-        </a>
-        <a href="users.html" class="mobile-nav-item">
-            <i class="fas fa-users"></i>
-            <span>Users</span>
-        </a>
+        <a href="dashboard.html" class="mobile-nav-item"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="stock-entry.html" class="mobile-nav-item active"><i class="fas fa-plus-circle"></i><span>Stock</span></a>
+        <a href="sales.html" class="mobile-nav-item"><i class="fas fa-cash-register"></i><span>Sale</span></a>
+        <a href="reports.html" class="mobile-nav-item"><i class="fas fa-chart-bar"></i><span>Reports</span></a>
+        <a href="users.html" class="mobile-nav-item"><i class="fas fa-users"></i><span>Users</span></a>
     </nav>
 
     <div class="toast-container" id="toastContainer"></div>
 
-    <!-- Confirmation Modal for Removal -->
-    <div id="removalModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 10000; align-items: center; justify-content: center; padding: 20px;">
-        <div style="background: white; border-radius: 16px; padding: 24px; max-width: 400px; width: 100%;">
-            <h3 style="margin-bottom: 16px; color: var(--danger);"><i class="fas fa-exclamation-triangle"></i> Remove Spoiled Stock</h3>
-            <p style="margin-bottom: 20px; color: var(--text-secondary);">Are you sure you want to remove this spoiled stock? This action cannot be undone and will be recorded for future reference.</p>
-            <div style="margin-bottom: 16px;">
-                <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Reason for Removal</label>
-                <select id="removalReason" style="width: 100%; padding: 10px; border: 2px solid var(--border); border-radius: 8px;">
+    <!-- Removal Modal -->
+    <div id="removalModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:10000;align-items:center;justify-content:center;padding:20px;">
+        <div style="background:#fff;border-radius:16px;padding:24px;max-width:400px;width:100%;box-shadow:0 20px 40px rgba(0,0,0,0.3);">
+            <h3 style="margin-bottom:16px;color:#dc2626;"><i class="fas fa-exclamation-triangle"></i> Remove Spoiled Stock</h3>
+            <p style="margin-bottom:20px;color:#6b7280;font-size:14px;">This action cannot be undone and will be recorded for reference.</p>
+            <div style="margin-bottom:14px;">
+                <label style="display:block;margin-bottom:6px;font-weight:600;font-size:13px;">Reason for Removal</label>
+                <select id="removalReason" class="form-input">
                     <option value="spoiled">Spoiled</option>
                     <option value="damaged">Damaged</option>
                     <option value="expired">Expired</option>
                     <option value="other">Other</option>
                 </select>
             </div>
-            <div style="margin-bottom: 20px;">
-                <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Notes (Optional)</label>
-                <textarea id="removalNotes" rows="3" style="width: 100%; padding: 10px; border: 2px solid var(--border); border-radius: 8px; resize: vertical;" placeholder="Add any additional notes..."></textarea>
+            <div style="margin-bottom:20px;">
+                <label style="display:block;margin-bottom:6px;font-weight:600;font-size:13px;">Notes (Optional)</label>
+                <textarea id="removalNotes" rows="3" class="form-input" style="resize:vertical;" placeholder="Add any additional notes…"></textarea>
             </div>
-            <div style="display: flex; gap: 12px;">
-                <button onclick="closeRemovalModal()" class="action-btn action-btn-secondary" style="flex: 1;">Cancel</button>
-                <button onclick="confirmRemoval()" class="action-btn action-btn-primary" style="flex: 1; background: var(--danger);">Remove Stock</button>
+            <div style="display:flex;gap:10px;">
+                <button onclick="closeRemovalModal()" class="action-btn action-btn-secondary" style="flex:1;">Cancel</button>
+                <button onclick="confirmRemoval()" class="action-btn action-btn-primary" style="flex:1;background:#dc2626;">Remove Stock</button>
             </div>
         </div>
     </div>
@@ -355,128 +367,89 @@
     <script src="js/config.js"></script>
     <script>
         const API_URL = CONFIG.API_URL;
-        const token = localStorage.getItem('access_token');
-
+        const token   = localStorage.getItem('access_token');
         if (!token) window.location.href = 'login.html';
 
-        document.getElementById('userName').textContent = localStorage.getItem('username') || 'User';
-        document.getElementById('userAvatar').textContent = (localStorage.getItem('username') || 'U')[0].toUpperCase();
+        document.getElementById('userName').textContent    = localStorage.getItem('username') || 'User';
+        document.getElementById('userAvatar').textContent  = (localStorage.getItem('username') || 'U')[0].toUpperCase();
+        document.getElementById('receiveDate').value       = new Date().toISOString().slice(0, 16);
 
-        let meatTypes = [];
-        let allCuts = [];
-        let selectedTypeId = null;
-        let selectedCutId = null;
-        let stockToRemove = null;
+        let meatTypes = [], allCuts = [];
+        let selectedTypeId = null, selectedCutId = null;
+        let stockToRemove  = null;
 
-        // ── Load role from API and display in sidebar ──
+        // ── User profile / role ──
         async function loadUserProfile() {
+            // Use cached role first for instant display
+            const cached = localStorage.getItem('role');
+            if (cached) {
+                document.getElementById('userRole').textContent =
+                    cached.charAt(0).toUpperCase() + cached.slice(1);
+            }
             try {
-                const response = await fetch(`${API_URL}/users/`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (response.ok) {
-                    const raw   = await response.json();
-                    const users = Array.isArray(raw) ? raw : (raw.results ?? []);
-                    const currentUser = users.find(u => u.username === localStorage.getItem('username'));
-                    if (currentUser) {
-                        const profile = currentUser.profile || currentUser.user_profile || {};
-                        const role    = (profile.role || currentUser.role || '').toLowerCase();
-                        if (role) {
-                            document.getElementById('userRole').textContent =
-                                role.charAt(0).toUpperCase() + role.slice(1);
-                            localStorage.setItem('role', role);
-                        }
+                const res   = await fetch(`${API_URL}/users/`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (!res.ok) return;
+                const raw   = await res.json();
+                const users = Array.isArray(raw) ? raw : (raw.results ?? []);
+                const me    = users.find(u => u.username === localStorage.getItem('username'));
+                if (me) {
+                    const profile = me.profile || me.user_profile || {};
+                    const role    = (profile.role || me.role || '').toLowerCase();
+                    if (role) {
+                        document.getElementById('userRole').textContent = role.charAt(0).toUpperCase() + role.slice(1);
+                        localStorage.setItem('role', role);
                     }
                 }
-            } catch (error) {
-                console.error('Error loading user profile:', error);
-            }
+            } catch (e) { console.error('Profile error:', e); }
         }
 
-        // Map meat type names to Font Awesome icons
-        const typeIcons = {
-            'beef':    'fa-cow',
-            'pork':    'fa-piggy-bank',
-            'chicken': 'fa-feather-alt',
-            'lamb':    'fa-horse',
-            'goat':    'fa-horse',
-            'fish':    'fa-fish',
-            'default': 'fa-drumstick-bite'
-        };
-
+        // ── Icons ──
+        const typeIcons = { beef:'fa-cow', pork:'fa-piggy-bank', chicken:'fa-feather-alt', lamb:'fa-horse', goat:'fa-horse', fish:'fa-fish', default:'fa-drumstick-bite' };
         function getTypeIcon(name) {
-            const key = (name || '').toLowerCase();
-            for (const [k, icon] of Object.entries(typeIcons)) {
-                if (key.includes(k)) return icon;
-            }
+            const key = (name||'').toLowerCase();
+            for (const [k,icon] of Object.entries(typeIcons)) { if (key.includes(k)) return icon; }
             return typeIcons.default;
         }
 
         // ── Navigation ──
         function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebarOverlay');
-            const hamburger = document.getElementById('hamburgerBtn');
-            sidebar.classList.toggle('open');
-            overlay.classList.toggle('show');
-            hamburger.classList.toggle('active');
+            document.getElementById('sidebar').classList.toggle('open');
+            document.getElementById('sidebarOverlay').classList.toggle('show');
+            document.getElementById('hamburgerBtn').classList.toggle('active');
         }
-
-        function logout() {
-            localStorage.clear();
-            window.location.href = 'login.html';
-        }
+        function logout() { localStorage.clear(); window.location.href = 'login.html'; }
 
         function showToast(message, type = 'success') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerHTML = `
-                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
-                <span>${message}</span>
-            `;
-            container.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
+            const c = document.getElementById('toastContainer');
+            const t = document.createElement('div');
+            t.className = `toast ${type}`;
+            t.innerHTML = `<i class="fas fa-${type==='success'?'check-circle':'exclamation-circle'}"></i><span>${message}</span>`;
+            c.appendChild(t);
+            setTimeout(() => t.remove(), 3000);
         }
 
-        // ── Load & Render Meat Type Tiles ──
+        // ── Meat type tiles ──
         async function loadMeatTypes() {
             try {
-                const response = await fetch(`${API_URL}/meat-types/`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                meatTypes = await response.json();
+                const res  = await fetch(`${API_URL}/meat-types/`, { headers: { 'Authorization': `Bearer ${token}` } });
+                meatTypes  = await res.json();
                 renderMeatTypeTiles();
-            } catch {
-                showToast('Failed to load meat types', 'error');
-                document.getElementById('meatTypeTiles').innerHTML =
-                    '<span class="cut-tiles-empty">Failed to load</span>';
-            }
+            } catch { showToast('Failed to load meat types', 'error'); }
         }
 
         function renderMeatTypeTiles() {
-            const container = document.getElementById('meatTypeTiles');
-            if (!meatTypes.length) {
-                container.innerHTML = '<span class="cut-tiles-empty">No meat types found</span>';
-                return;
-            }
-            container.innerHTML = meatTypes.map(type => `
-                <div class="meat-type-tile" data-id="${type.id}" onclick="selectMeatType(${type.id}, this)">
-                    <i class="fas ${getTypeIcon(type.name)}"></i>
-                    ${type.name}
-                </div>
-            `).join('');
+            const c = document.getElementById('meatTypeTiles');
+            c.innerHTML = meatTypes.length
+                ? meatTypes.map(t => `<div class="meat-type-tile" onclick="selectMeatType(${t.id},this)"><i class="fas ${getTypeIcon(t.name)}"></i>${t.name}</div>`).join('')
+                : '<span class="cut-tiles-empty">No meat types found</span>';
         }
 
-        // ── Select Meat Type ──
         async function selectMeatType(typeId, el) {
             document.querySelectorAll('.meat-type-tile').forEach(t => t.classList.remove('selected'));
             el.classList.add('selected');
-
-            selectedTypeId = typeId;
-            selectedCutId = null;
+            selectedTypeId = typeId; selectedCutId = null;
             document.getElementById('meatTypeHidden').value = typeId;
-            document.getElementById('meatCutHidden').value = '';
+            document.getElementById('meatCutHidden').value  = '';
 
             const wrapper = document.getElementById('cutTilesWrapper');
             const cutContainer = document.getElementById('cutTiles');
@@ -485,10 +458,8 @@
 
             try {
                 if (!allCuts.length) {
-                    const response = await fetch(`${API_URL}/meat-cuts/`, {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-                    allCuts = await response.json();
+                    const res = await fetch(`${API_URL}/meat-cuts/`, { headers: { 'Authorization': `Bearer ${token}` } });
+                    allCuts   = await res.json();
                 }
                 renderCutTiles(typeId);
             } catch {
@@ -499,24 +470,16 @@
 
         function renderCutTiles(typeId) {
             const wrapper = document.getElementById('cutTilesWrapper');
-            const container = document.getElementById('cutTiles');
-            const filtered = allCuts.filter(c => c.meat_type == typeId);
-
+            const c       = document.getElementById('cutTiles');
+            const filtered = allCuts.filter(x => x.meat_type == typeId);
             if (!filtered.length) {
-                container.innerHTML = '<span class="cut-tiles-empty">No cuts available for this type</span>';
-                wrapper.classList.remove('disabled');
-                return;
+                c.innerHTML = '<span class="cut-tiles-empty">No cuts available for this type</span>';
+            } else {
+                c.innerHTML = filtered.map(cut => `<div class="cut-tile" onclick="selectCut(${cut.id},this)">${cut.name}</div>`).join('');
             }
-
-            container.innerHTML = filtered.map(cut => `
-                <div class="cut-tile" data-id="${cut.id}" onclick="selectCut(${cut.id}, this)">
-                    ${cut.name}
-                </div>
-            `).join('');
             wrapper.classList.remove('disabled');
         }
 
-        // ── Select Cut ──
         function selectCut(cutId, el) {
             document.querySelectorAll('.cut-tile').forEach(t => t.classList.remove('selected'));
             el.classList.add('selected');
@@ -524,312 +487,222 @@
             document.getElementById('meatCutHidden').value = cutId;
         }
 
-        // ── Reset Form ──
         function resetForm() {
             document.getElementById('stockForm').reset();
-            document.querySelectorAll('.meat-type-tile').forEach(t => t.classList.remove('selected'));
-            document.querySelectorAll('.cut-tile').forEach(t => t.classList.remove('selected'));
-            selectedTypeId = null;
-            selectedCutId = null;
+            document.querySelectorAll('.meat-type-tile, .cut-tile').forEach(t => t.classList.remove('selected'));
+            selectedTypeId = selectedCutId = null;
             document.getElementById('meatTypeHidden').value = '';
-            document.getElementById('meatCutHidden').value = '';
-            document.getElementById('cutTiles').innerHTML =
-                '<span class="cut-tiles-empty">Select a meat type first</span>';
+            document.getElementById('meatCutHidden').value  = '';
+            document.getElementById('cutTiles').innerHTML   = '<span class="cut-tiles-empty">Select a meat type first</span>';
             document.getElementById('cutTilesWrapper').classList.add('disabled');
-            document.getElementById('receiveDate').value = new Date().toISOString().slice(0, 16);
+            document.getElementById('receiveDate').value    = new Date().toISOString().slice(0, 16);
         }
 
-        // ── NEW: Load Categorized Stock Overview ──
+        // ── Toggle a cut row open/closed ──
+        function toggleCutRow(id) {
+            const header = document.getElementById(`header-${id}`);
+            const body   = document.getElementById(`body-${id}`);
+            const isOpen = body.classList.contains('open');
+            header.classList.toggle('open', !isOpen);
+            body.classList.toggle('open', !isOpen);
+        }
+
+        // ── Stock overview — collapsible rows ──
         async function loadCategorizedStock() {
             try {
-                const response = await fetch(`${API_URL}/stock/categorized/`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                
-                if (!response.ok) throw new Error('Failed to load stock');
-                
-                const categorizedData = await response.json();
+                const res  = await fetch(`${API_URL}/stock/categorized/`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (!res.ok) throw new Error();
+                const data = await res.json();
                 const container = document.getElementById('stockOverviewContainer');
-                
-                if (!categorizedData.length) {
-                    container.innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-box-open"></i>
-                            <p>No stock recorded yet</p>
-                        </div>`;
+
+                if (!data.length) {
+                    container.innerHTML = `<div class="empty-state"><i class="fas fa-box-open"></i><p>No stock recorded yet</p></div>`;
                     return;
                 }
-                
-                // Build HTML for each cut
-                let html = '';
-                categorizedData.forEach(cut => {
+
+                container.innerHTML = data.map((cut, idx) => {
+                    const hasSpoiled   = cut.spoiled_count   > 0;
                     const hasUnspoiled = cut.unspoiled_count > 0;
-                    const hasSpoiled = cut.spoiled_count > 0;
-                    const hasAlerts = cut.is_low_stock || cut.approaching_spoilage;
-                    
-                    html += `
-                        <div class="cut-summary-card">
-                            <div class="cut-summary-header">
-                                <div class="cut-summary-title">
-                                    <i class="fas fa-drumstick-bite" style="color: var(--primary);"></i>
-                                    ${cut.meat_type_name} - ${cut.meat_cut_name}
-                                </div>
-                                ${hasAlerts ? `
-                                    <div class="cut-alert-badges">
-                                        ${cut.is_low_stock ? '<span class="cut-alert-badge low-stock"><i class="fas fa-arrow-down"></i> Low Stock</span>' : ''}
-                                        ${cut.approaching_spoilage ? '<span class="cut-alert-badge spoilage"><i class="fas fa-clock"></i> Spoilage Risk</span>' : ''}
-                                    </div>
-                                ` : ''}
+                    const rowId = `cut-${idx}`;
+
+                    const unspoiledItems = (cut.unspoiled_items || []).map(item => `
+                        <div class="stock-item-card ${item.is_spoilage_warning ? 'warning' : 'good'}">
+                            <div class="stock-item-header">
+                                <span class="stock-item-weight">${parseFloat(item.weight).toFixed(2)} kg</span>
+                                ${item.is_spoilage_warning ? `<button class="mark-spoiled-btn" onclick="markAsSpoiled(${item.id})"><i class="fas fa-exclamation"></i> Mark Spoiled</button>` : ''}
                             </div>
-                            
-                            <div class="cut-summary-stats">
-                                <div class="cut-stat">
-                                    <div class="cut-stat-value" style="color: var(--success);">${cut.total_unspoiled_weight.toFixed(1)}</div>
-                                    <div class="cut-stat-label">Unspoiled (kg)</div>
-                                </div>
-                                <div class="cut-stat">
-                                    <div class="cut-stat-value" style="color: var(--danger);">${cut.total_spoiled_weight.toFixed(1)}</div>
-                                    <div class="cut-stat-label">Spoiled (kg)</div>
-                                </div>
-                                <div class="cut-stat">
-                                    <div class="cut-stat-value">${cut.total_weight.toFixed(1)}</div>
-                                    <div class="cut-stat-label">Total (kg)</div>
+                            <div class="stock-item-meta">
+                                <span><i class="fas fa-calendar"></i> Added: ${new Date(item.receive_date).toLocaleDateString()}</span>
+                                <span><i class="fas fa-clock"></i> Age: ${item.days_old} days</span>
+                                <span><i class="fas fa-user"></i> By: ${item.added_by}</span>
+                                ${item.is_spoilage_warning ? '<span style="color:#f59e0b;"><i class="fas fa-exclamation-triangle"></i> Approaching spoilage</span>' : ''}
+                            </div>
+                        </div>`).join('');
+
+                    const spoiledItems = (cut.spoiled_items || []).map(item => `
+                        <div class="stock-item-card spoiled">
+                            <div class="stock-item-header">
+                                <span class="stock-item-weight">${parseFloat(item.weight).toFixed(2)} kg</span>
+                            </div>
+                            <div class="stock-item-meta">
+                                <span><i class="fas fa-calendar"></i> Added: ${new Date(item.receive_date).toLocaleDateString()}</span>
+                                <span><i class="fas fa-clock"></i> Age: ${item.days_old} days</span>
+                                <span><i class="fas fa-user"></i> By: ${item.added_by}</span>
+                                <span style="color:#dc2626;"><i class="fas fa-skull-crossbones"></i> SPOILED — Remove immediately</span>
+                            </div>
+                            <button class="remove-spoiled-btn" onclick="openRemovalModal(${item.id})">
+                                <i class="fas fa-trash-alt"></i> Remove Spoiled Stock
+                            </button>
+                        </div>`).join('');
+
+                    return `
+                    <div class="cut-row ${hasSpoiled ? 'has-spoiled' : ''}">
+                        <div class="cut-row-header" id="header-${rowId}" onclick="toggleCutRow('${rowId}')">
+                            <div class="cut-row-left">
+                                <div class="cut-row-icon"><i class="fas ${getTypeIcon(cut.meat_type_name)}"></i></div>
+                                <div>
+                                    <div class="cut-row-name">${cut.meat_cut_name}</div>
+                                    <div class="cut-row-type">${cut.meat_type_name}</div>
                                 </div>
                             </div>
-                            
-                            <!-- Unspoiled Stock Section -->
+
+                            <div class="cut-row-stats">
+                                <div class="cut-row-stat">
+                                    <div class="cut-row-stat-val stat-good">${parseFloat(cut.total_unspoiled_weight).toFixed(1)}</div>
+                                    <div class="cut-row-stat-lbl">Good kg</div>
+                                </div>
+                                ${hasSpoiled ? `<div class="cut-row-stat">
+                                    <div class="cut-row-stat-val stat-spoiled">${parseFloat(cut.total_spoiled_weight).toFixed(1)}</div>
+                                    <div class="cut-row-stat-lbl">Spoiled kg</div>
+                                </div>` : ''}
+                            </div>
+
+                            <div class="cut-row-badges">
+                                ${cut.is_low_stock        ? '<span class="cut-badge low"><i class="fas fa-arrow-down"></i> Low</span>'   : ''}
+                                ${cut.approaching_spoilage ? '<span class="cut-badge spoil"><i class="fas fa-clock"></i> Spoilage</span>' : ''}
+                                ${hasSpoiled              ? '<span class="cut-badge spoil"><i class="fas fa-skull-crossbones"></i> Spoiled</span>' : ''}
+                            </div>
+
+                            <i class="fas fa-chevron-down cut-row-chevron"></i>
+                        </div>
+
+                        <div class="cut-row-body" id="body-${rowId}">
                             ${hasUnspoiled ? `
-                                <div class="stock-category">
-                                    <div class="stock-category-header">
-                                        <div class="stock-category-title unspoiled">
-                                            <i class="fas fa-check-circle"></i>
-                                            Unspoiled Stock
-                                        </div>
-                                        <span class="stock-category-count">${cut.unspoiled_count} items</span>
-                                    </div>
-                                    <div class="stock-items-grid">
-                                        ${cut.unspoiled_items.map(item => `
-                                            <div class="stock-item-card ${item.is_spoilage_warning ? 'warning' : 'good'}">
-                                                <div class="stock-item-header">
-                                                    <span class="stock-item-weight">${item.weight.toFixed(2)} kg</span>
-                                                    ${item.is_spoilage_warning ? `
-                                                        <button class="mark-spoiled-btn" onclick="markAsSpoiled(${item.id})">
-                                                            <i class="fas fa-exclamation"></i> Mark Spoiled
-                                                        </button>
-                                                    ` : ''}
-                                                </div>
-                                                <div class="stock-item-meta">
-                                                    <span><i class="fas fa-calendar"></i> Added: ${new Date(item.receive_date).toLocaleDateString()}</span>
-                                                    <span><i class="fas fa-clock"></i> Age: ${item.days_old} days</span>
-                                                    <span><i class="fas fa-user"></i> By: ${item.added_by}</span>
-                                                    ${item.is_spoilage_warning ? '<span style="color: var(--warning);"><i class="fas fa-exclamation-triangle"></i> Approaching spoilage!</span>' : ''}
-                                                </div>
-                                            </div>
-                                        `).join('')}
-                                    </div>
+                                <div class="stock-category-label unspoiled">
+                                    <i class="fas fa-check-circle"></i> Unspoiled Stock (${cut.unspoiled_count} item${cut.unspoiled_count!==1?'s':''})
                                 </div>
+                                <div class="stock-items-grid">${unspoiledItems}</div>
                             ` : ''}
-                            
-                            <!-- Spoiled Stock Section -->
+
                             ${hasSpoiled ? `
-                                <div class="stock-category">
-                                    <div class="stock-category-header">
-                                        <div class="stock-category-title spoiled">
-                                            <i class="fas fa-exclamation-triangle"></i>
-                                            Spoiled Stock - Remove Required
-                                        </div>
-                                        <span class="stock-category-count">${cut.spoiled_count} items</span>
-                                    </div>
-                                    <div class="stock-items-grid">
-                                        ${cut.spoiled_items.map(item => `
-                                            <div class="stock-item-card spoiled">
-                                                <div class="stock-item-header">
-                                                    <span class="stock-item-weight" style="color: var(--danger);">${item.weight.toFixed(2)} kg</span>
-                                                </div>
-                                                <div class="stock-item-meta">
-                                                    <span><i class="fas fa-calendar"></i> Added: ${new Date(item.receive_date).toLocaleDateString()}</span>
-                                                    <span><i class="fas fa-clock"></i> Age: ${item.days_old} days</span>
-                                                    <span><i class="fas fa-user"></i> By: ${item.added_by}</span>
-                                                    <span style="color: var(--danger);"><i class="fas fa-skull-crossbones"></i> SPOILED - Remove immediately</span>
-                                                </div>
-                                                <button class="remove-spoiled-btn" onclick="openRemovalModal(${item.id})">
-                                                    <i class="fas fa-trash-alt"></i> Remove Spoiled Stock
-                                                </button>
-                                            </div>
-                                        `).join('')}
-                                    </div>
+                                <div class="stock-category-label spoiled" style="margin-top:${hasUnspoiled?'16px':'0'}">
+                                    <i class="fas fa-exclamation-triangle"></i> Spoiled Stock (${cut.spoiled_count} item${cut.spoiled_count!==1?'s':''})
                                 </div>
+                                <div class="stock-items-grid">${spoiledItems}</div>
                             ` : ''}
-                            
+
                             ${!hasUnspoiled && !hasSpoiled ? `
-                                <div class="category-empty-state">
-                                    <i class="fas fa-box-open"></i>
-                                    <p>No active stock for this cut</p>
-                                </div>
+                                <p style="color:#9ca3af;font-size:13px;text-align:center;padding:12px 0;">No active stock for this cut</p>
                             ` : ''}
                         </div>
-                    `;
-                });
-                
-                container.innerHTML = html;
-                
-            } catch (error) {
-                console.error('Error loading categorized stock:', error);
-                document.getElementById('stockOverviewContainer').innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <p>Failed to load stock overview</p>
                     </div>`;
+                }).join('');
+
+            } catch {
+                document.getElementById('stockOverviewContainer').innerHTML =
+                    `<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Failed to load stock overview</p></div>`;
             }
         }
 
-        // ── NEW: Mark Stock as Spoiled ──
+        // ── Mark as spoiled ──
         async function markAsSpoiled(stockId) {
-            if (!confirm('Are you sure you want to mark this stock as spoiled?')) return;
-            
+            if (!confirm('Mark this stock as spoiled?')) return;
             try {
-                const response = await fetch(`${API_URL}/stock/${stockId}/mark_spoiled/`, {
-                    method: 'POST',
-                    headers: { 'Authorization': `Bearer ${token}` }
+                const res = await fetch(`${API_URL}/stock/${stockId}/mark_spoiled/`, {
+                    method: 'POST', headers: { 'Authorization': `Bearer ${token}` }
                 });
-                
-                if (response.ok) {
-                    showToast('Stock marked as spoiled', 'success');
-                    loadCategorizedStock();
-                } else {
-                    const error = await response.json();
-                    showToast(error.error || 'Failed to mark as spoiled', 'error');
-                }
-            } catch (error) {
-                showToast('Connection error', 'error');
-            }
+                if (res.ok) { showToast('Stock marked as spoiled', 'success'); loadCategorizedStock(); }
+                else { const e = await res.json(); showToast(e.error || 'Failed', 'error'); }
+            } catch { showToast('Connection error', 'error'); }
         }
 
-        // ── NEW: Removal Modal Functions ──
+        // ── Removal modal ──
         function openRemovalModal(stockId) {
             stockToRemove = stockId;
             document.getElementById('removalModal').style.display = 'flex';
         }
-
         function closeRemovalModal() {
             stockToRemove = null;
             document.getElementById('removalModal').style.display = 'none';
             document.getElementById('removalReason').value = 'spoiled';
-            document.getElementById('removalNotes').value = '';
+            document.getElementById('removalNotes').value  = '';
         }
-
         async function confirmRemoval() {
             if (!stockToRemove) return;
-            
-            const reason = document.getElementById('removalReason').value;
-            const notes = document.getElementById('removalNotes').value;
-            
             try {
-                const response = await fetch(`${API_URL}/stock/${stockToRemove}/remove_spoiled/`, {
+                const res = await fetch(`${API_URL}/stock/${stockToRemove}/remove_spoiled/`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ reason, notes })
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({
+                        reason: document.getElementById('removalReason').value,
+                        notes:  document.getElementById('removalNotes').value
+                    })
                 });
-                
-                if (response.ok) {
-                    showToast('Spoiled stock removed successfully', 'success');
-                    closeRemovalModal();
-                    loadCategorizedStock();
-                    loadRemovalHistory();
-                } else {
-                    const error = await response.json();
-                    showToast(error.error || 'Failed to remove stock', 'error');
-                }
-            } catch (error) {
-                showToast('Connection error', 'error');
-            }
+                if (res.ok) {
+                    showToast('Spoiled stock removed', 'success');
+                    closeRemovalModal(); loadCategorizedStock(); loadRemovalHistory();
+                } else { const e = await res.json(); showToast(e.error || 'Failed', 'error'); }
+            } catch { showToast('Connection error', 'error'); }
         }
 
-        // ── NEW: Load Stock Removal History ──
+        // ── Removal history ──
         async function loadRemovalHistory() {
             try {
-                const response = await fetch(`${API_URL}/stock-removals/`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                
-                if (!response.ok) throw new Error('Failed to load removal history');
-                
-                const removals = await response.json();
+                const res      = await fetch(`${API_URL}/stock-removals/`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (!res.ok) throw new Error();
+                const removals = await res.json();
                 const container = document.getElementById('removalHistoryContainer');
-                
                 if (!removals.length) {
-                    container.innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-clipboard-check"></i>
-                            <p>No stock removals recorded yet</p>
-                        </div>`;
+                    container.innerHTML = `<div class="empty-state"><i class="fas fa-clipboard-check"></i><p>No stock removals recorded yet</p></div>`;
                     return;
                 }
-                
-                container.innerHTML = removals.map(removal => `
-                    <div class="removal-history-card">
-                        <div class="removal-history-info">
-                            <h4>${removal.meat_cut_name}</h4>
+                container.innerHTML = removals.map(r => `
+                    <div class="removal-card">
+                        <div class="removal-card-info">
+                            <h4>${r.meat_cut_name}</h4>
                             <p>
-                                <i class="fas fa-weight-hanging"></i> ${parseFloat(removal.weight_removed).toFixed(2)} kg removed
-                                <br><i class="fas fa-calendar"></i> ${new Date(removal.removal_date).toLocaleString()}
-                                <br><i class="fas fa-user"></i> By: ${removal.username}
-                                ${removal.notes ? `<br><i class="fas fa-sticky-note"></i> ${removal.notes}` : ''}
+                                <span><i class="fas fa-weight-hanging"></i> ${parseFloat(r.weight_removed).toFixed(2)} kg removed</span>
+                                <span><i class="fas fa-calendar"></i> ${new Date(r.removal_date).toLocaleString()}</span>
+                                <span><i class="fas fa-user"></i> By: ${r.username}</span>
+                                ${r.notes ? `<span><i class="fas fa-sticky-note"></i> ${r.notes}</span>` : ''}
                             </p>
                         </div>
-                        <span class="removal-history-badge ${removal.reason}">
-                            ${removal.reason}
-                        </span>
-                    </div>
-                `).join('');
-                
-            } catch (error) {
-                console.error('Error loading removal history:', error);
-                document.getElementById('removalHistoryContainer').innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <p>Failed to load removal history</p>
-                    </div>`;
+                        <span class="removal-badge ${r.reason}">${r.reason}</span>
+                    </div>`).join('');
+            } catch {
+                document.getElementById('removalHistoryContainer').innerHTML =
+                    `<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Failed to load removal history</p></div>`;
             }
         }
 
-        // ── Submit ──
+        // ── Submit new stock ──
         document.getElementById('stockForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-
             if (!selectedTypeId) { showToast('Please select a meat type', 'error'); return; }
             if (!selectedCutId)  { showToast('Please select a cut', 'error'); return; }
-
-            const data = {
-                meat_cut: selectedCutId,
-                current_weight: parseFloat(document.getElementById('weight').value),
-                receive_date: document.getElementById('receiveDate').value
-            };
-
             try {
-                const response = await fetch(`${API_URL}/stock/`, {
+                const res = await fetch(`${API_URL}/stock/`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(data)
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({
+                        meat_cut:       selectedCutId,
+                        current_weight: parseFloat(document.getElementById('weight').value),
+                        receive_date:   document.getElementById('receiveDate').value
+                    })
                 });
-
-                if (response.ok) {
-                    showToast('Stock recorded successfully!', 'success');
-                    resetForm();
-                    loadCategorizedStock();
-                } else {
-                    const error = await response.json();
-                    showToast(error.detail || 'Failed to record stock', 'error');
-                }
-            } catch {
-                showToast('Connection error', 'error');
-            }
+                if (res.ok) { showToast('Stock recorded successfully!', 'success'); resetForm(); loadCategorizedStock(); }
+                else { const e = await res.json(); showToast(e.detail || 'Failed to record stock', 'error'); }
+            } catch { showToast('Connection error', 'error'); }
         });
 
         window.addEventListener('resize', () => {
@@ -840,13 +713,10 @@
             }
         });
 
-        // Initialize
         loadUserProfile();
         loadMeatTypes();
         loadCategorizedStock();
         loadRemovalHistory();
-        
-        // Refresh stock overview every 30 seconds
         setInterval(loadCategorizedStock, 30000);
     </script>
 </body>
