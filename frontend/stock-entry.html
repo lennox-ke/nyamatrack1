@@ -173,6 +173,34 @@
         }
         .remove-spoiled-btn:hover { background: #b91c1c; }
 
+        /* ── Meat type group headers ── */
+        .meat-type-group { margin-bottom: 24px; }
+        .meat-type-group:last-child { margin-bottom: 0; }
+
+        .meat-type-group-header {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 14px; margin-bottom: 10px;
+            background: linear-gradient(135deg, #fff5f5 0%, #fff 100%);
+            border: 1.5px solid #fca5a5; border-radius: 10px;
+        }
+        .meat-type-group-icon {
+            width: 32px; height: 32px; border-radius: 8px;
+            background: #dc2626; color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; flex-shrink: 0;
+        }
+        .meat-type-group-name {
+            font-size: 14px; font-weight: 800; color: #111; flex: 1; letter-spacing: -0.2px;
+        }
+        .meat-type-group-summary {
+            font-size: 12px; color: #6b7280; display: flex; gap: 12px; flex-shrink: 0;
+            flex-wrap: wrap; justify-content: flex-end;
+        }
+        .meat-type-group-summary span { display: flex; align-items: center; gap: 4px; }
+        .meat-type-group-summary .good-kg  { color: #16a34a; font-weight: 700; }
+        .meat-type-group-summary .spoil-kg { color: #dc2626; font-weight: 700; }
+        .meat-type-group-cuts { padding-left: 0; }
+
         /* ── Removal history ── */
         .removal-card {
             display: flex; align-items: center; justify-content: space-between;
@@ -520,10 +548,23 @@
                     return;
                 }
 
-                container.innerHTML = data.map((cut, idx) => {
+                // Group cuts by meat type
+                const groups = {};
+                data.forEach((cut, idx) => {
+                    const typeName = cut.meat_type_name || 'Other';
+                    if (!groups[typeName]) groups[typeName] = { cuts: [], totalGood: 0, totalSpoiled: 0 };
+                    groups[typeName].cuts.push({ ...cut, _idx: idx });
+                    groups[typeName].totalGood    += parseFloat(cut.total_unspoiled_weight) || 0;
+                    groups[typeName].totalSpoiled += parseFloat(cut.total_spoiled_weight)   || 0;
+                });
+
+                container.innerHTML = Object.entries(groups).map(([typeName, group]) => {
+                    const groupHasSpoiled = group.totalSpoiled > 0;
+
+                    const cutsHtml = group.cuts.map((cut) => {
                     const hasSpoiled   = cut.spoiled_count   > 0;
                     const hasUnspoiled = cut.unspoiled_count > 0;
-                    const rowId = `cut-${idx}`;
+                    const rowId = `cut-${cut._idx}`;
 
                     const unspoiledItems = (cut.unspoiled_items || []).map(item => `
                         <div class="stock-item-card ${item.is_spoilage_warning ? 'warning' : 'good'}">
@@ -605,6 +646,20 @@
                                 <p style="color:#9ca3af;font-size:13px;text-align:center;padding:12px 0;">No active stock for this cut</p>
                             ` : ''}
                         </div>
+                    </div>`;
+                    }).join('');
+
+                    return `
+                    <div class="meat-type-group">
+                        <div class="meat-type-group-header">
+                            <div class="meat-type-group-icon"><i class="fas ${getTypeIcon(typeName)}"></i></div>
+                            <div class="meat-type-group-name">${typeName}</div>
+                            <div class="meat-type-group-summary">
+                                <span><span class="good-kg">${group.totalGood.toFixed(1)} kg</span> good</span>
+                                ${groupHasSpoiled ? `<span><span class="spoil-kg">${group.totalSpoiled.toFixed(1)} kg</span> spoiled</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="meat-type-group-cuts">${cutsHtml}</div>
                     </div>`;
                 }).join('');
 
