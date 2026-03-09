@@ -195,41 +195,15 @@
     <script>
         const API_URL = CONFIG.API_URL;
         const token = localStorage.getItem('access_token');
-        
+
         if (!token) window.location.href = 'login.html';
-        
+
         document.getElementById('userName').textContent = localStorage.getItem('username') || 'User';
         document.getElementById('userAvatar').textContent = (localStorage.getItem('username') || 'U')[0].toUpperCase();
-        
-        // Read the logged-in user's role to control delete button visibility
-        const currentUserRole = (localStorage.getItem('role') || localStorage.getItem('user_role') || '').toLowerCase();
-        const isOwner = currentUserRole === 'owner';
-        async function loadUserProfile() {
-    try {
-        const response = await fetch(`${CONFIG.API_URL}/users/`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        if (response.ok) {
-            const users = await response.json();
-            const currentUser = users.find(u => u.username === localStorage.getItem('username'));
-            
-            if (currentUser && currentUser.profile) {
-                document.getElementById('userRole').textContent = 
-                    currentUser.profile.role.charAt(0).toUpperCase() + 
-                    currentUser.profile.role.slice(1);
-            } else {
-                document.getElementById('userRole').textContent = 'Butcher';
-            }
-        }
-    } catch (error) {
-        console.error('Error loading profile:', error);
-        document.getElementById('userRole').textContent = 'User';
-    }
-}
 
-// Call this after setting user info
-loadUserProfile();
+        // isOwner is false until confirmed from the API — never trust localStorage alone
+        let isOwner = false;
+
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebarOverlay');
@@ -238,12 +212,12 @@ loadUserProfile();
             overlay.classList.toggle('show');
             hamburger.classList.toggle('active');
         }
-        
+
         function logout() {
             localStorage.clear();
             window.location.href = 'login.html';
         }
-        
+
         function showToast(message, type = 'success') {
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
@@ -255,18 +229,19 @@ loadUserProfile();
             container.appendChild(toast);
             setTimeout(() => toast.remove(), 3000);
         }
-        
+
         function getRoleBadgeClass(role) {
-            switch(role) {
+            switch (role) {
                 case 'admin':  return 'badge-danger';
                 case 'owner':  return 'badge-success';
                 case 'keeper': return 'badge-warning';
                 default:       return 'badge-success';
             }
         }
-        
-        async function loadUsers() {
-            const tbody = document.getElementById('usersTable');
+
+        // ── Step 1: fetch all users, identify the logged-in user's role,
+        //            THEN render the table so isOwner is set correctly ──
+        async function init() {
             try {
                 const response = await fetch(`${API_URL}/users/`, {
                     headers: { 'Authorization': `Bearer ${token}` }
@@ -275,72 +250,100 @@ loadUserProfile();
                 if (!response.ok) {
                     const errText = await response.text();
                     console.error('[NyamaTrack] /users/ responded with', response.status, errText);
-                    tbody.innerHTML = `<tr><td colspan="5" class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Error ${response.status} — check console</p></td></tr>`;
+                    document.getElementById('usersTable').innerHTML =
+                        `<tr><td colspan="5" class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Error ${response.status} — check console</p></td></tr>`;
                     return;
                 }
 
                 const raw = await response.json();
-
-                // Log the raw response so we can see its shape
                 console.log('[NyamaTrack] /users/ raw response:', JSON.stringify(raw, null, 2));
 
-                // Handle both plain array and paginated { results: [...] } responses
                 const users = Array.isArray(raw) ? raw : (raw.results ?? raw.data ?? []);
+                const currentUsername = localStorage.getItem('username');
+                const currentUser = users.find(u => u.username === currentUsername);
 
-                if (!users.length) {
-                    tbody.innerHTML = `<tr><td colspan="5" class="empty-state"><i class="fas fa-users"></i><p>No users found</p></td></tr>`;
-                    return;
+                if (currentUser) {
+                    const profile = currentUser.profile || currentUser.user_profile || {};
+                    const role = (profile.role || currentUser.role || '').toLowerCase();
+
+                    // Update sidebar role label
+                    document.getElementById('userRole').textContent =
+                        role ? role.charAt(0).toUpperCase() + role.slice(1) : 'User';
+
+                    // Cache for other pages
+                    localStorage.setItem('role', role);
+
+                    // This is the key — set BEFORE renderUsers is called
+                    isOwner = role === 'owner';
                 }
 
-                tbody.innerHTML = users.map(user => {
-                    // Safely read profile — it may be null, missing, or nested differently
-                    const profile   = user.profile || user.user_profile || {};
-                    const role      = profile.role      || user.role      || '—';
-                    const shopName  = profile.shop_name || user.shop_name || '—';
-                    const firstName = user.first_name || '';
-                    const lastName  = user.last_name  || '';
-                    const fullName  = (firstName + ' ' + lastName).trim() || user.username;
-                    const initial   = (firstName || user.username || '?')[0].toUpperCase();
-                    const joined    = user.date_joined ? new Date(user.date_joined).toLocaleDateString() : '—';
+                renderUsers(users);
 
-                    return `
-                        <tr>
-                            <td>
-                                <div style="display:flex;align-items:center;gap:12px;">
-                                    <div class="user-avatar" style="width:36px;height:36px;font-size:14px;">
-                                        ${initial}
-                                    </div>
-                                    <div>
-                                        <div style="font-weight:600;">${fullName}</div>
-                                        <div style="font-size:12px;color:var(--text-secondary);">@${user.username}</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <span class="badge ${getRoleBadgeClass(role)}">${role}</span>
-                            </td>
-                            <td>${shopName}</td>
-                            <td>${joined}</td>
-                            <td>
-                                ${isOwner ? `
-                                <button onclick="deleteUser(${user.id})" class="action-btn" style="background:#fee2e2;color:var(--danger);">
-                                    <i class="fas fa-trash"></i>
-                                </button>` : '—'}
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
-                
             } catch (error) {
-                console.error('[NyamaTrack] loadUsers error:', error);
-                tbody.innerHTML = `<tr><td colspan="5" class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Failed to load users — check console</p></td></tr>`;
+                console.error('[NyamaTrack] init error:', error);
+                document.getElementById('usersTable').innerHTML =
+                    `<tr><td colspan="5" class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Failed to load users — check console</p></td></tr>`;
                 showToast('Failed to load users', 'error');
             }
         }
-        
+
+        function renderUsers(users) {
+            const tbody = document.getElementById('usersTable');
+
+            if (!users.length) {
+                tbody.innerHTML = `<tr><td colspan="5" class="empty-state"><i class="fas fa-users"></i><p>No users found</p></td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = users.map(user => {
+                const profile   = user.profile || user.user_profile || {};
+                const role      = profile.role      || user.role      || '—';
+                const shopName  = profile.shop_name || user.shop_name || '—';
+                const firstName = user.first_name || '';
+                const lastName  = user.last_name  || '';
+                const fullName  = (firstName + ' ' + lastName).trim() || user.username;
+                const initial   = (firstName || user.username || '?')[0].toUpperCase();
+                const joined    = user.date_joined ? new Date(user.date_joined).toLocaleDateString() : '—';
+
+                return `
+                    <tr>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:12px;">
+                                <div class="user-avatar" style="width:36px;height:36px;font-size:14px;">
+                                    ${initial}
+                                </div>
+                                <div>
+                                    <div style="font-weight:600;">${fullName}</div>
+                                    <div style="font-size:12px;color:var(--text-secondary);">@${user.username}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge ${getRoleBadgeClass(role)}">${role}</span>
+                        </td>
+                        <td>${shopName}</td>
+                        <td>${joined}</td>
+                        <td>
+                            ${isOwner
+                                ? `<button onclick="deleteUser(${user.id})" class="action-btn" style="background:#fee2e2;color:var(--danger);">
+                                       <i class="fas fa-trash"></i>
+                                   </button>`
+                                : '—'
+                            }
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Refresh after add/delete — re-runs init so isOwner stays correct
+        async function loadUsers() {
+            await init();
+        }
+
         document.getElementById('addUserForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const userData = {
                 username:   document.getElementById('newUsername').value,
                 email:      document.getElementById('newEmail').value,
@@ -352,7 +355,7 @@ loadUserProfile();
                     shop_name: document.getElementById('newShopName').value
                 }
             };
-            
+
             try {
                 const response = await fetch(`${API_URL}/users/`, {
                     method: 'POST',
@@ -362,7 +365,7 @@ loadUserProfile();
                     },
                     body: JSON.stringify(userData)
                 });
-                
+
                 if (response.ok) {
                     showToast('User created successfully!', 'success');
                     document.getElementById('addUserForm').reset();
@@ -375,16 +378,16 @@ loadUserProfile();
                 showToast('Connection error', 'error');
             }
         });
-        
+
         async function deleteUser(userId) {
             if (!confirm('Are you sure you want to delete this user?')) return;
-            
+
             try {
                 const response = await fetch(`${API_URL}/users/${userId}/`, {
                     method: 'DELETE',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                
+
                 if (response.ok || response.status === 204) {
                     showToast('User deleted', 'success');
                     loadUsers();
@@ -395,7 +398,7 @@ loadUserProfile();
                 showToast('Connection error', 'error');
             }
         }
-        
+
         window.addEventListener('resize', () => {
             if (window.innerWidth > 1024) {
                 document.getElementById('sidebar').classList.remove('open');
@@ -403,8 +406,9 @@ loadUserProfile();
                 document.getElementById('hamburgerBtn').classList.remove('active');
             }
         });
-        
-        loadUsers();
+
+        // Kick off — role check happens before table renders
+        init();
     </script>
 </body>
 </html>

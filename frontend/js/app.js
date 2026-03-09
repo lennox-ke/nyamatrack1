@@ -6,7 +6,7 @@
 // API Configuration - Change this to your Render backend URL after deployment
 const API_URL = window.location.hostname === 'localhost' 
     ? 'http://localhost:8000/api' 
-    : 'https://nyamatrack-api.onrender.com/api';
+    : 'https://nyamatrack1.onrender.com/api';
 
 // Authentication Utilities
 const Auth = {

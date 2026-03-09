@@ -8,7 +8,7 @@ const CONFIG = {
     DEV_API_URL: 'http://localhost:8000/api',
     
     // Production - Update this after deploying to Render
-    PROD_API_URL: 'https://nyamatrack-api.onrender.com/api',
+    PROD_API_URL: 'https://nyamatrack1.onrender.com/api',
     
     // Get current API URL based on environment
     get API_URL() {
