@@ -11,23 +11,31 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* ── Tile Selector ── */
+        /* ────────────────────────────────────────
+           MEAT TYPE TILES  (form + overview)
+        ──────────────────────────────────────── */
         .tile-section-label {
             font-size: 13px; font-weight: 600; color: #374151;
             margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
         }
-        .meat-type-tiles { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 4px; }
+
+        /* Shared tile grid */
+        .meat-type-tiles {
+            display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 4px;
+        }
+
+        /* ── Form tiles (small, for selecting when recording stock) ── */
         .meat-type-tile {
             display: flex; flex-direction: column; align-items: center;
-            justify-content: center; gap: 6px;
-            width: 88px; height: 78px;
+            justify-content: center; gap: 4px;
+            min-width: 80px; padding: 10px 12px;
             border: 2px solid #e5e7eb; border-radius: 12px;
             background: #fff; cursor: pointer;
             font-size: 12px; font-weight: 600; color: #6b7280;
-            transition: all 0.18s ease; padding: 8px;
-            text-align: center; user-select: none;
+            transition: all 0.18s ease; text-align: center; user-select: none;
         }
-        .meat-type-tile i { font-size: 22px; color: #9ca3af; transition: color 0.18s; }
+        .meat-type-tile i { font-size: 20px; color: #9ca3af; transition: color 0.18s; }
+        .meat-type-tile .tile-name { font-size: 12px; font-weight: 700; }
         .meat-type-tile:hover { border-color: #dc2626; color: #dc2626; background: #fff5f5; }
         .meat-type-tile:hover i { color: #dc2626; }
         .meat-type-tile.selected {
@@ -36,6 +44,47 @@
         }
         .meat-type-tile.selected i { color: #fff; }
 
+        /* ── Overview tiles (larger, show kg stats + colour coding) ── */
+        .ov-tile {
+            display: flex; flex-direction: column; align-items: center;
+            gap: 6px; padding: 14px 16px; min-width: 100px;
+            border: 2px solid #e5e7eb; border-radius: 14px;
+            background: #fff; cursor: pointer;
+            transition: all 0.18s ease; text-align: center; user-select: none;
+            position: relative; flex: 1;
+        }
+        .ov-tile i { font-size: 24px; color: #9ca3af; transition: color 0.18s; }
+        .ov-tile-name { font-size: 13px; font-weight: 700; color: #374151; }
+        .ov-tile-stats {
+            display: flex; gap: 8px; align-items: center; justify-content: center;
+            flex-wrap: wrap; margin-top: 2px;
+        }
+        .ov-tile-stat {
+            font-size: 11px; font-weight: 700; padding: 2px 7px;
+            border-radius: 20px; white-space: nowrap;
+        }
+        .ov-tile-stat.good    { background: #dcfce7; color: #166534; }
+        .ov-tile-stat.spoiled { background: #fee2e2; color: #991b1b; }
+        .ov-tile-stat.low     { background: #fef9c3; color: #854d0e; }
+
+        /* Colour-coded borders for status */
+        .ov-tile.status-good    { border-color: #e5e7eb; }
+        .ov-tile.status-low     { border-color: #fde68a; background: #fefce8; }
+        .ov-tile.status-spoiled { border-color: #fca5a5; background: #fff5f5; }
+        .ov-tile.status-low     i { color: #d97706; }
+        .ov-tile.status-spoiled i { color: #dc2626; }
+
+        .ov-tile:hover, .ov-tile.active {
+            border-color: #dc2626 !important;
+            box-shadow: 0 4px 14px rgba(220,38,38,0.18);
+            transform: translateY(-2px);
+        }
+        .ov-tile.active { background: #dc2626 !important; }
+        .ov-tile.active i,
+        .ov-tile.active .ov-tile-name { color: #fff !important; }
+        .ov-tile.active .ov-tile-stat { background: rgba(255,255,255,0.25) !important; color: #fff !important; }
+
+        /* ── Cut tiles (form) ── */
         .cut-tiles-wrapper { margin-top: 4px; transition: opacity 0.2s; }
         .cut-tiles-wrapper.disabled { opacity: 0.4; pointer-events: none; }
         .cut-tiles { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -55,26 +104,32 @@
         }
         #meatTypeHidden, #meatCutHidden { display: none; }
 
-        /* ── Stock Overview: compact cut rows ── */
+        /* ────────────────────────────────────────
+           STOCK OVERVIEW
+        ──────────────────────────────────────── */
+        .overview-filter-row {
+            margin-bottom: 16px;
+        }
+        .overview-filter-label {
+            font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+            text-transform: uppercase; color: #9ca3af; margin-bottom: 10px;
+        }
+
         .cut-row {
-            border: 1.5px solid #e5e7eb;
-            border-radius: 12px;
-            margin-bottom: 10px;
-            overflow: hidden;
-            transition: border-color 0.18s;
+            border: 1.5px solid #e5e7eb; border-radius: 12px;
+            margin-bottom: 10px; overflow: hidden; transition: border-color 0.18s;
         }
         .cut-row:hover { border-color: #fca5a5; }
         .cut-row.has-spoiled { border-color: #fca5a5; }
+        .cut-row.has-low     { border-color: #fde68a; }
 
-        /* The always-visible header bar */
         .cut-row-header {
             display: flex; align-items: center; justify-content: space-between;
             padding: 13px 16px; cursor: pointer; background: #fff;
-            user-select: none; gap: 12px;
-            transition: background 0.15s;
+            user-select: none; gap: 12px; transition: background 0.15s;
         }
         .cut-row-header:hover { background: #fafafa; }
-        .cut-row-header.open { background: #fff5f5; }
+        .cut-row-header.open  { background: #fff5f5; }
 
         .cut-row-left { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
         .cut-row-icon {
@@ -83,29 +138,27 @@
             display: flex; align-items: center; justify-content: center;
             font-size: 15px; flex-shrink: 0;
         }
+        .cut-row-icon.low     { background: #fef9c3; color: #d97706; }
+        .cut-row-icon.spoiled { background: #fee2e2; color: #dc2626; }
+
         .cut-row-name {
             font-size: 14px; font-weight: 700; color: #111;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
-        .cut-row-type { font-size: 11px; color: #9ca3af; margin-top: 1px; }
+        .cut-row-sub { font-size: 11px; color: #9ca3af; margin-top: 1px; }
 
-        .cut-row-stats {
-            display: flex; align-items: center; gap: 16px; flex-shrink: 0;
-        }
-        .cut-row-stat { text-align: right; }
-        .cut-row-stat-val { font-size: 15px; font-weight: 800; line-height: 1; }
-        .cut-row-stat-lbl { font-size: 10px; color: #9ca3af; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.04em; }
+        .cut-row-stats { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+        .cut-row-stat  { text-align: right; }
+        .cut-row-stat-val { font-size: 14px; font-weight: 800; line-height: 1; }
+        .cut-row-stat-lbl { font-size: 10px; color: #9ca3af; margin-top: 2px;
+            text-transform: uppercase; letter-spacing: 0.04em; }
         .stat-good    { color: #16a34a; }
         .stat-spoiled { color: #dc2626; }
-        .stat-total   { color: #374151; }
 
-        .cut-row-badges { display: flex; gap: 6px; flex-shrink: 0; }
-        .cut-badge {
-            font-size: 10px; font-weight: 700; padding: 3px 8px;
-            border-radius: 20px; white-space: nowrap;
-        }
-        .cut-badge.low   { background: #fef9c3; color: #854d0e; }
-        .cut-badge.spoil { background: #fee2e2; color: #991b1b; }
+        .cut-row-badges { display: flex; gap: 5px; flex-shrink: 0; }
+        .cut-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; white-space: nowrap; }
+        .cut-badge.low    { background: #fef9c3; color: #854d0e; }
+        .cut-badge.spoil  { background: #fee2e2; color: #991b1b; }
 
         .cut-row-chevron {
             font-size: 12px; color: #9ca3af; flex-shrink: 0;
@@ -113,33 +166,27 @@
         }
         .cut-row-header.open .cut-row-chevron { transform: rotate(180deg); }
 
-        /* Expandable detail panel */
         .cut-row-body {
-            display: none;
-            border-top: 1px solid #f3f4f6;
-            padding: 16px;
-            background: #fafafa;
+            display: none; border-top: 1px solid #f3f4f6;
+            padding: 16px; background: #fafafa;
         }
         .cut-row-body.open { display: block; }
 
-        /* Stock item cards inside the panel */
         .stock-items-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 10px;
-            margin-top: 10px;
+            gap: 10px; margin-top: 10px;
         }
         .stock-item-card {
             background: #fff; border: 1.5px solid #e5e7eb;
             border-radius: 10px; padding: 12px 14px;
         }
         .stock-item-card.good    { border-color: #bbf7d0; }
-        .stock-item-card.warning { border-color: #fde68a; }
+        .stock-item-card.warning { border-color: #fde68a; background: #fefce8; }
         .stock-item-card.spoiled { border-color: #fca5a5; background: #fff5f5; }
 
         .stock-item-header {
-            display: flex; align-items: center; justify-content: space-between;
-            margin-bottom: 8px;
+            display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;
         }
         .stock-item-weight { font-size: 18px; font-weight: 800; color: #111; }
         .stock-item-card.spoiled .stock-item-weight { color: #dc2626; }
@@ -158,48 +205,17 @@
         .mark-spoiled-btn {
             font-size: 11px; font-weight: 600; padding: 4px 10px;
             border-radius: 6px; border: 1.5px solid #f59e0b;
-            background: #fef9c3; color: #92400e; cursor: pointer;
-            transition: all 0.15s;
+            background: #fef9c3; color: #92400e; cursor: pointer; transition: all 0.15s;
         }
         .mark-spoiled-btn:hover { background: #f59e0b; color: #fff; }
 
         .remove-spoiled-btn {
-            width: 100%; margin-top: 10px; padding: 8px;
-            border-radius: 8px; border: none;
-            background: #dc2626; color: #fff;
-            font-size: 12px; font-weight: 700; cursor: pointer;
+            width: 100%; margin-top: 10px; padding: 8px; border-radius: 8px; border: none;
+            background: #dc2626; color: #fff; font-size: 12px; font-weight: 700; cursor: pointer;
             display: flex; align-items: center; justify-content: center; gap: 6px;
             transition: background 0.15s;
         }
         .remove-spoiled-btn:hover { background: #b91c1c; }
-
-        /* ── Meat type group headers ── */
-        .meat-type-group { margin-bottom: 24px; }
-        .meat-type-group:last-child { margin-bottom: 0; }
-
-        .meat-type-group-header {
-            display: flex; align-items: center; gap: 10px;
-            padding: 10px 14px; margin-bottom: 10px;
-            background: linear-gradient(135deg, #fff5f5 0%, #fff 100%);
-            border: 1.5px solid #fca5a5; border-radius: 10px;
-        }
-        .meat-type-group-icon {
-            width: 32px; height: 32px; border-radius: 8px;
-            background: #dc2626; color: #fff;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 14px; flex-shrink: 0;
-        }
-        .meat-type-group-name {
-            font-size: 14px; font-weight: 800; color: #111; flex: 1; letter-spacing: -0.2px;
-        }
-        .meat-type-group-summary {
-            font-size: 12px; color: #6b7280; display: flex; gap: 12px; flex-shrink: 0;
-            flex-wrap: wrap; justify-content: flex-end;
-        }
-        .meat-type-group-summary span { display: flex; align-items: center; gap: 4px; }
-        .meat-type-group-summary .good-kg  { color: #16a34a; font-weight: 700; }
-        .meat-type-group-summary .spoil-kg { color: #dc2626; font-weight: 700; }
-        .meat-type-group-cuts { padding-left: 0; }
 
         /* ── Removal history ── */
         .removal-card {
@@ -211,18 +227,18 @@
         .removal-card-info p  { font-size: 12px; color: #6b7280; display: flex; flex-direction: column; gap: 2px; }
         .removal-badge {
             font-size: 11px; font-weight: 700; padding: 4px 10px;
-            border-radius: 20px; white-space: nowrap; flex-shrink: 0;
-            text-transform: capitalize;
+            border-radius: 20px; white-space: nowrap; flex-shrink: 0; text-transform: capitalize;
         }
-        .removal-badge.spoiled  { background: #fee2e2; color: #991b1b; }
-        .removal-badge.damaged  { background: #fef3c7; color: #92400e; }
-        .removal-badge.expired  { background: #ede9fe; color: #5b21b6; }
-        .removal-badge.other    { background: #f3f4f6; color: #374151; }
+        .removal-badge.spoiled { background: #fee2e2; color: #991b1b; }
+        .removal-badge.damaged { background: #fef3c7; color: #92400e; }
+        .removal-badge.expired { background: #ede9fe; color: #5b21b6; }
+        .removal-badge.other   { background: #f3f4f6; color: #374151; }
 
         @media (max-width: 480px) {
-            .cut-row-stats { gap: 10px; }
-            .cut-row-stat-val { font-size: 13px; }
-            .cut-row-badges { display: none; } /* shown in expanded panel on mobile */
+            .ov-tile { min-width: 80px; padding: 10px 10px; }
+            .ov-tile i { font-size: 20px; }
+            .cut-row-stats { gap: 8px; }
+            .cut-row-badges { display: none; }
             .stock-items-grid { grid-template-columns: 1fr; }
         }
     </style>
@@ -277,7 +293,7 @@
                 <p>Add incoming meat deliveries to inventory</p>
             </div>
 
-            <!-- Form card -->
+            <!-- ── Record form ── -->
             <div class="card">
                 <div class="card-body">
                     <form id="stockForm">
@@ -329,20 +345,30 @@
                 </div>
             </div>
 
-            <!-- Stock Overview — collapsible rows -->
+            <!-- ── Stock Overview ── -->
             <div class="card">
                 <div class="card-header">
                     <h2><i class="fas fa-warehouse"></i> Current Stock Overview</h2>
                 </div>
-                <div class="card-body" id="stockOverviewContainer">
-                    <div class="empty-state">
-                        <i class="fas fa-spinner fa-spin"></i>
-                        <p>Loading stock overview…</p>
+                <div class="card-body">
+                    <!-- Meat type filter tiles with stats -->
+                    <div class="overview-filter-row">
+                        <div class="overview-filter-label">Filter by meat type</div>
+                        <div class="meat-type-tiles" id="ovTypeTiles">
+                            <div class="cut-tiles-loading"><i class="fas fa-circle-notch fa-spin"></i> Loading…</div>
+                        </div>
+                    </div>
+                    <!-- Cut rows — filtered by selected type -->
+                    <div id="stockOverviewContainer">
+                        <div class="empty-state">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Loading stock overview…</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Removal History -->
+            <!-- ── Removal History ── -->
             <div class="card">
                 <div class="card-header">
                     <h2><i class="fas fa-trash-alt"></i> Stock Removal History</h2>
@@ -398,44 +424,27 @@
         const token   = localStorage.getItem('access_token');
         if (!token) window.location.href = 'login.html';
 
-        document.getElementById('userName').textContent    = localStorage.getItem('username') || 'User';
-        document.getElementById('userAvatar').textContent  = (localStorage.getItem('username') || 'U')[0].toUpperCase();
-        document.getElementById('receiveDate').value       = new Date().toISOString().slice(0, 16);
+        document.getElementById('userName').textContent   = localStorage.getItem('username') || 'User';
+        document.getElementById('userAvatar').textContent = (localStorage.getItem('username') || 'U')[0].toUpperCase();
+        document.getElementById('receiveDate').value      = new Date().toISOString().slice(0, 16);
 
-        let meatTypes = [], allCuts = [];
-        let selectedTypeId = null, selectedCutId = null;
-        let stockToRemove  = null;
-
-        // ── User profile / role ──
-        async function loadUserProfile() {
-            // Use cached role first for instant display
-            const cached = localStorage.getItem('role');
-            if (cached) {
-                document.getElementById('userRole').textContent =
-                    cached.charAt(0).toUpperCase() + cached.slice(1);
-            }
-            try {
-                const res   = await fetch(`${API_URL}/users/`, { headers: { 'Authorization': `Bearer ${token}` } });
-                if (!res.ok) return;
-                const raw   = await res.json();
-                const users = Array.isArray(raw) ? raw : (raw.results ?? []);
-                const me    = users.find(u => u.username === localStorage.getItem('username'));
-                if (me) {
-                    const profile = me.profile || me.user_profile || {};
-                    const role    = (profile.role || me.role || '').toLowerCase();
-                    if (role) {
-                        document.getElementById('userRole').textContent = role.charAt(0).toUpperCase() + role.slice(1);
-                        localStorage.setItem('role', role);
-                    }
-                }
-            } catch (e) { console.error('Profile error:', e); }
-        }
+        // State
+        let meatTypes       = [];
+        let allCuts         = [];
+        let allStockData    = [];          // full categorized data from API
+        let selectedTypeId  = null;       // form tile selection
+        let selectedCutId   = null;
+        let ovActiveType    = null;       // overview filter selection
+        let stockToRemove   = null;
 
         // ── Icons ──
-        const typeIcons = { beef:'fa-cow', pork:'fa-piggy-bank', chicken:'fa-feather-alt', lamb:'fa-horse', goat:'fa-horse', fish:'fa-fish', default:'fa-drumstick-bite' };
+        const typeIcons = {
+            beef:'fa-cow', pork:'fa-piggy-bank', chicken:'fa-feather-alt',
+            lamb:'fa-horse', goat:'fa-horse', fish:'fa-fish', default:'fa-drumstick-bite'
+        };
         function getTypeIcon(name) {
-            const key = (name||'').toLowerCase();
-            for (const [k,icon] of Object.entries(typeIcons)) { if (key.includes(k)) return icon; }
+            const k = (name||'').toLowerCase();
+            for (const [key, icon] of Object.entries(typeIcons)) { if (k.includes(key)) return icon; }
             return typeIcons.default;
         }
 
@@ -456,19 +465,43 @@
             setTimeout(() => t.remove(), 3000);
         }
 
-        // ── Meat type tiles ──
+        // ── User profile ──
+        async function loadUserProfile() {
+            const cached = localStorage.getItem('role');
+            if (cached) document.getElementById('userRole').textContent = cached.charAt(0).toUpperCase() + cached.slice(1);
+            try {
+                const res = await fetch(`${API_URL}/users/`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (!res.ok) return;
+                const raw   = await res.json();
+                const users = Array.isArray(raw) ? raw : (raw.results ?? []);
+                const me    = users.find(u => u.username === localStorage.getItem('username'));
+                if (me) {
+                    const p    = me.profile || me.user_profile || {};
+                    const role = (p.role || me.role || '').toLowerCase();
+                    if (role) { document.getElementById('userRole').textContent = role.charAt(0).toUpperCase() + role.slice(1); localStorage.setItem('role', role); }
+                }
+            } catch(e) { console.error('Profile error:', e); }
+        }
+
+        // ────────────────────────────────────────
+        //  FORM — meat type tiles (small, no stats)
+        // ────────────────────────────────────────
         async function loadMeatTypes() {
             try {
-                const res  = await fetch(`${API_URL}/meat-types/`, { headers: { 'Authorization': `Bearer ${token}` } });
-                meatTypes  = await res.json();
-                renderMeatTypeTiles();
+                const res = await fetch(`${API_URL}/meat-types/`, { headers: { 'Authorization': `Bearer ${token}` } });
+                meatTypes = await res.json();
+                renderFormTypeTiles();
             } catch { showToast('Failed to load meat types', 'error'); }
         }
 
-        function renderMeatTypeTiles() {
+        function renderFormTypeTiles() {
             const c = document.getElementById('meatTypeTiles');
             c.innerHTML = meatTypes.length
-                ? meatTypes.map(t => `<div class="meat-type-tile" onclick="selectMeatType(${t.id},this)"><i class="fas ${getTypeIcon(t.name)}"></i>${t.name}</div>`).join('')
+                ? meatTypes.map(t => `
+                    <div class="meat-type-tile" onclick="selectMeatType(${t.id}, this)">
+                        <i class="fas ${getTypeIcon(t.name)}"></i>
+                        <span class="tile-name">${t.name}</span>
+                    </div>`).join('')
                 : '<span class="cut-tiles-empty">No meat types found</span>';
         }
 
@@ -479,7 +512,7 @@
             document.getElementById('meatTypeHidden').value = typeId;
             document.getElementById('meatCutHidden').value  = '';
 
-            const wrapper = document.getElementById('cutTilesWrapper');
+            const wrapper     = document.getElementById('cutTilesWrapper');
             const cutContainer = document.getElementById('cutTiles');
             wrapper.classList.add('disabled');
             cutContainer.innerHTML = '<div class="cut-tiles-loading"><i class="fas fa-circle-notch fa-spin"></i> Loading cuts…</div>';
@@ -497,14 +530,12 @@
         }
 
         function renderCutTiles(typeId) {
-            const wrapper = document.getElementById('cutTilesWrapper');
-            const c       = document.getElementById('cutTiles');
+            const wrapper  = document.getElementById('cutTilesWrapper');
+            const c        = document.getElementById('cutTiles');
             const filtered = allCuts.filter(x => x.meat_type == typeId);
-            if (!filtered.length) {
-                c.innerHTML = '<span class="cut-tiles-empty">No cuts available for this type</span>';
-            } else {
-                c.innerHTML = filtered.map(cut => `<div class="cut-tile" onclick="selectCut(${cut.id},this)">${cut.name}</div>`).join('');
-            }
+            c.innerHTML = filtered.length
+                ? filtered.map(cut => `<div class="cut-tile" onclick="selectCut(${cut.id},this)">${cut.name}</div>`).join('')
+                : '<span class="cut-tiles-empty">No cuts available for this type</span>';
             wrapper.classList.remove('disabled');
         }
 
@@ -526,147 +557,194 @@
             document.getElementById('receiveDate').value    = new Date().toISOString().slice(0, 16);
         }
 
-        // ── Toggle a cut row open/closed ──
+        // ────────────────────────────────────────
+        //  OVERVIEW — stat tiles + filtered cuts
+        // ────────────────────────────────────────
+        async function loadCategorizedStock() {
+            try {
+                const res = await fetch(`${API_URL}/stock/categorized/`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (!res.ok) throw new Error();
+                allStockData = await res.json();
+                renderOvTypeTiles();
+                renderOvCuts(ovActiveType);  // render all or filtered
+            } catch {
+                document.getElementById('stockOverviewContainer').innerHTML =
+                    `<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Failed to load stock overview</p></div>`;
+            }
+        }
+
+        // Build overview type tiles with stats + colour coding
+        function renderOvTypeTiles() {
+            // Aggregate per type
+            const typeMap = {};
+            allStockData.forEach(cut => {
+                const tn = cut.meat_type_name || 'Other';
+                if (!typeMap[tn]) typeMap[tn] = { good: 0, spoiled: 0, hasLow: false, hasSpoiled: false };
+                typeMap[tn].good    += parseFloat(cut.total_unspoiled_weight) || 0;
+                typeMap[tn].spoiled += parseFloat(cut.total_spoiled_weight)   || 0;
+                if (cut.is_low_stock)         typeMap[tn].hasLow     = true;
+                if (cut.approaching_spoilage) typeMap[tn].hasLow     = true;
+                if (cut.spoiled_count > 0)    typeMap[tn].hasSpoiled = true;
+            });
+
+            const container = document.getElementById('ovTypeTiles');
+            if (!Object.keys(typeMap).length) {
+                container.innerHTML = '<span class="cut-tiles-empty">No stock data</span>';
+                return;
+            }
+
+            // "All" tile first
+            const totalGood    = allStockData.reduce((s,c) => s + (parseFloat(c.total_unspoiled_weight)||0), 0);
+            const totalSpoiled = allStockData.reduce((s,c) => s + (parseFloat(c.total_spoiled_weight)||0),   0);
+            const anyLow       = allStockData.some(c => c.is_low_stock || c.approaching_spoilage);
+            const anySpoiled   = allStockData.some(c => c.spoiled_count > 0);
+            const allStatus    = anySpoiled ? 'status-spoiled' : anyLow ? 'status-low' : 'status-good';
+
+            let html = `
+                <div class="ov-tile ${allStatus} ${ovActiveType === null ? 'active' : ''}"
+                     onclick="filterOvType(null, this)">
+                    <i class="fas fa-layer-group"></i>
+                    <div class="ov-tile-name">All</div>
+                    <div class="ov-tile-stats">
+                        <span class="ov-tile-stat good">${totalGood.toFixed(1)} kg</span>
+                        ${totalSpoiled > 0 ? `<span class="ov-tile-stat spoiled">${totalSpoiled.toFixed(1)} sp</span>` : ''}
+                        ${anyLow && !anySpoiled ? `<span class="ov-tile-stat low">Low</span>` : ''}
+                    </div>
+                </div>`;
+
+            html += Object.entries(typeMap).map(([typeName, stats]) => {
+                const status = stats.hasSpoiled ? 'status-spoiled' : stats.hasLow ? 'status-low' : 'status-good';
+                const isActive = ovActiveType === typeName;
+                return `
+                <div class="ov-tile ${status} ${isActive ? 'active' : ''}"
+                     onclick="filterOvType('${typeName}', this)">
+                    <i class="fas ${getTypeIcon(typeName)}"></i>
+                    <div class="ov-tile-name">${typeName}</div>
+                    <div class="ov-tile-stats">
+                        <span class="ov-tile-stat good">${stats.good.toFixed(1)} kg</span>
+                        ${stats.spoiled > 0 ? `<span class="ov-tile-stat spoiled">${stats.spoiled.toFixed(1)} sp</span>` : ''}
+                        ${stats.hasLow && !stats.hasSpoiled ? `<span class="ov-tile-stat low">Low</span>` : ''}
+                    </div>
+                </div>`;
+            }).join('');
+
+            container.innerHTML = html;
+        }
+
+        // Filter overview cuts by meat type name (null = show all)
+        function filterOvType(typeName, el) {
+            ovActiveType = typeName;
+            // Update active tile
+            document.querySelectorAll('#ovTypeTiles .ov-tile').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            renderOvCuts(typeName);
+        }
+
+        // Render the collapsible cut rows, filtered by type name
+        function renderOvCuts(typeName) {
+            const container = document.getElementById('stockOverviewContainer');
+            const filtered  = typeName
+                ? allStockData.filter(c => c.meat_type_name === typeName)
+                : allStockData;
+
+            if (!filtered.length) {
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-box-open"></i><p>No stock for this type yet</p></div>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map((cut, idx) => {
+                const hasSpoiled   = cut.spoiled_count   > 0;
+                const hasUnspoiled = cut.unspoiled_count > 0;
+                const hasLow       = cut.is_low_stock || cut.approaching_spoilage;
+                const rowId        = `cut-${idx}`;
+
+                const iconClass = hasSpoiled ? 'spoiled' : hasLow ? 'low' : '';
+                const rowClass  = hasSpoiled ? 'has-spoiled' : hasLow ? 'has-low' : '';
+
+                const unspoiledItems = (cut.unspoiled_items || []).map(item => `
+                    <div class="stock-item-card ${item.is_spoilage_warning ? 'warning' : 'good'}">
+                        <div class="stock-item-header">
+                            <span class="stock-item-weight">${parseFloat(item.weight).toFixed(2)} kg</span>
+                            ${item.is_spoilage_warning ? `<button class="mark-spoiled-btn" onclick="markAsSpoiled(${item.id})"><i class="fas fa-exclamation"></i> Mark Spoiled</button>` : ''}
+                        </div>
+                        <div class="stock-item-meta">
+                            <span><i class="fas fa-calendar"></i> Added: ${new Date(item.receive_date).toLocaleDateString()}</span>
+                            <span><i class="fas fa-clock"></i> Age: ${item.days_old} days</span>
+                            <span><i class="fas fa-user"></i> By: ${item.added_by}</span>
+                            ${item.is_spoilage_warning ? '<span style="color:#d97706;"><i class="fas fa-exclamation-triangle"></i> Approaching spoilage</span>' : ''}
+                        </div>
+                    </div>`).join('');
+
+                const spoiledItems = (cut.spoiled_items || []).map(item => `
+                    <div class="stock-item-card spoiled">
+                        <div class="stock-item-header">
+                            <span class="stock-item-weight">${parseFloat(item.weight).toFixed(2)} kg</span>
+                        </div>
+                        <div class="stock-item-meta">
+                            <span><i class="fas fa-calendar"></i> Added: ${new Date(item.receive_date).toLocaleDateString()}</span>
+                            <span><i class="fas fa-clock"></i> Age: ${item.days_old} days</span>
+                            <span><i class="fas fa-user"></i> By: ${item.added_by}</span>
+                            <span style="color:#dc2626;"><i class="fas fa-skull-crossbones"></i> SPOILED — Remove immediately</span>
+                        </div>
+                        <button class="remove-spoiled-btn" onclick="openRemovalModal(${item.id})">
+                            <i class="fas fa-trash-alt"></i> Remove Spoiled Stock
+                        </button>
+                    </div>`).join('');
+
+                return `
+                <div class="cut-row ${rowClass}">
+                    <div class="cut-row-header" id="header-${rowId}" onclick="toggleCutRow('${rowId}')">
+                        <div class="cut-row-left">
+                            <div class="cut-row-icon ${iconClass}">
+                                <i class="fas ${getTypeIcon(cut.meat_type_name)}"></i>
+                            </div>
+                            <div>
+                                <div class="cut-row-name">${cut.meat_cut_name}</div>
+                                <div class="cut-row-sub">${cut.meat_type_name}</div>
+                            </div>
+                        </div>
+                        <div class="cut-row-stats">
+                            <div class="cut-row-stat">
+                                <div class="cut-row-stat-val stat-good">${parseFloat(cut.total_unspoiled_weight).toFixed(1)}</div>
+                                <div class="cut-row-stat-lbl">Good kg</div>
+                            </div>
+                            ${hasSpoiled ? `<div class="cut-row-stat">
+                                <div class="cut-row-stat-val stat-spoiled">${parseFloat(cut.total_spoiled_weight).toFixed(1)}</div>
+                                <div class="cut-row-stat-lbl">Spoiled kg</div>
+                            </div>` : ''}
+                        </div>
+                        <div class="cut-row-badges">
+                            ${hasLow    ? '<span class="cut-badge low"><i class="fas fa-arrow-down"></i> Low</span>'          : ''}
+                            ${hasSpoiled? '<span class="cut-badge spoil"><i class="fas fa-skull-crossbones"></i> Spoiled</span>': ''}
+                        </div>
+                        <i class="fas fa-chevron-down cut-row-chevron"></i>
+                    </div>
+                    <div class="cut-row-body" id="body-${rowId}">
+                        ${hasUnspoiled ? `
+                            <div class="stock-category-label unspoiled">
+                                <i class="fas fa-check-circle"></i>
+                                Unspoiled Stock (${cut.unspoiled_count} item${cut.unspoiled_count!==1?'s':''})
+                            </div>
+                            <div class="stock-items-grid">${unspoiledItems}</div>` : ''}
+                        ${hasSpoiled ? `
+                            <div class="stock-category-label spoiled" style="margin-top:${hasUnspoiled?'16px':'0'}">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Spoiled Stock (${cut.spoiled_count} item${cut.spoiled_count!==1?'s':''})
+                            </div>
+                            <div class="stock-items-grid">${spoiledItems}</div>` : ''}
+                        ${!hasUnspoiled && !hasSpoiled ? `
+                            <p style="color:#9ca3af;font-size:13px;text-align:center;padding:12px 0;">No active stock for this cut</p>` : ''}
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
         function toggleCutRow(id) {
             const header = document.getElementById(`header-${id}`);
             const body   = document.getElementById(`body-${id}`);
             const isOpen = body.classList.contains('open');
             header.classList.toggle('open', !isOpen);
-            body.classList.toggle('open', !isOpen);
-        }
-
-        // ── Stock overview — collapsible rows ──
-        async function loadCategorizedStock() {
-            try {
-                const res  = await fetch(`${API_URL}/stock/categorized/`, { headers: { 'Authorization': `Bearer ${token}` } });
-                if (!res.ok) throw new Error();
-                const data = await res.json();
-                const container = document.getElementById('stockOverviewContainer');
-
-                if (!data.length) {
-                    container.innerHTML = `<div class="empty-state"><i class="fas fa-box-open"></i><p>No stock recorded yet</p></div>`;
-                    return;
-                }
-
-                // Group cuts by meat type
-                const groups = {};
-                data.forEach((cut, idx) => {
-                    const typeName = cut.meat_type_name || 'Other';
-                    if (!groups[typeName]) groups[typeName] = { cuts: [], totalGood: 0, totalSpoiled: 0 };
-                    groups[typeName].cuts.push({ ...cut, _idx: idx });
-                    groups[typeName].totalGood    += parseFloat(cut.total_unspoiled_weight) || 0;
-                    groups[typeName].totalSpoiled += parseFloat(cut.total_spoiled_weight)   || 0;
-                });
-
-                container.innerHTML = Object.entries(groups).map(([typeName, group]) => {
-                    const groupHasSpoiled = group.totalSpoiled > 0;
-
-                    const cutsHtml = group.cuts.map((cut) => {
-                    const hasSpoiled   = cut.spoiled_count   > 0;
-                    const hasUnspoiled = cut.unspoiled_count > 0;
-                    const rowId = `cut-${cut._idx}`;
-
-                    const unspoiledItems = (cut.unspoiled_items || []).map(item => `
-                        <div class="stock-item-card ${item.is_spoilage_warning ? 'warning' : 'good'}">
-                            <div class="stock-item-header">
-                                <span class="stock-item-weight">${parseFloat(item.weight).toFixed(2)} kg</span>
-                                ${item.is_spoilage_warning ? `<button class="mark-spoiled-btn" onclick="markAsSpoiled(${item.id})"><i class="fas fa-exclamation"></i> Mark Spoiled</button>` : ''}
-                            </div>
-                            <div class="stock-item-meta">
-                                <span><i class="fas fa-calendar"></i> Added: ${new Date(item.receive_date).toLocaleDateString()}</span>
-                                <span><i class="fas fa-clock"></i> Age: ${item.days_old} days</span>
-                                <span><i class="fas fa-user"></i> By: ${item.added_by}</span>
-                                ${item.is_spoilage_warning ? '<span style="color:#f59e0b;"><i class="fas fa-exclamation-triangle"></i> Approaching spoilage</span>' : ''}
-                            </div>
-                        </div>`).join('');
-
-                    const spoiledItems = (cut.spoiled_items || []).map(item => `
-                        <div class="stock-item-card spoiled">
-                            <div class="stock-item-header">
-                                <span class="stock-item-weight">${parseFloat(item.weight).toFixed(2)} kg</span>
-                            </div>
-                            <div class="stock-item-meta">
-                                <span><i class="fas fa-calendar"></i> Added: ${new Date(item.receive_date).toLocaleDateString()}</span>
-                                <span><i class="fas fa-clock"></i> Age: ${item.days_old} days</span>
-                                <span><i class="fas fa-user"></i> By: ${item.added_by}</span>
-                                <span style="color:#dc2626;"><i class="fas fa-skull-crossbones"></i> SPOILED — Remove immediately</span>
-                            </div>
-                            <button class="remove-spoiled-btn" onclick="openRemovalModal(${item.id})">
-                                <i class="fas fa-trash-alt"></i> Remove Spoiled Stock
-                            </button>
-                        </div>`).join('');
-
-                    return `
-                    <div class="cut-row ${hasSpoiled ? 'has-spoiled' : ''}">
-                        <div class="cut-row-header" id="header-${rowId}" onclick="toggleCutRow('${rowId}')">
-                            <div class="cut-row-left">
-                                <div class="cut-row-icon"><i class="fas ${getTypeIcon(cut.meat_type_name)}"></i></div>
-                                <div>
-                                    <div class="cut-row-name">${cut.meat_cut_name}</div>
-                                    <div class="cut-row-type">${cut.meat_type_name}</div>
-                                </div>
-                            </div>
-
-                            <div class="cut-row-stats">
-                                <div class="cut-row-stat">
-                                    <div class="cut-row-stat-val stat-good">${parseFloat(cut.total_unspoiled_weight).toFixed(1)}</div>
-                                    <div class="cut-row-stat-lbl">Good kg</div>
-                                </div>
-                                ${hasSpoiled ? `<div class="cut-row-stat">
-                                    <div class="cut-row-stat-val stat-spoiled">${parseFloat(cut.total_spoiled_weight).toFixed(1)}</div>
-                                    <div class="cut-row-stat-lbl">Spoiled kg</div>
-                                </div>` : ''}
-                            </div>
-
-                            <div class="cut-row-badges">
-                                ${cut.is_low_stock        ? '<span class="cut-badge low"><i class="fas fa-arrow-down"></i> Low</span>'   : ''}
-                                ${cut.approaching_spoilage ? '<span class="cut-badge spoil"><i class="fas fa-clock"></i> Spoilage</span>' : ''}
-                                ${hasSpoiled              ? '<span class="cut-badge spoil"><i class="fas fa-skull-crossbones"></i> Spoiled</span>' : ''}
-                            </div>
-
-                            <i class="fas fa-chevron-down cut-row-chevron"></i>
-                        </div>
-
-                        <div class="cut-row-body" id="body-${rowId}">
-                            ${hasUnspoiled ? `
-                                <div class="stock-category-label unspoiled">
-                                    <i class="fas fa-check-circle"></i> Unspoiled Stock (${cut.unspoiled_count} item${cut.unspoiled_count!==1?'s':''})
-                                </div>
-                                <div class="stock-items-grid">${unspoiledItems}</div>
-                            ` : ''}
-
-                            ${hasSpoiled ? `
-                                <div class="stock-category-label spoiled" style="margin-top:${hasUnspoiled?'16px':'0'}">
-                                    <i class="fas fa-exclamation-triangle"></i> Spoiled Stock (${cut.spoiled_count} item${cut.spoiled_count!==1?'s':''})
-                                </div>
-                                <div class="stock-items-grid">${spoiledItems}</div>
-                            ` : ''}
-
-                            ${!hasUnspoiled && !hasSpoiled ? `
-                                <p style="color:#9ca3af;font-size:13px;text-align:center;padding:12px 0;">No active stock for this cut</p>
-                            ` : ''}
-                        </div>
-                    </div>`;
-                    }).join('');
-
-                    return `
-                    <div class="meat-type-group">
-                        <div class="meat-type-group-header">
-                            <div class="meat-type-group-icon"><i class="fas ${getTypeIcon(typeName)}"></i></div>
-                            <div class="meat-type-group-name">${typeName}</div>
-                            <div class="meat-type-group-summary">
-                                <span><span class="good-kg">${group.totalGood.toFixed(1)} kg</span> good</span>
-                                ${groupHasSpoiled ? `<span><span class="spoil-kg">${group.totalSpoiled.toFixed(1)} kg</span> spoiled</span>` : ''}
-                            </div>
-                        </div>
-                        <div class="meat-type-group-cuts">${cutsHtml}</div>
-                    </div>`;
-                }).join('');
-
-            } catch {
-                document.getElementById('stockOverviewContainer').innerHTML =
-                    `<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Failed to load stock overview</p></div>`;
-            }
+            body.classList.toggle('open',   !isOpen);
         }
 
         // ── Mark as spoiled ──
@@ -698,15 +776,10 @@
                 const res = await fetch(`${API_URL}/stock/${stockToRemove}/remove_spoiled/`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({
-                        reason: document.getElementById('removalReason').value,
-                        notes:  document.getElementById('removalNotes').value
-                    })
+                    body: JSON.stringify({ reason: document.getElementById('removalReason').value, notes: document.getElementById('removalNotes').value })
                 });
-                if (res.ok) {
-                    showToast('Spoiled stock removed', 'success');
-                    closeRemovalModal(); loadCategorizedStock(); loadRemovalHistory();
-                } else { const e = await res.json(); showToast(e.error || 'Failed', 'error'); }
+                if (res.ok) { showToast('Spoiled stock removed', 'success'); closeRemovalModal(); loadCategorizedStock(); loadRemovalHistory(); }
+                else { const e = await res.json(); showToast(e.error || 'Failed', 'error'); }
             } catch { showToast('Connection error', 'error'); }
         }
 
@@ -768,6 +841,7 @@
             }
         });
 
+        // ── Init ──
         loadUserProfile();
         loadMeatTypes();
         loadCategorizedStock();
