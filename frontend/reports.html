@@ -494,7 +494,7 @@
             </div>
 
             <!-- ── Inventory Alerts ── -->
-            <div class="card">
+            <div class="card" style="margin-bottom: 20px;">
                 <div class="card-header">
                     <h2><i class="fas fa-bell"></i> Inventory Alerts</h2>
                 </div>
@@ -516,6 +516,41 @@
                                 <p style="color: var(--text-secondary); font-size: 13px;">Loading...</p>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NEW: Stock Removal History Report -->
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-trash-alt"></i> Stock Removal History</h2>
+                </div>
+                <div class="card-body">
+                    <div class="filter-row" style="margin-bottom: 16px;">
+                        <div class="form-group">
+                            <label class="form-label">From</label>
+                            <input type="date" class="form-input" id="removalDateFrom">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">To</label>
+                            <input type="date" class="form-input" id="removalDateTo">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Reason</label>
+                            <select class="form-input" id="removalReasonFilter">
+                                <option value="">All Reasons</option>
+                                <option value="spoiled">Spoiled</option>
+                                <option value="damaged">Damaged</option>
+                                <option value="expired">Expired</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <button onclick="loadRemovalHistory()" class="action-btn action-btn-primary">
+                            <i class="fas fa-filter"></i> Filter
+                        </button>
+                    </div>
+                    <div id="removalHistoryList">
+                        <p style="color: var(--text-secondary); font-size: 13px;">Select filters to view removal history...</p>
                     </div>
                 </div>
             </div>
@@ -563,6 +598,10 @@
         document.getElementById('dateTo').value       = today.toISOString().split('T')[0];
         document.getElementById('dateFrom').value     = lastWeek.toISOString().split('T')[0];
         document.getElementById('specificDate').value = today.toISOString().split('T')[0];
+        
+        // Set default dates for removal history
+        document.getElementById('removalDateTo').value   = today.toISOString().split('T')[0];
+        document.getElementById('removalDateFrom').value = lastWeek.toISOString().split('T')[0];
 
         // ── Navigation ──
         function toggleSidebar() {
@@ -684,53 +723,142 @@
 
         // ── Alerts ──
         async function loadAlerts() {
-    try {
-        // Load spoilage alerts
-        const spoilageRes = await fetch(`${API_URL}/alerts/spoilage/`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const spoilage = await spoilageRes.json();
-        
-        const spoilageDiv = document.getElementById('spoilageList');
-        if (spoilage.length === 0) {
-            spoilageDiv.innerHTML = '<p style="color: var(--success);"><i class="fas fa-check-circle"></i> No spoilage warnings - all fresh!</p>';
-        } else {
-            spoilageDiv.innerHTML = spoilage.map(item => `
-                <div style="padding: 12px; background: #fee2e2; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid var(--danger);">
-                    <strong style="color: var(--danger);">${item.meat_cut}</strong>
-                    <div style="font-size: 12px; color: #991b1b; margin-top: 4px;">
-                        <i class="fas fa-clock"></i> ${item.days_old} days old (spoilage: ${item.spoilage_days} days)
-                        <br><small>Received: ${new Date(item.receive_date).toLocaleDateString()}</small>
-                    </div>
-                </div>
-            `).join('');
+            try {
+                // Load spoilage alerts
+                const spoilageRes = await fetch(`${API_URL}/alerts/spoilage/`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const spoilage = await spoilageRes.json();
+                
+                const spoilageDiv = document.getElementById('spoilageList');
+                if (spoilage.length === 0) {
+                    spoilageDiv.innerHTML = '<p style="color: var(--success);"><i class="fas fa-check-circle"></i> No spoilage warnings - all fresh!</p>';
+                } else {
+                    spoilageDiv.innerHTML = spoilage.map(item => `
+                        <div class="alert-item-detailed spoilage">
+                            <div class="alert-item-header">
+                                <span class="alert-item-title">${item.meat_cut}</span>
+                                <span style="font-size: 12px; color: #991b1b; font-weight: 600;">
+                                    ${item.is_past_spoilage ? 'PAST SPOILAGE!' : item.days_until_spoilage + ' days left'}
+                                </span>
+                            </div>
+                            <div class="alert-item-meta">
+                                <strong><i class="fas fa-weight-hanging"></i> ${item.current_weight.toFixed(2)} kg</strong> currently at risk<br>
+                                <i class="fas fa-calendar"></i> Stocked: ${new Date(item.receive_date).toLocaleDateString()}<br>
+                                <i class="fas fa-clock"></i> Age: ${item.days_old} days (spoils at ${item.spoilage_days})<br>
+                                <i class="fas fa-user"></i> Added by: ${item.added_by}
+                            </div>
+                        </div>
+                    `).join('');
+                }
+                
+                // Load low stock alerts
+                const lowStockRes = await fetch(`${API_URL}/alerts/low-stock/`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const lowStock = await lowStockRes.json();
+                
+                const lowStockDiv = document.getElementById('lowStockList');
+                if (lowStock.length === 0) {
+                    lowStockDiv.innerHTML = '<p style="color: var(--success);"><i class="fas fa-check-circle"></i> All stock levels healthy!</p>';
+                } else {
+                    lowStockDiv.innerHTML = lowStock.map(item => `
+                        <div class="alert-item-detailed low-stock">
+                            <div class="alert-item-header">
+                                <span class="alert-item-title">${item.meat_cut}</span>
+                                <span style="font-size: 12px; color: #92400e; font-weight: 600;">
+                                    ${item.total_weight.toFixed(2)} / ${item.threshold} kg
+                                </span>
+                            </div>
+                            <div class="alert-item-meta">
+                                <strong>Total weight: ${item.total_weight.toFixed(2)} kg</strong> (threshold: ${item.threshold} kg)<br>
+                                <i class="fas fa-boxes"></i> ${item.stock_items.length} stock batches:<br>
+                                ${item.stock_items.map(subItem => `
+                                    <small style="display: block; margin-left: 16px; margin-top: 4px;">
+                                        • ${subItem.weight.toFixed(2)} kg (added ${new Date(subItem.receive_date).toLocaleDateString()}, ${subItem.days_old} days old)
+                                    </small>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `).join('');
+                }
+                
+            } catch (error) {
+                console.error('Error loading alerts:', error);
+            }
         }
-        
-        // Load low stock alerts
-        const lowStockRes = await fetch(`${API_URL}/alerts/low-stock/`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const lowStock = await lowStockRes.json();
-        
-        const lowStockDiv = document.getElementById('lowStockList');
-        if (lowStock.length === 0) {
-            lowStockDiv.innerHTML = '<p style="color: var(--success);"><i class="fas fa-check-circle"></i> All stock levels healthy!</p>';
-        } else {
-            lowStockDiv.innerHTML = lowStock.map(item => `
-                <div style="padding: 12px; background: #fef3c7; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid var(--warning);">
-                    <strong style="color: #92400e;">${item.meat_cut}</strong>
-                    <div style="font-size: 12px; color: #92400e; margin-top: 4px;">
-                        <i class="fas fa-weight-hanging"></i> ${item.current_weight} kg remaining
-                        <br><small>Threshold: ${item.threshold} kg</small>
+
+        // ── NEW: Load Stock Removal History ──
+        async function loadRemovalHistory() {
+            const from = document.getElementById('removalDateFrom').value;
+            const to = document.getElementById('removalDateTo').value;
+            const reason = document.getElementById('removalReasonFilter').value;
+            
+            try {
+                let url = `${API_URL}/stock-removals/`;
+                const params = new URLSearchParams();
+                if (from) params.append('from', from);
+                if (to) params.append('to', to);
+                if (reason) params.append('reason', reason);
+                if (params.toString()) url += `?${params.toString()}`;
+                
+                const response = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load removal history');
+                
+                const removals = await response.json();
+                const container = document.getElementById('removalHistoryList');
+                
+                if (!removals.length) {
+                    container.innerHTML = `
+                        <div class="empty-state" style="padding: 40px 20px;">
+                            <i class="fas fa-clipboard-check"></i>
+                            <p>No stock removals found for selected filters</p>
+                        </div>`;
+                    return;
+                }
+                
+                // Calculate totals
+                const totalWeight = removals.reduce((sum, r) => sum + parseFloat(r.weight_removed), 0);
+                
+                let html = `
+                    <div style="margin-bottom: 20px; padding: 16px; background: var(--background); border-radius: 10px;">
+                        <strong>Total Removals: ${removals.length} | Total Weight: ${totalWeight.toFixed(2)} kg</strong>
                     </div>
-                </div>
-            `).join('');
+                `;
+                
+                html += removals.map(removal => `
+                    <div class="removal-history-card">
+                        <div class="removal-history-info">
+                            <h4>${removal.meat_cut_name}</h4>
+                            <p>
+                                <i class="fas fa-weight-hanging"></i> ${parseFloat(removal.weight_removed).toFixed(2)} kg removed
+                                <br><i class="fas fa-calendar"></i> ${new Date(removal.removal_date).toLocaleString()}
+                                <br><i class="fas fa-user"></i> By: ${removal.username}
+                                <br><i class="fas fa-clock"></i> Stock was ${removal.days_at_removal} days old when removed
+                                ${removal.notes ? `<br><i class="fas fa-sticky-note"></i> ${removal.notes}` : ''}
+                            </p>
+                        </div>
+                        <span class="removal-history-badge ${removal.reason}">
+                            ${removal.reason}
+                        </span>
+                    </div>
+                `).join('');
+                
+                container.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error loading removal history:', error);
+                document.getElementById('removalHistoryList').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>Failed to load removal history</p>
+                    </div>`;
+            }
         }
-        
-    } catch (error) {
-        console.error('Error loading alerts:', error);
-    }
-}
+
         // ── User Profile ──
         async function loadUserProfile() {
             try {
@@ -776,9 +904,11 @@
             }
         });
 
+        // Initialize
         loadUserProfile();
         loadReports();
         loadAlerts();
+        loadRemovalHistory();
     </script>
 </body>
 </html>

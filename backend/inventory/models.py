@@ -26,6 +26,7 @@ class Stock(models.Model):
     current_weight = models.DecimalField(max_digits=10, decimal_places=2)
     receive_date = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
+    is_spoiled = models.BooleanField(default=False)  # NEW: Track if stock is spoiled
     
     class Meta:
         verbose_name_plural = "Stock"
@@ -39,7 +40,13 @@ class Stock(models.Model):
     
     @property
     def is_spoilage_warning(self):
-        return self.days_since_received >= self.meat_cut.spoilage_days - 1
+        """Check if stock is approaching spoilage (within 1 day of spoilage)"""
+        return self.days_since_received >= self.meat_cut.spoilage_days - 1 and not self.is_spoiled
+    
+    @property
+    def is_actually_spoiled(self):
+        """Check if stock has actually spoiled (past spoilage date)"""
+        return self.days_since_received >= self.meat_cut.spoilage_days and not self.is_spoiled
     
     @property
     def is_low_stock(self):
@@ -62,6 +69,32 @@ class Sale(models.Model):
             self.stock.is_active = False
         self.stock.save()
         super().save(*args, **kwargs)
+
+# NEW: Model for recording removed/spoiled stock
+class StockRemoval(models.Model):
+    REMOVAL_REASON_CHOICES = [
+        ('spoiled', 'Spoiled'),
+        ('damaged', 'Damaged'),
+        ('expired', 'Expired'),
+        ('other', 'Other'),
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='stock_removals')
+    stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name='removals')
+    meat_cut = models.ForeignKey(MeatCut, on_delete=models.CASCADE, related_name='removal_records')
+    weight_removed = models.DecimalField(max_digits=10, decimal_places=2)
+    reason = models.CharField(max_length=20, choices=REMOVAL_REASON_CHOICES, default='spoiled')
+    notes = models.TextField(blank=True)
+    removal_date = models.DateTimeField(auto_now_add=True)
+    original_receive_date = models.DateTimeField()  # Store when the stock was originally received
+    days_at_removal = models.IntegerField()  # How old the stock was when removed
+    
+    class Meta:
+        verbose_name_plural = "Stock Removals"
+        ordering = ['-removal_date']
+    
+    def __str__(self):
+        return f"{self.meat_cut.name} - {self.weight_removed}kg removed ({self.reason})"
 
 class UserProfile(models.Model):
     ROLE_CHOICES = [

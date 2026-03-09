@@ -272,29 +272,30 @@
                 </div>
             </div>
 
+            <!-- NEW: Current Stock Overview with Spoiled/Unspoiled Categories -->
             <div class="card">
                 <div class="card-header">
                     <h2><i class="fas fa-warehouse"></i> Current Stock Overview</h2>
                 </div>
-                <div class="card-body">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Meat Cut</th>
-                                <th>Current Weight</th>
-                                <th>Received</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="stockTable">
-                            <tr>
-                                <td colspan="4" class="empty-state">
-                                    <i class="fas fa-box-open"></i>
-                                    <p>Loading stock...</p>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class="card-body" id="stockOverviewContainer">
+                    <!-- Content loaded dynamically -->
+                    <div class="empty-state">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Loading stock overview...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NEW: Stock Removal History -->
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-trash-alt"></i> Stock Removal History</h2>
+                </div>
+                <div class="card-body" id="removalHistoryContainer">
+                    <div class="empty-state">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Loading removal history...</p>
+                    </div>
                 </div>
             </div>
         </main>
@@ -326,6 +327,31 @@
 
     <div class="toast-container" id="toastContainer"></div>
 
+    <!-- Confirmation Modal for Removal -->
+    <div id="removalModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 10000; align-items: center; justify-content: center; padding: 20px;">
+        <div style="background: white; border-radius: 16px; padding: 24px; max-width: 400px; width: 100%;">
+            <h3 style="margin-bottom: 16px; color: var(--danger);"><i class="fas fa-exclamation-triangle"></i> Remove Spoiled Stock</h3>
+            <p style="margin-bottom: 20px; color: var(--text-secondary);">Are you sure you want to remove this spoiled stock? This action cannot be undone and will be recorded for future reference.</p>
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Reason for Removal</label>
+                <select id="removalReason" style="width: 100%; padding: 10px; border: 2px solid var(--border); border-radius: 8px;">
+                    <option value="spoiled">Spoiled</option>
+                    <option value="damaged">Damaged</option>
+                    <option value="expired">Expired</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px;">Notes (Optional)</label>
+                <textarea id="removalNotes" rows="3" style="width: 100%; padding: 10px; border: 2px solid var(--border); border-radius: 8px; resize: vertical;" placeholder="Add any additional notes..."></textarea>
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <button onclick="closeRemovalModal()" class="action-btn action-btn-secondary" style="flex: 1;">Cancel</button>
+                <button onclick="confirmRemoval()" class="action-btn action-btn-primary" style="flex: 1; background: var(--danger);">Remove Stock</button>
+            </div>
+        </div>
+    </div>
+
     <script src="js/config.js"></script>
     <script>
         const API_URL = CONFIG.API_URL;
@@ -335,12 +361,12 @@
 
         document.getElementById('userName').textContent = localStorage.getItem('username') || 'User';
         document.getElementById('userAvatar').textContent = (localStorage.getItem('username') || 'U')[0].toUpperCase();
-        document.getElementById('receiveDate').value = new Date().toISOString().slice(0, 16);
 
         let meatTypes = [];
         let allCuts = [];
         let selectedTypeId = null;
         let selectedCutId = null;
+        let stockToRemove = null;
 
         // ── Load role from API and display in sidebar ──
         async function loadUserProfile() {
@@ -513,43 +539,260 @@
             document.getElementById('receiveDate').value = new Date().toISOString().slice(0, 16);
         }
 
-        // ── Load Stock Table ──
-        async function loadStock() {
+        // ── NEW: Load Categorized Stock Overview ──
+        async function loadCategorizedStock() {
             try {
-                const response = await fetch(`${API_URL}/stock/`, {
+                const response = await fetch(`${API_URL}/stock/categorized/`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                const stock = await response.json();
-                const tbody = document.getElementById('stockTable');
-
-                if (!stock.length) {
-                    tbody.innerHTML = `
-                        <tr>
-                            <td colspan="4" class="empty-state">
-                                <i class="fas fa-box-open"></i>
-                                <p>No stock recorded yet</p>
-                            </td>
-                        </tr>`;
+                
+                if (!response.ok) throw new Error('Failed to load stock');
+                
+                const categorizedData = await response.json();
+                const container = document.getElementById('stockOverviewContainer');
+                
+                if (!categorizedData.length) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-box-open"></i>
+                            <p>No stock recorded yet</p>
+                        </div>`;
                     return;
                 }
+                
+                // Build HTML for each cut
+                let html = '';
+                categorizedData.forEach(cut => {
+                    const hasUnspoiled = cut.unspoiled_count > 0;
+                    const hasSpoiled = cut.spoiled_count > 0;
+                    const hasAlerts = cut.is_low_stock || cut.approaching_spoilage;
+                    
+                    html += `
+                        <div class="cut-summary-card">
+                            <div class="cut-summary-header">
+                                <div class="cut-summary-title">
+                                    <i class="fas fa-drumstick-bite" style="color: var(--primary);"></i>
+                                    ${cut.meat_type_name} - ${cut.meat_cut_name}
+                                </div>
+                                ${hasAlerts ? `
+                                    <div class="cut-alert-badges">
+                                        ${cut.is_low_stock ? '<span class="cut-alert-badge low-stock"><i class="fas fa-arrow-down"></i> Low Stock</span>' : ''}
+                                        ${cut.approaching_spoilage ? '<span class="cut-alert-badge spoilage"><i class="fas fa-clock"></i> Spoilage Risk</span>' : ''}
+                                    </div>
+                                ` : ''}
+                            </div>
+                            
+                            <div class="cut-summary-stats">
+                                <div class="cut-stat">
+                                    <div class="cut-stat-value" style="color: var(--success);">${cut.total_unspoiled_weight.toFixed(1)}</div>
+                                    <div class="cut-stat-label">Unspoiled (kg)</div>
+                                </div>
+                                <div class="cut-stat">
+                                    <div class="cut-stat-value" style="color: var(--danger);">${cut.total_spoiled_weight.toFixed(1)}</div>
+                                    <div class="cut-stat-label">Spoiled (kg)</div>
+                                </div>
+                                <div class="cut-stat">
+                                    <div class="cut-stat-value">${cut.total_weight.toFixed(1)}</div>
+                                    <div class="cut-stat-label">Total (kg)</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Unspoiled Stock Section -->
+                            ${hasUnspoiled ? `
+                                <div class="stock-category">
+                                    <div class="stock-category-header">
+                                        <div class="stock-category-title unspoiled">
+                                            <i class="fas fa-check-circle"></i>
+                                            Unspoiled Stock
+                                        </div>
+                                        <span class="stock-category-count">${cut.unspoiled_count} items</span>
+                                    </div>
+                                    <div class="stock-items-grid">
+                                        ${cut.unspoiled_items.map(item => `
+                                            <div class="stock-item-card ${item.is_spoilage_warning ? 'warning' : 'good'}">
+                                                <div class="stock-item-header">
+                                                    <span class="stock-item-weight">${item.weight.toFixed(2)} kg</span>
+                                                    ${item.is_spoilage_warning ? `
+                                                        <button class="mark-spoiled-btn" onclick="markAsSpoiled(${item.id})">
+                                                            <i class="fas fa-exclamation"></i> Mark Spoiled
+                                                        </button>
+                                                    ` : ''}
+                                                </div>
+                                                <div class="stock-item-meta">
+                                                    <span><i class="fas fa-calendar"></i> Added: ${new Date(item.receive_date).toLocaleDateString()}</span>
+                                                    <span><i class="fas fa-clock"></i> Age: ${item.days_old} days</span>
+                                                    <span><i class="fas fa-user"></i> By: ${item.added_by}</span>
+                                                    ${item.is_spoilage_warning ? '<span style="color: var(--warning);"><i class="fas fa-exclamation-triangle"></i> Approaching spoilage!</span>' : ''}
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            <!-- Spoiled Stock Section -->
+                            ${hasSpoiled ? `
+                                <div class="stock-category">
+                                    <div class="stock-category-header">
+                                        <div class="stock-category-title spoiled">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                            Spoiled Stock - Remove Required
+                                        </div>
+                                        <span class="stock-category-count">${cut.spoiled_count} items</span>
+                                    </div>
+                                    <div class="stock-items-grid">
+                                        ${cut.spoiled_items.map(item => `
+                                            <div class="stock-item-card spoiled">
+                                                <div class="stock-item-header">
+                                                    <span class="stock-item-weight" style="color: var(--danger);">${item.weight.toFixed(2)} kg</span>
+                                                </div>
+                                                <div class="stock-item-meta">
+                                                    <span><i class="fas fa-calendar"></i> Added: ${new Date(item.receive_date).toLocaleDateString()}</span>
+                                                    <span><i class="fas fa-clock"></i> Age: ${item.days_old} days</span>
+                                                    <span><i class="fas fa-user"></i> By: ${item.added_by}</span>
+                                                    <span style="color: var(--danger);"><i class="fas fa-skull-crossbones"></i> SPOILED - Remove immediately</span>
+                                                </div>
+                                                <button class="remove-spoiled-btn" onclick="openRemovalModal(${item.id})">
+                                                    <i class="fas fa-trash-alt"></i> Remove Spoiled Stock
+                                                </button>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            ${!hasUnspoiled && !hasSpoiled ? `
+                                <div class="category-empty-state">
+                                    <i class="fas fa-box-open"></i>
+                                    <p>No active stock for this cut</p>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                });
+                
+                container.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error loading categorized stock:', error);
+                document.getElementById('stockOverviewContainer').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>Failed to load stock overview</p>
+                    </div>`;
+            }
+        }
 
-                tbody.innerHTML = stock.map(item => `
-                    <tr>
-                        <td>${item.meat_cut_details.name}</td>
-                        <td>${item.current_weight} kg</td>
-                        <td>${new Date(item.receive_date).toLocaleDateString()}</td>
-                        <td>
-                            ${item.is_spoilage_warning ?
-                                '<span class="badge badge-danger">Spoilage Risk</span>' :
-                                item.is_low_stock ?
-                                '<span class="badge badge-warning">Low Stock</span>' :
-                                '<span class="badge badge-success">Good</span>'
-                            }
-                        </td>
-                    </tr>
+        // ── NEW: Mark Stock as Spoiled ──
+        async function markAsSpoiled(stockId) {
+            if (!confirm('Are you sure you want to mark this stock as spoiled?')) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/stock/${stockId}/mark_spoiled/`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    showToast('Stock marked as spoiled', 'success');
+                    loadCategorizedStock();
+                } else {
+                    const error = await response.json();
+                    showToast(error.error || 'Failed to mark as spoiled', 'error');
+                }
+            } catch (error) {
+                showToast('Connection error', 'error');
+            }
+        }
+
+        // ── NEW: Removal Modal Functions ──
+        function openRemovalModal(stockId) {
+            stockToRemove = stockId;
+            document.getElementById('removalModal').style.display = 'flex';
+        }
+
+        function closeRemovalModal() {
+            stockToRemove = null;
+            document.getElementById('removalModal').style.display = 'none';
+            document.getElementById('removalReason').value = 'spoiled';
+            document.getElementById('removalNotes').value = '';
+        }
+
+        async function confirmRemoval() {
+            if (!stockToRemove) return;
+            
+            const reason = document.getElementById('removalReason').value;
+            const notes = document.getElementById('removalNotes').value;
+            
+            try {
+                const response = await fetch(`${API_URL}/stock/${stockToRemove}/remove_spoiled/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ reason, notes })
+                });
+                
+                if (response.ok) {
+                    showToast('Spoiled stock removed successfully', 'success');
+                    closeRemovalModal();
+                    loadCategorizedStock();
+                    loadRemovalHistory();
+                } else {
+                    const error = await response.json();
+                    showToast(error.error || 'Failed to remove stock', 'error');
+                }
+            } catch (error) {
+                showToast('Connection error', 'error');
+            }
+        }
+
+        // ── NEW: Load Stock Removal History ──
+        async function loadRemovalHistory() {
+            try {
+                const response = await fetch(`${API_URL}/stock-removals/`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load removal history');
+                
+                const removals = await response.json();
+                const container = document.getElementById('removalHistoryContainer');
+                
+                if (!removals.length) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-clipboard-check"></i>
+                            <p>No stock removals recorded yet</p>
+                        </div>`;
+                    return;
+                }
+                
+                container.innerHTML = removals.map(removal => `
+                    <div class="removal-history-card">
+                        <div class="removal-history-info">
+                            <h4>${removal.meat_cut_name}</h4>
+                            <p>
+                                <i class="fas fa-weight-hanging"></i> ${parseFloat(removal.weight_removed).toFixed(2)} kg removed
+                                <br><i class="fas fa-calendar"></i> ${new Date(removal.removal_date).toLocaleString()}
+                                <br><i class="fas fa-user"></i> By: ${removal.username}
+                                ${removal.notes ? `<br><i class="fas fa-sticky-note"></i> ${removal.notes}` : ''}
+                            </p>
+                        </div>
+                        <span class="removal-history-badge ${removal.reason}">
+                            ${removal.reason}
+                        </span>
+                    </div>
                 `).join('');
-            } catch (e) {
-                console.error('Error loading stock:', e);
+                
+            } catch (error) {
+                console.error('Error loading removal history:', error);
+                document.getElementById('removalHistoryContainer').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>Failed to load removal history</p>
+                    </div>`;
             }
         }
 
@@ -579,7 +822,7 @@
                 if (response.ok) {
                     showToast('Stock recorded successfully!', 'success');
                     resetForm();
-                    loadStock();
+                    loadCategorizedStock();
                 } else {
                     const error = await response.json();
                     showToast(error.detail || 'Failed to record stock', 'error');
@@ -597,9 +840,14 @@
             }
         });
 
+        // Initialize
         loadUserProfile();
         loadMeatTypes();
-        loadStock();
+        loadCategorizedStock();
+        loadRemovalHistory();
+        
+        // Refresh stock overview every 30 seconds
+        setInterval(loadCategorizedStock, 30000);
     </script>
 </body>
 </html>

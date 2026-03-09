@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import MeatType, MeatCut, Stock, Sale, UserProfile
+from .models import MeatType, MeatCut, Stock, Sale, UserProfile, StockRemoval
 
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
@@ -96,13 +96,49 @@ class StockSerializer(serializers.ModelSerializer):
     meat_cut_details = MeatCutSerializer(source='meat_cut', read_only=True)
     days_since_received = serializers.IntegerField(read_only=True)
     is_spoilage_warning = serializers.BooleanField(read_only=True)
+    is_actually_spoiled = serializers.BooleanField(read_only=True)  # NEW
     is_low_stock = serializers.BooleanField(read_only=True)
     username = serializers.CharField(source='user.username', read_only=True)
     
     class Meta:
         model = Stock
         fields = '__all__'
-        read_only_fields = ['user']
+        read_only_fields = ['user', 'is_spoiled']
+
+# NEW: Serializer for spoiled vs unspoiled categorization
+class StockCategorizationSerializer(serializers.Serializer):
+    meat_cut_id = serializers.IntegerField()
+    meat_cut_name = serializers.CharField()
+    meat_type_name = serializers.CharField()
+    
+    # Unspoiled stock
+    unspoiled_items = serializers.ListField(child=serializers.DictField())
+    total_unspoiled_weight = serializers.DecimalField(max_digits=10, decimal_places=2)
+    unspoiled_count = serializers.IntegerField()
+    
+    # Spoiled stock
+    spoiled_items = serializers.ListField(child=serializers.DictField())
+    total_spoiled_weight = serializers.DecimalField(max_digits=10, decimal_places=2)
+    spoiled_count = serializers.IntegerField()
+    
+    # Totals
+    total_weight = serializers.DecimalField(max_digits=10, decimal_places=2)
+    total_items = serializers.IntegerField()
+    
+    # Alert info
+    is_low_stock = serializers.BooleanField()
+    min_threshold = serializers.DecimalField(max_digits=10, decimal_places=2)
+    approaching_spoilage = serializers.BooleanField()
+
+# NEW: Serializer for stock removal
+class StockRemovalSerializer(serializers.ModelSerializer):
+    meat_cut_name = serializers.CharField(source='meat_cut.name', read_only=True)
+    username = serializers.CharField(source='user.username', read_only=True)
+    
+    class Meta:
+        model = StockRemoval
+        fields = '__all__'
+        read_only_fields = ['user', 'removal_date', 'days_at_removal']
 
 class SaleSerializer(serializers.ModelSerializer):
     stock_details = StockSerializer(source='stock', read_only=True)
