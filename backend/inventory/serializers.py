@@ -1,11 +1,12 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import MeatType, MeatCut, Stock, Sale, UserProfile, StockRemoval
+from .models import MeatType, MeatCut, Stock, Sale, UserProfile
 
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = ['role', 'shop_name', 'phone_number']
+        # Add default values for missing fields
         extra_kwargs = {
             'role': {'default': 'butcher'},
             'shop_name': {'default': ''},
@@ -21,8 +22,10 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 'password', 'profile', 'date_joined']
     
     def to_representation(self, instance):
+        # Ensure profile exists when reading
         ret = super().to_representation(instance)
         if not hasattr(instance, 'profile') or instance.profile is None:
+            # Create profile if missing
             UserProfile.objects.create(user=instance)
             instance.refresh_from_db()
         try:
@@ -40,6 +43,7 @@ class UserSerializer(serializers.ModelSerializer):
             user.set_password(password)
             user.save()
         
+        # Create or update profile
         UserProfile.objects.update_or_create(
             user=user,
             defaults={
@@ -55,6 +59,7 @@ class UserSerializer(serializers.ModelSerializer):
         profile_data = validated_data.pop('profile', {})
         password = validated_data.pop('password', None)
         
+        # Update user fields
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         
@@ -63,6 +68,7 @@ class UserSerializer(serializers.ModelSerializer):
         
         instance.save()
         
+        # Update or create profile
         UserProfile.objects.update_or_create(
             user=instance,
             defaults={
@@ -90,23 +96,13 @@ class StockSerializer(serializers.ModelSerializer):
     meat_cut_details = MeatCutSerializer(source='meat_cut', read_only=True)
     days_since_received = serializers.IntegerField(read_only=True)
     is_spoilage_warning = serializers.BooleanField(read_only=True)
-    is_actually_spoiled = serializers.BooleanField(read_only=True)
     is_low_stock = serializers.BooleanField(read_only=True)
     username = serializers.CharField(source='user.username', read_only=True)
     
     class Meta:
         model = Stock
         fields = '__all__'
-        read_only_fields = ['user', 'is_spoiled']
-
-class StockRemovalSerializer(serializers.ModelSerializer):
-    meat_cut_name = serializers.CharField(source='meat_cut.name', read_only=True)
-    username = serializers.CharField(source='user.username', read_only=True)
-    
-    class Meta:
-        model = StockRemoval
-        fields = '__all__'
-        read_only_fields = ['user', 'removal_date', 'days_at_removal']
+        read_only_fields = ['user']
 
 class SaleSerializer(serializers.ModelSerializer):
     stock_details = StockSerializer(source='stock', read_only=True)

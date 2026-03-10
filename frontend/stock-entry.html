@@ -562,92 +562,12 @@
         // ────────────────────────────────────────
         async function loadCategorizedStock() {
             try {
-                // Try the categorized endpoint first
-                let usedCategorized = false;
-                try {
-                    const res = await fetch(`${API_URL}/stock/categorized/`, { headers: { 'Authorization': `Bearer ${token}` } });
-                    if (res.ok) {
-                        const data = await res.json();
-                        if (Array.isArray(data) && data.length) {
-                            allStockData = data;
-                            usedCategorized = true;
-                        }
-                    }
-                } catch(e) { /* fall through to flat endpoint */ }
-
-                // Fallback: build categorized data from flat /stock/ endpoint
-                if (!usedCategorized) {
-                    const res = await fetch(`${API_URL}/stock/`, { headers: { 'Authorization': `Bearer ${token}` } });
-                    if (!res.ok) throw new Error('stock fetch failed');
-                    const flatStock = await res.json();
-
-                    // Group flat stock items by meat_cut_details.id
-                    const cutMap = {};
-                    flatStock.forEach(item => {
-                        const details  = item.meat_cut_details || {};
-                        const cutId    = details.id || item.meat_cut;
-                        const cutName  = details.name || 'Unknown';
-                        const typeName = details.meat_type_name || details.meat_type || 'Unknown';
-                        const weight   = parseFloat(item.current_weight) || 0;
-                        // Determine spoiled: backend sets is_spoilage_warning for approaching,
-                        // and is_spoiled (or days > threshold) for actually spoiled.
-                        // We treat is_spoilage_warning as approaching (still good), not yet spoiled.
-                        const isSpoiled    = !!item.is_spoiled;
-                        const isApproaching = !isSpoiled && !!item.is_spoilage_warning;
-                        const isLow        = !!item.is_low_stock;
-
-                        if (!cutMap[cutId]) {
-                            cutMap[cutId] = {
-                                meat_cut_name:         cutName,
-                                meat_type_name:        typeName,
-                                total_unspoiled_weight: 0,
-                                total_spoiled_weight:   0,
-                                unspoiled_count:        0,
-                                spoiled_count:          0,
-                                is_low_stock:           false,
-                                approaching_spoilage:   false,
-                                unspoiled_items:        [],
-                                spoiled_items:          []
-                            };
-                        }
-
-                        const entry = cutMap[cutId];
-                        if (isSpoiled) {
-                            entry.total_spoiled_weight += weight;
-                            entry.spoiled_count++;
-                            entry.spoiled_items.push({
-                                id:                item.id,
-                                weight:            weight,
-                                receive_date:      item.receive_date,
-                                days_old:          item.days_since_received ?? '?',
-                                added_by:          item.added_by || item.username || '—',
-                                is_spoilage_warning: false
-                            });
-                        } else {
-                            entry.total_unspoiled_weight += weight;
-                            entry.unspoiled_count++;
-                            if (isApproaching) entry.approaching_spoilage = true;
-                            if (isLow)         entry.is_low_stock         = true;
-                            entry.unspoiled_items.push({
-                                id:                  item.id,
-                                weight:              weight,
-                                receive_date:        item.receive_date,
-                                days_old:            item.days_since_received ?? '?',
-                                added_by:            item.added_by || item.username || '—',
-                                is_spoilage_warning: isApproaching
-                            });
-                        }
-                    });
-
-                    allStockData = Object.values(cutMap);
-                    console.log('[NyamaTrack] Built from flat /stock/. Sample:', JSON.stringify(allStockData[0], null, 2));
-                }
-
+                const res = await fetch(`${API_URL}/stock/categorized/`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (!res.ok) throw new Error();
+                allStockData = await res.json();
                 renderOvTypeTiles();
-                renderOvCuts(ovActiveType);
-
-            } catch(err) {
-                console.error('[NyamaTrack] loadCategorizedStock error:', err);
+                renderOvCuts(ovActiveType);  // render all or filtered
+            } catch {
                 document.getElementById('stockOverviewContainer').innerHTML =
                     `<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Failed to load stock overview</p></div>`;
             }

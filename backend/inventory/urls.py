@@ -8,7 +8,6 @@ router.register(r'meat-types', views.MeatTypeViewSet)
 router.register(r'meat-cuts', views.MeatCutViewSet)
 router.register(r'stock', views.StockViewSet, basename='stock')
 router.register(r'sales', views.SaleViewSet, basename='sale')
-router.register(r'stock-removals', views.StockRemovalViewSet, basename='stock-removal')  # NEW
 
 urlpatterns = [
     path('', include(router.urls)),
