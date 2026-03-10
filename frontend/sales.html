@@ -11,220 +11,177 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* ── Meat Type Tiles (matches stock-entry) ── */
+        /* ── Meat Type Tiles ── */
         .tile-section-label {
-            font-size: 13px;
-            font-weight: 600;
-            color: #374151;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            font-size: 13px; font-weight: 600; color: #374151;
+            margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
         }
-
-        .meat-type-tiles {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 4px;
-        }
-
+        .meat-type-tiles { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 4px; }
         .meat-type-tile {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            width: 88px;
-            height: 78px;
-            border: 2px solid #e5e7eb;
-            border-radius: 12px;
-            background: #fff;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 600;
-            color: #6b7280;
-            transition: all 0.18s ease;
-            padding: 8px;
-            text-align: center;
-            user-select: none;
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; gap: 6px;
+            width: 88px; height: 78px;
+            border: 2px solid #e5e7eb; border-radius: 12px;
+            background: #fff; cursor: pointer;
+            font-size: 12px; font-weight: 600; color: #6b7280;
+            transition: all 0.18s ease; padding: 8px;
+            text-align: center; user-select: none;
         }
-        .meat-type-tile i {
-            font-size: 22px;
-            color: #9ca3af;
-            transition: color 0.18s;
-        }
-        .meat-type-tile:hover {
-            border-color: #dc2626;
-            color: #dc2626;
-            background: #fff5f5;
-        }
+        .meat-type-tile i { font-size: 22px; color: #9ca3af; transition: color 0.18s; }
+        .meat-type-tile:hover { border-color: #dc2626; color: #dc2626; background: #fff5f5; }
         .meat-type-tile:hover i { color: #dc2626; }
         .meat-type-tile.active {
-            border-color: #dc2626;
-            background: #dc2626;
-            color: #fff;
-            box-shadow: 0 4px 14px rgba(220, 38, 38, 0.3);
+            border-color: #dc2626; background: #dc2626; color: #fff;
+            box-shadow: 0 4px 14px rgba(220,38,38,0.3);
         }
         .meat-type-tile.active i { color: #fff; }
 
-        .tiles-loading,
-        .tiles-empty {
-            font-size: 13px;
-            color: #9ca3af;
-            padding: 4px 0;
-            display: flex;
-            align-items: center;
-            gap: 7px;
+        .tiles-loading, .tiles-empty {
+            font-size: 13px; color: #9ca3af; padding: 4px 0;
+            display: flex; align-items: center; gap: 7px;
         }
 
-        /* ── Cut Cards Grid ── */
-        .cuts-section {
-            margin-top: 24px;
-            display: none;
+        /* ── Cut group header ── */
+        .cuts-section { margin-top: 24px; display: none; }
+        .cut-group { margin-bottom: 20px; }
+        .cut-group-title {
+            font-size: 13px; font-weight: 700; color: #374151;
+            margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+            padding-bottom: 8px; border-bottom: 1px solid #f3f4f6;
         }
+        .cut-group-title i { color: #dc2626; font-size: 12px; }
 
-        .cuts-grid {
+        /* ── Batch cards ── */
+        .batches-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 12px;
-            margin-top: 12px;
+            gap: 10px;
         }
 
-        .cut-card {
-            background: #fff;
-            border: 2px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 16px;
-            cursor: pointer;
-            transition: all 0.18s ease;
-            position: relative;
-            overflow: hidden;
+        .batch-card {
+            background: #fff; border: 2px solid #e5e7eb;
+            border-radius: 12px; padding: 14px;
+            cursor: pointer; transition: all 0.18s ease;
+            position: relative; overflow: hidden;
+            user-select: none;
         }
-        .cut-card:hover {
+        .batch-card:hover {
             border-color: #dc2626;
             transform: translateY(-2px);
-            box-shadow: 0 6px 18px rgba(220, 38, 38, 0.1);
+            box-shadow: 0 6px 18px rgba(220,38,38,0.1);
             background: #fff5f5;
         }
-        .cut-card.selected {
-            border-color: #dc2626;
-            background: #fff5f5;
-            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
+        /* Multi-select: selected state */
+        .batch-card.selected {
+            border-color: #dc2626; background: #fff5f5;
+            box-shadow: 0 0 0 3px rgba(220,38,38,0.15);
         }
-        .cut-card.selected::after {
-            content: '\f00c';
-            font-family: 'Font Awesome 6 Free';
-            font-weight: 900;
-            position: absolute;
-            top: 10px; right: 12px;
-            color: #dc2626;
-            font-size: 13px;
+        /* Checkmark in top-right when selected */
+        .batch-card .batch-check {
+            position: absolute; top: 10px; right: 12px;
+            width: 20px; height: 20px; border-radius: 50%;
+            border: 2px solid #e5e7eb;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px; color: transparent;
+            transition: all 0.15s; background: #fff;
+            flex-shrink: 0;
         }
-        .cut-card-name {
-            font-size: 14px;
-            font-weight: 700;
-            color: #111;
-            margin-bottom: 8px;
-            padding-right: 18px;
+        .batch-card.selected .batch-check {
+            background: #dc2626; border-color: #dc2626; color: #fff;
         }
-        .cut-card-weight {
-            font-size: 22px;
-            font-weight: 800;
-            color: #dc2626;
-            line-height: 1;
-            margin-bottom: 4px;
+
+        .batch-weight {
+            font-size: 22px; font-weight: 800; color: #dc2626;
+            line-height: 1; margin-bottom: 4px;
         }
-        .cut-card-weight span {
-            font-size: 12px;
-            font-weight: 500;
-            color: #9ca3af;
+        .batch-weight span { font-size: 12px; font-weight: 500; color: #9ca3af; }
+        .batch-meta {
+            font-size: 11.5px; color: #9ca3af;
+            display: flex; flex-direction: column; gap: 3px; margin-top: 6px;
         }
-        .cut-card-meta {
-            font-size: 11.5px;
-            color: #9ca3af;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            margin-top: 6px;
-        }
+        .batch-meta span { display: flex; align-items: center; gap: 4px; }
 
         /* Badges */
         .badge {
-            display: inline-block;
-            font-size: 11px;
-            padding: 3px 9px;
-            border-radius: 999px;
-            font-weight: 600;
-            margin-top: 8px;
+            display: inline-block; font-size: 11px; padding: 3px 9px;
+            border-radius: 999px; font-weight: 600; margin-top: 8px;
         }
         .badge-success { background: #dcfce7; color: #166534; }
         .badge-warning { background: #fef9c3; color: #854d0e; }
         .badge-danger  { background: #fee2e2; color: #991b1b; }
 
+        /* ── Selection summary bar ── */
+        .selection-bar {
+            display: none;
+            margin-top: 20px; padding: 14px 18px;
+            background: #fff5f5; border: 2px solid #dc2626;
+            border-radius: 12px;
+            align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 12px;
+        }
+        .selection-bar.visible { display: flex; }
+        .selection-bar-info {
+            display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+        }
+        .selection-bar-stat { text-align: center; }
+        .selection-bar-val  { font-size: 18px; font-weight: 800; color: #dc2626; line-height: 1; }
+        .selection-bar-lbl  { font-size: 10px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
+        .selection-batches  { font-size: 13px; color: #374151; font-weight: 500; }
+        .selection-batches strong { color: #dc2626; }
+
         /* ── Sale Panel ── */
         .sale-panel {
-            display: none;
-            margin-top: 24px;
-            border-top: 2px solid #f3f4f6;
-            padding-top: 24px;
+            display: none; margin-top: 24px;
+            border-top: 2px solid #f3f4f6; padding-top: 24px;
         }
         .sale-panel.visible { display: block; }
 
-        .selected-info-box {
-            background: #fff5f5;
-            border: 1.5px solid #fca5a5;
-            border-radius: 10px;
-            padding: 14px 16px;
-            margin-bottom: 18px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px 24px;
+        .selected-batches-list {
+            background: #fff5f5; border: 1.5px solid #fca5a5;
+            border-radius: 10px; padding: 14px 16px; margin-bottom: 18px;
         }
-        .selected-info-box.spoilage {
-            background: #fee2e2;
-            border-color: #dc2626;
+        .selected-batches-list h4 {
+            font-size: 12px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.06em; color: #9ca3af; margin-bottom: 10px;
         }
-        .info-item {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-        .info-label {
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #9ca3af;
-        }
-        .info-value {
-            font-size: 14px;
-            font-weight: 600;
-            color: #111;
-        }
-        .spoilage-warning {
-            width: 100%;
+        .selected-batch-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 6px 0; border-bottom: 1px solid rgba(220,38,38,0.1);
             font-size: 13px;
-            font-weight: 600;
-            color: #dc2626;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+        }
+        .selected-batch-row:last-child { border-bottom: none; }
+        .selected-batch-row .batch-row-name { font-weight: 600; color: #111; }
+        .selected-batch-row .batch-row-meta { font-size: 11px; color: #9ca3af; }
+        .selected-batch-row .batch-row-weight { font-weight: 800; color: #dc2626; }
+
+        .selected-total-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding-top: 10px; margin-top: 4px;
+            font-size: 14px; font-weight: 700; color: #111;
+        }
+        .selected-total-row span { color: #dc2626; font-size: 16px; font-weight: 800; }
+
+        .spoilage-warning {
+            width: 100%; font-size: 13px; font-weight: 600;
+            color: #dc2626; display: flex; align-items: center; gap: 6px;
+            margin-top: 8px;
         }
 
-        /* Empty/loading */
+        /* Empty state */
         .cuts-empty {
-            text-align: center;
-            padding: 36px 20px;
-            color: #9ca3af;
+            text-align: center; padding: 36px 20px; color: #9ca3af;
             grid-column: 1 / -1;
         }
         .cuts-empty i { font-size: 30px; margin-bottom: 10px; display: block; opacity: 0.5; }
         .cuts-empty p { font-size: 13px; }
+
+        @media (max-width: 480px) {
+            .batches-grid { grid-template-columns: 1fr 1fr; }
+            .selection-bar { flex-direction: column; align-items: flex-start; }
+        }
     </style>
 </head>
 <body>
-    <!-- Mobile Header -->
     <header class="mobile-header">
         <div class="mobile-logo">
             <div class="mobile-logo-icon"><i class="fas fa-drumstick-bite"></i></div>
@@ -262,7 +219,7 @@
                         <p id="userRole">Role</p>
                     </div>
                 </div>
-                <button onclick="logout()" class="btn btn-secondary" style="margin-top: 12px; font-size: 14px;">
+                <button onclick="logout()" class="btn btn-secondary" style="margin-top:12px;font-size:14px;">
                     <i class="fas fa-sign-out-alt"></i> Logout
                 </button>
             </div>
@@ -277,40 +234,56 @@
             <div class="card">
                 <div class="card-body">
 
-                    <!-- Step 1: Meat Type Tiles -->
-                    <div class="form-section" style="margin-bottom: 0;">
-                        <h3 style="margin-bottom: 14px;"><i class="fas fa-filter"></i> Step 1 — Select Meat Type</h3>
+                    <!-- Step 1: Meat Type -->
+                    <div class="form-section" style="margin-bottom:0;">
+                        <h3 style="margin-bottom:14px;"><i class="fas fa-filter"></i> Step 1 — Select Meat Type</h3>
                         <div class="tile-section-label">
-                            <i class="fas fa-tag" style="color:#dc2626;font-size:11px;"></i>
-                            Meat Type
+                            <i class="fas fa-tag" style="color:#dc2626;font-size:11px;"></i> Meat Type
                         </div>
                         <div class="meat-type-tiles" id="typeTiles">
-                            <div class="tiles-loading">
-                                <i class="fas fa-circle-notch fa-spin"></i> Loading…
-                            </div>
+                            <div class="tiles-loading"><i class="fas fa-circle-notch fa-spin"></i> Loading…</div>
                         </div>
                     </div>
 
-                    <!-- Step 2: Cut Cards -->
+                    <!-- Step 2: Batches (grouped by cut, multi-select) -->
                     <div class="cuts-section" id="cutsSection">
-                        <h3 style="margin-bottom: 0;"><i class="fas fa-box"></i> Step 2 — Select a Cut</h3>
-                        <div class="cuts-grid" id="cutsGrid"></div>
+                        <h3 style="margin-bottom:4px;"><i class="fas fa-layer-group"></i> Step 2 — Select Batch(es)</h3>
+                        <p style="font-size:13px;color:#9ca3af;margin-bottom:14px;">
+                            Tap one or more batches to combine them for this sale
+                        </p>
+                        <div id="cutsGrid"></div>
+
+                        <!-- Live selection summary -->
+                        <div class="selection-bar" id="selectionBar">
+                            <div class="selection-bar-info">
+                                <div class="selection-bar-stat">
+                                    <div class="selection-bar-val" id="selBarKg">0.00</div>
+                                    <div class="selection-bar-lbl">Total kg selected</div>
+                                </div>
+                                <div class="selection-batches" id="selBarBatches">
+                                    <strong>0</strong> batch selected
+                                </div>
+                            </div>
+                            <button onclick="proceedToSale()" class="action-btn action-btn-primary">
+                                <i class="fas fa-arrow-right"></i> Proceed to Sale
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Step 3: Sale Details -->
                     <div class="sale-panel" id="salePanel">
-                        <h3 style="margin-bottom: 16px;"><i class="fas fa-calculator"></i> Step 3 — Enter Sale Details</h3>
+                        <h3 style="margin-bottom:16px;"><i class="fas fa-calculator"></i> Step 3 — Enter Sale Details</h3>
 
-                        <div class="selected-info-box" id="selectedInfoBox"></div>
+                        <!-- Selected batches summary -->
+                        <div class="selected-batches-list" id="selectedBatchesList"></div>
 
                         <form id="saleForm">
-                            <input type="hidden" id="selectedStockId">
-
-                            <div class="form-grid" style="margin-bottom: 0;">
+                            <div class="form-grid" style="margin-bottom:0;">
                                 <div class="form-group">
                                     <label class="form-label">Weight to Sell (kg) *</label>
                                     <input type="number" step="0.01" class="form-input" id="weightSold"
                                            placeholder="0.00" required oninput="calculateTotal()">
+                                    <small id="maxWeightHint" style="font-size:12px;color:#9ca3af;margin-top:4px;display:block;"></small>
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Price per kg (KES)</label>
@@ -321,19 +294,17 @@
                                     <label class="form-label">Total Amount (KES) *</label>
                                     <input type="number" step="0.01" class="form-input" id="totalPrice"
                                            placeholder="0.00" required
-                                           style="font-size: 18px; font-weight: 700; color: var(--primary);">
+                                           style="font-size:18px;font-weight:700;color:var(--primary);">
                                 </div>
                             </div>
 
-                            <div style="margin-top: 20px; display: flex; gap: 12px; flex-wrap: wrap;">
+                            <div style="margin-top:20px;display:flex;gap:12px;flex-wrap:wrap;">
                                 <button type="submit" class="action-btn action-btn-primary"
-                                        style="font-size: 16px; padding: 16px 32px;">
-                                    <i class="fas fa-check-circle"></i>
-                                    Complete Sale
+                                        style="font-size:16px;padding:16px 32px;">
+                                    <i class="fas fa-check-circle"></i> Complete Sale
                                 </button>
                                 <button type="button" class="action-btn action-btn-secondary" onclick="resetAll()">
-                                    <i class="fas fa-undo"></i>
-                                    Clear
+                                    <i class="fas fa-undo"></i> Clear
                                 </button>
                             </div>
                         </form>
@@ -344,7 +315,6 @@
         </main>
     </div>
 
-    <!-- Bottom Navigation -->
     <nav class="mobile-nav">
         <a href="dashboard.html" class="mobile-nav-item"><i class="fas fa-home"></i><span>Home</span></a>
         <a href="stock-entry.html" class="mobile-nav-item"><i class="fas fa-plus-circle"></i><span>Stock</span></a>
@@ -358,59 +328,25 @@
     <script src="js/config.js"></script>
     <script>
         const API_URL = CONFIG.API_URL;
-        const token = localStorage.getItem('access_token');
-
+        const token   = localStorage.getItem('access_token');
         if (!token) window.location.href = 'login.html';
 
-        document.getElementById('userName').textContent = localStorage.getItem('username') || 'User';
+        document.getElementById('userName').textContent   = localStorage.getItem('username') || 'User';
         document.getElementById('userAvatar').textContent = (localStorage.getItem('username') || 'U')[0].toUpperCase();
 
-        let allStock = [];
-        let meatTypes = [];
-        let selectedTypeId = null;
-        let selectedStockItem = null;
+        let allStock        = [];
+        let meatTypes       = [];
+        let selectedTypeId  = null;
+        let selectedBatches = new Map(); // stockId → stock item
 
-        // Icon map — same logic as stock-entry
+        // ── Icons ──
         const typeIcons = {
-            'beef':    'fa-cow',
-            'pork':    'fa-piggy-bank',
-            'chicken': 'fa-feather-alt',
-            'lamb':    'fa-horse',
-            'goat':    'fa-horse',
-            'fish':    'fa-fish',
-            'default': 'fa-drumstick-bite'
+            beef:'fa-cow', pork:'fa-piggy-bank', chicken:'fa-feather-alt',
+            lamb:'fa-horse', goat:'fa-horse', fish:'fa-fish', default:'fa-drumstick-bite'
         };
-        async function loadUserProfile() {
-    try {
-        const response = await fetch(`${CONFIG.API_URL}/users/`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        if (response.ok) {
-            const users = await response.json();
-            const currentUser = users.find(u => u.username === localStorage.getItem('username'));
-            
-            if (currentUser && currentUser.profile) {
-                document.getElementById('userRole').textContent = 
-                    currentUser.profile.role.charAt(0).toUpperCase() + 
-                    currentUser.profile.role.slice(1);
-            } else {
-                document.getElementById('userRole').textContent = 'Butcher';
-            }
-        }
-    } catch (error) {
-        console.error('Error loading profile:', error);
-        document.getElementById('userRole').textContent = 'User';
-    }
-}
-
-// Call this after setting user info
-loadUserProfile();
         function getTypeIcon(name) {
-            const key = (name || '').toLowerCase();
-            for (const [k, icon] of Object.entries(typeIcons)) {
-                if (key.includes(k)) return icon;
-            }
+            const k = (name||'').toLowerCase();
+            for (const [key,icon] of Object.entries(typeIcons)) { if (k.includes(key)) return icon; }
             return typeIcons.default;
         }
 
@@ -423,18 +359,33 @@ loadUserProfile();
         function logout() { localStorage.clear(); window.location.href = 'login.html'; }
 
         function showToast(message, type = 'success') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerHTML = `
-                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'exclamation-circle'}"></i>
-                <span>${message}</span>
-            `;
-            container.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
+            const c = document.getElementById('toastContainer');
+            const t = document.createElement('div');
+            t.className = `toast ${type}`;
+            t.innerHTML = `<i class="fas fa-${type==='success'?'check-circle':type==='warning'?'exclamation-triangle':'exclamation-circle'}"></i><span>${message}</span>`;
+            c.appendChild(t);
+            setTimeout(() => t.remove(), 3000);
         }
 
-        // ── Load Data ──
+        // ── User profile ──
+        async function loadUserProfile() {
+            const cached = localStorage.getItem('role');
+            if (cached) document.getElementById('userRole').textContent = cached.charAt(0).toUpperCase() + cached.slice(1);
+            try {
+                const res   = await fetch(`${API_URL}/users/`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (!res.ok) return;
+                const raw   = await res.json();
+                const users = Array.isArray(raw) ? raw : (raw.results ?? []);
+                const me    = users.find(u => u.username === localStorage.getItem('username'));
+                if (me) {
+                    const p    = me.profile || me.user_profile || {};
+                    const role = (p.role || me.role || '').toLowerCase();
+                    if (role) { document.getElementById('userRole').textContent = role.charAt(0).toUpperCase() + role.slice(1); localStorage.setItem('role', role); }
+                }
+            } catch(e) { console.error('Profile error:', e); }
+        }
+
+        // ── Load data ──
         async function loadData() {
             try {
                 const [typesRes, stockRes] = await Promise.all([
@@ -444,55 +395,43 @@ loadUserProfile();
                 meatTypes = await typesRes.json();
                 allStock  = await stockRes.json();
 
-                // Debug: inspect stock item shape in browser console
-                if (allStock.length) {
-                    console.log('[NyamaTrack] Stock count:', allStock.length);
-                    console.log('[NyamaTrack] Sample stock item:', JSON.stringify(allStock[0], null, 2));
-                }
+                if (allStock.length) console.log('[NyamaTrack] Sample stock item:', JSON.stringify(allStock[0], null, 2));
 
                 renderTypeTiles();
                 if (selectedTypeId) renderCuts(selectedTypeId);
-            } catch {
-                showToast('Failed to load data', 'error');
-            }
+            } catch { showToast('Failed to load data', 'error'); }
         }
 
-        // ── Meat Type Tiles ──
+        // ── Meat type tiles ──
         function renderTypeTiles() {
-            const container = document.getElementById('typeTiles');
-            if (!meatTypes.length) {
-                container.innerHTML = '<span class="tiles-empty">No meat types found</span>';
-                return;
-            }
-            container.innerHTML = meatTypes.map(type => `
+            const c = document.getElementById('typeTiles');
+            if (!meatTypes.length) { c.innerHTML = '<span class="tiles-empty">No meat types found</span>'; return; }
+            c.innerHTML = meatTypes.map(type => `
                 <div class="meat-type-tile ${selectedTypeId == type.id ? 'active' : ''}"
                      onclick="selectType(${type.id}, this)">
                     <i class="fas ${getTypeIcon(type.name)}"></i>
                     ${type.name}
-                </div>
-            `).join('');
+                </div>`).join('');
         }
 
         function selectType(typeId, el) {
             selectedTypeId = typeId;
             document.querySelectorAll('.meat-type-tile').forEach(t => t.classList.remove('active'));
             el.classList.add('active');
-
-            // Clear cut & sale selection
-            selectedStockItem = null;
+            selectedBatches.clear();
             document.getElementById('salePanel').classList.remove('visible');
             document.getElementById('saleForm').reset();
-
+            updateSelectionBar();
             renderCuts(typeId);
         }
 
-        // ── Cut Cards ──
+        // ── Cut cards grouped by cut name, each batch is individually selectable ──
         function renderCuts(typeId) {
             const section = document.getElementById('cutsSection');
             const grid    = document.getElementById('cutsGrid');
+
             const filtered = allStock.filter(item => {
                 const details = item.meat_cut_details || {};
-                // Handle all possible shapes the API might return
                 const mt = details.meat_type ?? details.meat_type_id ?? details.meat_type_details?.id ?? null;
                 return String(mt) === String(typeId);
             });
@@ -500,128 +439,206 @@ loadUserProfile();
             section.style.display = 'block';
 
             if (!filtered.length) {
-                grid.innerHTML = `
-                    <div class="cuts-empty">
-                        <i class="fas fa-box-open"></i>
-                        <p>No stock available for this meat type</p>
-                    </div>`;
+                grid.innerHTML = `<div class="cuts-empty"><i class="fas fa-box-open"></i><p>No stock available for this meat type</p></div>`;
                 return;
             }
 
-            grid.innerHTML = filtered.map(item => {
-                const statusClass = item.is_spoilage_warning ? 'badge-danger'
-                                  : item.is_low_stock        ? 'badge-warning'
-                                  :                            'badge-success';
-                const statusLabel = item.is_spoilage_warning ? 'Spoilage Risk'
-                                  : item.is_low_stock        ? 'Low Stock'
-                                  :                            'Good';
-                const isSelected  = selectedStockItem && selectedStockItem.id === item.id;
-                return `
-                    <div class="cut-card ${isSelected ? 'selected' : ''}"
-                         id="cut-card-${item.id}"
-                         onclick="selectCut(${item.id})">
-                        <div class="cut-card-name">${item.meat_cut_details.name}</div>
-                        <div class="cut-card-weight">${item.current_weight} <span>kg left</span></div>
-                        <div class="cut-card-meta">
-                            <i class="fas fa-clock"></i> ${item.days_since_received} days old
+            // Group by cut name
+            const groups = {};
+            filtered.forEach(item => {
+                const cutName = item.meat_cut_details?.name || 'Unknown';
+                if (!groups[cutName]) groups[cutName] = [];
+                groups[cutName].push(item);
+            });
+
+            grid.innerHTML = Object.entries(groups).map(([cutName, batches]) => {
+                // Sort oldest first (sell oldest stock first)
+                batches.sort((a, b) => new Date(a.receive_date) - new Date(b.receive_date));
+
+                const batchCards = batches.map(item => {
+                    const statusClass = item.is_spoilage_warning ? 'badge-danger' : item.is_low_stock ? 'badge-warning' : 'badge-success';
+                    const statusLabel = item.is_spoilage_warning ? 'Spoilage Risk' : item.is_low_stock ? 'Low Stock' : 'Good';
+                    const isSelected  = selectedBatches.has(item.id);
+                    return `
+                    <div class="batch-card ${isSelected ? 'selected' : ''}"
+                         id="batch-${item.id}" onclick="toggleBatch(${item.id})">
+                        <div class="batch-check"><i class="fas fa-check"></i></div>
+                        <div class="batch-weight">${parseFloat(item.current_weight).toFixed(2)} <span>kg</span></div>
+                        <div class="batch-meta">
+                            <span><i class="fas fa-calendar"></i> ${new Date(item.receive_date).toLocaleDateString()}</span>
+                            <span><i class="fas fa-clock"></i> ${item.days_since_received} days old</span>
                         </div>
                         <span class="badge ${statusClass}">${statusLabel}</span>
                     </div>`;
+                }).join('');
+
+                const totalKg = batches.reduce((s, b) => s + parseFloat(b.current_weight), 0);
+
+                return `
+                <div class="cut-group">
+                    <div class="cut-group-title">
+                        <i class="fas fa-drumstick-bite"></i>
+                        ${cutName}
+                        <span style="font-size:11px;font-weight:500;color:#9ca3af;margin-left:auto;">
+                            ${batches.length} batch${batches.length!==1?'es':''} · ${totalKg.toFixed(2)} kg total
+                        </span>
+                    </div>
+                    <div class="batches-grid">${batchCards}</div>
+                </div>`;
             }).join('');
         }
 
-        // ── Select a Cut ──
-        function selectCut(stockId) {
+        // ── Toggle a batch on/off ──
+        function toggleBatch(stockId) {
             const item = allStock.find(s => s.id === stockId);
             if (!item) return;
 
-            selectedStockItem = item;
-            document.querySelectorAll('.cut-card').forEach(c => c.classList.remove('selected'));
-            const card = document.getElementById(`cut-card-${stockId}`);
-            if (card) card.classList.add('selected');
+            const card = document.getElementById(`batch-${stockId}`);
 
-            document.getElementById('selectedStockId').value = stockId;
+            if (selectedBatches.has(stockId)) {
+                selectedBatches.delete(stockId);
+                card.classList.remove('selected');
+            } else {
+                selectedBatches.set(stockId, item);
+                card.classList.add('selected');
+            }
 
-            // Info box
-            const infoBox = document.getElementById('selectedInfoBox');
-            infoBox.className = 'selected-info-box' + (item.is_spoilage_warning ? ' spoilage' : '');
-            infoBox.innerHTML = `
-                <div class="info-item">
-                    <span class="info-label">Cut</span>
-                    <span class="info-value">${item.meat_cut_details.name}</span>
+            updateSelectionBar();
+
+            // If sale panel was open, close it so user confirms new selection
+            document.getElementById('salePanel').classList.remove('visible');
+        }
+
+        // ── Update the live selection summary bar ── 
+        function updateSelectionBar() {
+            const bar     = document.getElementById('selectionBar');
+            const count   = selectedBatches.size;
+            const totalKg = [...selectedBatches.values()].reduce((s, item) => s + parseFloat(item.current_weight), 0);
+
+            if (count === 0) {
+                bar.classList.remove('visible');
+                return;
+            }
+
+            bar.classList.add('visible');
+            document.getElementById('selBarKg').textContent      = totalKg.toFixed(2);
+            document.getElementById('selBarBatches').innerHTML   = `<strong>${count}</strong> batch${count!==1?'es':''} selected`;
+        }
+
+        // ── Proceed to sale form after confirming batch selection ──
+        function proceedToSale() {
+            if (!selectedBatches.size) { showToast('Select at least one batch', 'error'); return; }
+
+            const batches  = [...selectedBatches.values()];
+            const totalKg  = batches.reduce((s, b) => s + parseFloat(b.current_weight), 0);
+            const hasSpoil = batches.some(b => b.is_spoilage_warning);
+
+            // Build the selected batches summary
+            const listEl = document.getElementById('selectedBatchesList');
+            listEl.innerHTML = `
+                <h4>Selected Batches</h4>
+                ${batches.map(b => `
+                    <div class="selected-batch-row">
+                        <div>
+                            <div class="batch-row-name">${b.meat_cut_details?.name || 'Unknown'}</div>
+                            <div class="batch-row-meta">
+                                Received ${new Date(b.receive_date).toLocaleDateString()} · ${b.days_since_received} days old
+                                ${b.is_spoilage_warning ? ' · <span style="color:#dc2626;">⚠ Spoilage Risk</span>' : ''}
+                            </div>
+                        </div>
+                        <div class="batch-row-weight">${parseFloat(b.current_weight).toFixed(2)} kg</div>
+                    </div>`).join('')}
+                <div class="selected-total-row">
+                    <div>Total available from selection</div>
+                    <span>${totalKg.toFixed(2)} kg</span>
                 </div>
-                <div class="info-item">
-                    <span class="info-label">Available</span>
-                    <span class="info-value">${item.current_weight} kg</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Received</span>
-                    <span class="info-value">${new Date(item.receive_date).toLocaleDateString()}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Age</span>
-                    <span class="info-value">${item.days_since_received} days</span>
-                </div>
-                ${item.is_spoilage_warning
-                    ? '<div class="spoilage-warning"><i class="fas fa-exclamation-triangle"></i> Spoilage risk — sell immediately</div>'
-                    : ''}
+                ${hasSpoil ? '<div class="spoilage-warning"><i class="fas fa-exclamation-triangle"></i> Some batches have spoilage risk — sell immediately</div>' : ''}
             `;
+
+            // Pre-fill weight with total available, set hint
+            document.getElementById('weightSold').value   = totalKg.toFixed(2);
+            document.getElementById('weightSold').max     = totalKg;
+            document.getElementById('maxWeightHint').textContent = `Max: ${totalKg.toFixed(2)} kg (across ${batches.length} batch${batches.length!==1?'es':''})`;
+            calculateTotal();
 
             const panel = document.getElementById('salePanel');
             panel.classList.add('visible');
-            panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
             setTimeout(() => document.getElementById('weightSold').focus(), 400);
-
-            showToast(`${item.meat_cut_details.name} selected — enter weight to sell.`, 'success');
         }
 
-        // ── Calculations ──
+        // ── Calculate total ──
         function calculateTotal() {
             const weight = parseFloat(document.getElementById('weightSold').value) || 0;
             const price  = parseFloat(document.getElementById('pricePerKg').value)  || 0;
             document.getElementById('totalPrice').value = (weight * price).toFixed(2);
         }
 
-        // ── Reset ──
+        // ── Reset everything ──
         function resetAll() {
-            selectedStockItem = null;
+            selectedBatches.clear();
             document.getElementById('saleForm').reset();
             document.getElementById('salePanel').classList.remove('visible');
-            document.querySelectorAll('.cut-card').forEach(c => c.classList.remove('selected'));
+            document.getElementById('selectionBar').classList.remove('visible');
+            // Deselect all batch cards
+            document.querySelectorAll('.batch-card').forEach(c => c.classList.remove('selected'));
         }
 
-        // ── Submit ──
+        // ── Submit — one API call per batch, splitting weight proportionally ──
         document.getElementById('saleForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const stockId    = parseInt(document.getElementById('selectedStockId').value);
             const weightSold = parseFloat(document.getElementById('weightSold').value);
             const totalPrice = parseFloat(document.getElementById('totalPrice').value);
+            const batches    = [...selectedBatches.values()];
+            const totalKg    = batches.reduce((s, b) => s + parseFloat(b.current_weight), 0);
 
-            if (!selectedStockItem) { showToast('Please select a cut first', 'error'); return; }
-            if (weightSold > selectedStockItem.current_weight) {
-                showToast(`Insufficient stock. Only ${selectedStockItem.current_weight} kg available`, 'error');
+            if (!batches.length) { showToast('No batches selected', 'error'); return; }
+            if (weightSold > totalKg + 0.001) {
+                showToast(`Insufficient stock. Only ${totalKg.toFixed(2)} kg available across selected batches`, 'error');
                 return;
             }
 
-            try {
-                const response = await fetch(`${API_URL}/sales/`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ stock: stockId, weight_sold: weightSold, sale_price: totalPrice })
-                });
+            // Distribute weight across batches oldest-first, proportionally to their size
+            // Each batch sells min(its full weight, remaining needed)
+            let remaining = weightSold;
+            const sales   = [];
+            for (const batch of batches) {
+                if (remaining <= 0) break;
+                const batchWeight  = parseFloat(batch.current_weight);
+                const sellFromThis = Math.min(batchWeight, remaining);
+                // Price proportional to weight share
+                const priceShare   = (sellFromThis / weightSold) * totalPrice;
+                sales.push({ stock: batch.id, weight_sold: parseFloat(sellFromThis.toFixed(3)), sale_price: parseFloat(priceShare.toFixed(2)) });
+                remaining -= sellFromThis;
+            }
 
-                if (response.ok) {
-                    showToast('Sale recorded successfully!', 'success');
+            try {
+                // Submit all sales in parallel
+                const results = await Promise.all(sales.map(sale =>
+                    fetch(`${API_URL}/sales/`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                        body: JSON.stringify(sale)
+                    })
+                ));
+
+                const allOk = results.every(r => r.ok);
+                if (allOk) {
+                    showToast(`Sale recorded across ${sales.length} batch${sales.length!==1?'es':''}!`, 'success');
                     resetAll();
                     await loadData();
                 } else {
-                    const err = await response.json();
-                    showToast(err.error || err.detail || 'Failed to record sale', 'error');
+                    // Find first error
+                    for (const res of results) {
+                        if (!res.ok) {
+                            const err = await res.json().catch(() => ({}));
+                            showToast(err.error || err.detail || 'Failed to record sale', 'error');
+                            break;
+                        }
+                    }
                 }
-            } catch {
-                showToast('Connection error', 'error');
-            }
+            } catch { showToast('Connection error', 'error'); }
         });
 
         window.addEventListener('resize', () => {
@@ -632,6 +649,7 @@ loadUserProfile();
             }
         });
 
+        loadUserProfile();
         loadData();
     </script>
 </body>
