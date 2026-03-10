@@ -1,515 +1,359 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#dc2626">
-    <meta name="description" content="NyamaTrack - Smart Inventory Management for Butcher Shops">
-    
-    <!-- Preload critical resources -->
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
-    <link rel="preload" href="css/styles.css" as="style">
-    <link rel="preload" href="js/config.js" as="script">
-    
-    <title>NyamaTrack - Login</title>
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
-    
-    <!-- Critical CSS inline for fast first paint -->
-    <style>
-        /* Critical CSS - loads instantly */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #dc2626 0%, #991b1b 50%, #7f1d1d 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#dc2626">
+<meta charset="UTF-8">
+<title>NyamaTrack - Login</title>
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    /* ── Background image layer (img tag used so styles.css cannot override it) ── */
+    #bg-img {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        z-index: -2;
+        display: block;
+    }
+
+    /* Lighter tint overlay — lets the image breathe */
+    #bg-overlay {
+        position: fixed;
+        inset: 0;
+        background: linear-gradient(
+            160deg,
+            rgba(140, 20, 20, 0.52) 0%,
+            rgba(40, 8, 8, 0.58) 100%
+        );
+        z-index: -1;
+        pointer-events: none;
+    }
+
+    /* Force body/html to be transparent so the fixed img shows through */
+    html, body {
+        background: transparent !important;
+        min-height: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Ensure all page content sits above the overlay */
+    .mobile-header,
+    .sidebar-overlay,
+    .login-container,
+    .mobile-nav,
+    .toast-container,
+    #registerModal {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Override whatever background styles.css gives .login-container */
+    .login-container {
+        background: transparent !important;
+        min-height: calc(100vh - 60px - 64px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px 16px;
+        box-sizing: border-box;
+    }
+
+    /* Frosted white card */
+    .login-card {
+        background: rgba(255, 255, 255, 0.97) !important;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5) !important;
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    /* ── Toast notifications from the top ── */
+    .toast-container {
+        position: fixed !important;
+        top: 80px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        bottom: auto !important;
+        z-index: 9999 !important;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        width: auto;
+        min-width: 280px;
+        pointer-events: none;
+    }
+
+    .toast {
+        animation: slideDownFade 0.35s ease forwards;
+        pointer-events: all;
+    }
+
+    @keyframes slideDownFade {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
         }
-        
-        .login-card {
-            background: white;
-            padding: 40px;
-            border-radius: 20px;
-            width: 100%;
-            max-width: 400px;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
-            animation: slideUp 0.5s ease-out;
-        }
-        
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .brand {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        .brand-icon {
-            width: 70px;
-            height: 70px;
-            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 15px;
-            font-size: 35px;
-            color: white;
-        }
-        
-        .brand h1 {
-            font-size: 26px;
-            color: #111827;
-            margin-bottom: 5px;
-        }
-        
-        .brand p {
-            color: #6b7280;
-            font-size: 14px;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-label {
-            display: block;
-            font-size: 14px;
-            font-weight: 600;
-            color: #374151;
-            margin-bottom: 6px;
-        }
-        
-        .form-input {
-            width: 100%;
-            padding: 14px 16px;
-            border: 2px solid #e5e7eb;
-            border-radius: 12px;
-            font-size: 16px;
-            transition: all 0.2s;
-            background: #f9fafb;
-        }
-        
-        .form-input:focus {
-            outline: none;
-            border-color: #dc2626;
-            background: white;
-            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
-        }
-        
-        .btn {
-            width: 100%;
-            padding: 16px;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(220, 38, 38, 0.3);
-        }
-        
-        .btn-primary:active {
+        to {
+            opacity: 1;
             transform: translateY(0);
         }
-        
-        .btn-primary:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-            transform: none;
-        }
-        
-        .spinner {
-            display: none;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 0.8s linear infinite;
-        }
-        
-        .btn-primary.loading .spinner {
-            display: inline-block;
-        }
-        
-        .btn-primary.loading .btn-text {
-            display: none;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .toast {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 16px 24px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 500;
-            z-index: 10000;
-            animation: slideInRight 0.3s ease-out;
-            border-left: 4px solid;
-        }
-        
-        .toast.success { border-left-color: #10b981; }
-        .toast.error { border-left-color: #ef4444; }
-        
-        @keyframes slideInRight {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        
-        @media (max-width: 480px) {
-            .login-card {
-                padding: 30px 20px;
-            }
-            
-            .brand h1 {
-                font-size: 22px;
-            }
-        }
-        
-        /* Skeleton loading state */
-        .skeleton {
-            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-            background-size: 200% 100%;
-            animation: loading 1.5s infinite;
-        }
-        
-        @keyframes loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-    </style>
+    }
+</style>
 </head>
 <body>
-    <div class="login-card">
-        <div class="brand">
-            <div class="brand-icon">
-                <i class="fas fa-drumstick-bite"></i>
-            </div>
-            <h1>NyamaTrack</h1>
-            <p>Smart Inventory Management</p>
-        </div>
-        
-        <form id="loginForm">
-            <div class="form-group">
-                <label class="form-label">Username</label>
-                <input 
-                    type="text" 
-                    class="form-input" 
-                    id="username" 
-                    placeholder="Enter your username" 
-                    required
-                    autocomplete="username"
-                    autocapitalize="none"
-                    spellcheck="false"
-                >
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Password</label>
-                <input 
-                    type="password" 
-                    class="form-input" 
-                    id="password" 
-                    placeholder="Enter your password" 
-                    required
-                    autocomplete="current-password"
-                >
-            </div>
-            
-            <button type="submit" class="btn btn-primary" id="loginBtn">
-                <span class="spinner"></span>
-                <span class="btn-text">
-                    <i class="fas fa-sign-in-alt"></i>
-                    Sign In
-                </span>
-            </button>
-        </form>
-        
-        <div style="text-align: center; margin-top: 24px; padding-top: 24px; border-top: 1px solid #e5e7eb;">
-            <p style="color: #6b7280; font-size: 14px;">
-                Don't have an account? 
-                <a href="#" onclick="showRegister()" style="color: #dc2626; text-decoration: none; font-weight: 600;">Register</a>
-            </p>
-        </div>
-    </div>
+<!-- Background image pinned to viewport — cannot be overridden by styles.css background-color -->
+<img id="bg-img" src="https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=1600&q=80" alt="">
+<!-- Dark tint overlay -->
+<div id="bg-overlay"></div>
 
-    <!-- Register Modal -->
-    <div id="registerModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center; padding: 20px; overflow-y: auto;">
-        <div class="login-card" style="max-width: 450px; margin: 20px auto; animation: slideUp 0.3s ease-out;">
-            <div class="brand">
-                <h2>Create Account</h2>
-                <p>Join NyamaTrack today</p>
-            </div>
-            
-            <form id="registerForm">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                    <div class="form-group">
-                        <label class="form-label">First Name *</label>
-                        <input type="text" class="form-input" id="regFirstName" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Last Name *</label>
-                        <input type="text" class="form-input" id="regLastName" required>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Username *</label>
-                    <input type="text" class="form-input" id="regUsername" required autocapitalize="none" spellcheck="false">
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Email *</label>
-                    <input type="email" class="form-input" id="regEmail" required>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Shop Name</label>
-                    <input type="text" class="form-input" id="regShopName" placeholder="Your butcher shop name">
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Role *</label>
-                    <select class="form-input" id="regRole" style="cursor: pointer;">
-                        <option value="owner">Shop Owner</option>
-                        <option value="keeper">Stock Keeper</option>
-                        <option value="butcher">Butcher</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Password *</label>
-                    <input type="password" class="form-input" id="regPassword" required minlength="6">
-                </div>
-                
-                <button type="submit" class="btn btn-primary" id="registerBtn">
-                    <span class="spinner"></span>
-                    <span class="btn-text">
-                        <i class="fas fa-user-plus"></i>
-                        Create Account
-                    </span>
-                </button>
-                
-                <button type="button" class="btn btn-secondary" onclick="hideRegister()" style="margin-top: 12px; background: #f3f4f6; color: #374151;">
-                    Cancel
-                </button>
-            </form>
-        </div>
-    </div>
+<!-- Mobile Header -->
+<header class="mobile-header">
+<div class="mobile-logo">
+<div class="mobile-logo-icon">
+<i class="fas fa-drumstick-bite"></i>
+</div>
+    NyamaTrack
+</div>
+<button class="hamburger-btn" id="hamburgerBtn" onclick="toggleSidebar()">
+<span class="hamburger-line"></span>
+<span class="hamburger-line"></span>
+<span class="hamburger-line"></span>
+</button>
+</header>
 
-    <!-- Toast Container -->
-    <div id="toastContainer"></div>
+<!-- Sidebar Overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-    <script src="js/config.js"></script>
-    <script>
-        // Fast API URL resolution
-        const API_URL = window.CONFIG?.API_URL || 'http://localhost:8000/api';
-        
-        // Check if already logged in (fast check)
-        if (localStorage.getItem('access_token')) {
-            window.location.replace('dashboard.html');
+<div class="login-container">
+<div class="login-card">
+<div class="brand">
+<div class="brand-icon">
+<i class="fas fa-drumstick-bite"></i>
+</div>
+<h1>NyamaTrack</h1>
+<p>Smart Inventory Management for Butcher Shops</p>
+</div>
+<form id="loginForm">
+<div class="form-group">
+<label class="form-label">Username</label>
+<input type="text" class="form-input" id="username" placeholder="Enter your username" required>
+</div>
+<div class="form-group">
+<label class="form-label">Password</label>
+<input type="password" class="form-input" id="password" placeholder="Enter your password" required>
+</div>
+<button type="submit" class="btn btn-primary">
+<i class="fas fa-sign-in-alt"></i>
+                Sign In
+</button>
+</form>
+<div style="text-align: center; margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border);">
+<p style="color: var(--text-secondary); font-size: 14px;">
+    Don't have an account? <a href="#" onclick="showRegister()" style="color: var(--primary); text-decoration: none; font-weight: 600;">Register</a>
+</p>
+</div>
+</div>
+</div>
+
+<!-- Register Modal -->
+<div id="registerModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center;">
+<div class="login-card" style="max-width: 480px; max-height: 90vh; overflow-y: auto;">
+<div class="brand">
+<h2>Create Account</h2>
+<p>Join NyamaTrack today</p>
+</div>
+<form id="registerForm">
+<div class="form-grid" style="grid-template-columns: 1fr 1fr;">
+<div class="form-group">
+<label class="form-label">First Name *</label>
+<input type="text" class="form-input" id="regFirstName" required>
+</div>
+<div class="form-group">
+<label class="form-label">Last Name *</label>
+<input type="text" class="form-input" id="regLastName" required>
+</div>
+</div>
+<div class="form-group">
+<label class="form-label">Username *</label>
+<input type="text" class="form-input" id="regUsername" required>
+</div>
+<div class="form-group">
+<label class="form-label">Email *</label>
+<input type="email" class="form-input" id="regEmail" required>
+</div>
+<div class="form-group">
+<label class="form-label">Shop Name</label>
+<input type="text" class="form-input" id="regShopName" placeholder="Your butcher shop name">
+</div>
+<div class="form-group">
+<label class="form-label">Role *</label>
+<select class="form-input" id="regRole">
+<option value="owner">Shop Owner</option>
+<option value="keeper">Stock Keeper</option>
+<option value="butcher">Butcher</option>
+</select>
+</div>
+<div class="form-group">
+<label class="form-label">Password *</label>
+<input type="password" class="form-input" id="regPassword" required minlength="6">
+</div>
+<button type="submit" class="btn btn-primary">
+<i class="fas fa-user-plus"></i>
+                Create Account
+</button>
+<button type="button" class="btn btn-secondary" onclick="hideRegister()" style="margin-top: 12px;">
+                Cancel
+</button>
+</form>
+</div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="js/config.js"></script>
+<script>
+const API_URL = CONFIG.API_URL;
+
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    try {
+        const response = await fetch(`${API_URL}/token/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        if (response.ok) {
+            const data = await response.json();
+            localStorage.setItem('access_token', data.access);
+            localStorage.setItem('refresh_token', data.refresh);
+            localStorage.setItem('username', username);
+            showToast('Login successful!', 'success');
+            setTimeout(() => window.location.href = 'dashboard.html', 1000);
+        } else {
+            const error = await response.json();
+            showToast(error.detail || 'Invalid credentials', 'error');
         }
-        
-        // Optimized form handling
-        const loginForm = document.getElementById('loginForm');
-        const loginBtn = document.getElementById('loginBtn');
-        const usernameInput = document.getElementById('username');
-        const passwordInput = document.getElementById('password');
-        
-        // Focus username on load
-        window.addEventListener('DOMContentLoaded', () => {
-            usernameInput.focus();
+    } catch (error) {
+        showToast('Connection error. Is the server running?', 'error');
+        console.error(error);
+    }
+});
+
+document.getElementById('registerForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const userData = {
+        username: document.getElementById('regUsername').value,
+        email: document.getElementById('regEmail').value,
+        first_name: document.getElementById('regFirstName').value,
+        last_name: document.getElementById('regLastName').value,
+        password: document.getElementById('regPassword').value,
+        profile: {
+            role: document.getElementById('regRole').value,
+            shop_name: document.getElementById('regShopName').value
+        }
+    };
+    try {
+        const response = await fetch(`${API_URL}/users/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(userData)
+        });
+        if (response.ok) {
+            showToast('Account created! Please login.', 'success');
+            hideRegister();
+            document.getElementById('username').value = userData.username;
+        } else {
+            const error = await response.json();
+            let message = 'Registration failed';
+            if (error.username) message = 'Username already exists';
+            else if (error.email) message = 'Email already registered';
+            else if (error.password) message = 'Password too weak';
+            showToast(message, 'error');
+        }
+    } catch (error) {
+        showToast('Connection error', 'error');
+        console.error(error);
+    }
+});
+async function loadUserProfile() {
+    try {
+        const response = await fetch(`${CONFIG.API_URL}/users/`, {
+            headers: { 'Authorization': `Bearer ${token}` }
         });
         
-        // Handle Enter key
-        passwordInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') loginForm.dispatchEvent(new Event('submit'));
-        });
-        
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
+        if (response.ok) {
+            const users = await response.json();
+            const currentUser = users.find(u => u.username === localStorage.getItem('username'));
             
-            const username = usernameInput.value.trim();
-            const password = passwordInput.value;
-            
-            if (!username || !password) {
-                showToast('Please enter username and password', 'error');
-                return;
+            if (currentUser && currentUser.profile) {
+                document.getElementById('userRole').textContent = 
+                    currentUser.profile.role.charAt(0).toUpperCase() + 
+                    currentUser.profile.role.slice(1);
+            } else {
+                document.getElementById('userRole').textContent = 'Butcher';
             }
-            
-            // Show loading state
-            loginBtn.classList.add('loading');
-            loginBtn.disabled = true;
-            
-            try {
-                // Use AbortController for timeout
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-                
-                const response = await fetch(`${API_URL}/token/`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({ username, password }),
-                    signal: controller.signal
-                });
-                
-                clearTimeout(timeoutId);
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    
-                    // Store tokens
-                    localStorage.setItem('access_token', data.access);
-                    localStorage.setItem('refresh_token', data.refresh);
-                    localStorage.setItem('username', username);
-                    
-                    showToast('Login successful!', 'success');
-                    
-                    // Fast redirect
-                    setTimeout(() => {
-                        window.location.replace('dashboard.html');
-                    }, 300);
-                    
-                } else {
-                    const error = await response.json().catch(() => ({}));
-                    showToast(error.detail || 'Invalid credentials', 'error');
-                }
-            } catch (error) {
-                if (error.name === 'AbortError') {
-                    showToast('Request timed out. Please try again.', 'error');
-                } else {
-                    showToast('Connection error. Is the server running?', 'error');
-                }
-            } finally {
-                loginBtn.classList.remove('loading');
-                loginBtn.disabled = false;
-            }
-        });
-        
-        // Registration
-        const registerForm = document.getElementById('registerForm');
-        const registerBtn = document.getElementById('registerBtn');
-        
-        registerForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const userData = {
-                username: document.getElementById('regUsername').value.trim(),
-                email: document.getElementById('regEmail').value.trim(),
-                first_name: document.getElementById('regFirstName').value.trim(),
-                last_name: document.getElementById('regLastName').value.trim(),
-                password: document.getElementById('regPassword').value,
-                profile: {
-                    role: document.getElementById('regRole').value,
-                    shop_name: document.getElementById('regShopName').value.trim()
-                }
-            };
-            
-            registerBtn.classList.add('loading');
-            registerBtn.disabled = true;
-            
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000);
-                
-                const response = await fetch(`${API_URL}/users/`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify(userData),
-                    signal: controller.signal
-                });
-                
-                clearTimeout(timeoutId);
-                
-                if (response.ok) {
-                    showToast('Account created! Please login.', 'success');
-                    hideRegister();
-                    usernameInput.value = userData.username;
-                    passwordInput.focus();
-                } else {
-                    const error = await response.json().catch(() => ({}));
-                    let message = 'Registration failed';
-                    if (error.username) message = 'Username already exists';
-                    else if (error.email) message = 'Email already registered';
-                    else if (error.password) message = 'Password too weak (min 6 chars)';
-                    showToast(message, 'error');
-                }
-            } catch (error) {
-                showToast('Connection error', 'error');
-            } finally {
-                registerBtn.classList.remove('loading');
-                registerBtn.disabled = false;
-            }
-        });
-        
-        // Modal functions
-        function showRegister() {
-            document.getElementById('registerModal').style.display = 'flex';
-            document.body.style.overflow = 'hidden';
         }
-        
-        function hideRegister() {
-            document.getElementById('registerModal').style.display = 'none';
-            document.body.style.overflow = '';
-        }
-        
-        // Toast notification
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerHTML = `
-                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}" style="color: ${type === 'success' ? '#10b981' : '#ef4444'};"></i>
-                <span>${message}</span>
-            `;
-            container.appendChild(toast);
-            
-            // Remove after 3 seconds
-            setTimeout(() => {
-                toast.style.animation = 'slideInRight 0.3s ease-out reverse';
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
-        
-        // Close modal on escape key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') hideRegister();
-        });
-    </script>
+    } catch (error) {
+        console.error('Error loading profile:', error);
+        document.getElementById('userRole').textContent = 'User';
+    }
+}
+
+// Call this after setting user info
+loadUserProfile();
+function showRegister() {
+    document.getElementById('registerModal').style.display = 'flex';
+}
+function hideRegister() {
+    document.getElementById('registerModal').style.display = 'none';
+}
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+        <span>${message}</span>
+    `;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+if (localStorage.getItem('access_token')) {
+    window.location.href = 'dashboard.html';
+}
+</script>
+
+<!-- Bottom Navigation -->
+<nav class="mobile-nav">
+<a href="dashboard.html" class="mobile-nav-item" onclick="setActiveNav(this)">
+<i class="fas fa-home"></i>
+<span>Home</span>
+</a>
+<a href="stock-entry.html" class="mobile-nav-item" onclick="setActiveNav(this)">
+<i class="fas fa-plus-circle"></i>
+<span>Stock</span>
+</a>
+<a href="sales.html" class="mobile-nav-item" onclick="setActiveNav(this)">
+<i class="fas fa-cash-register"></i>
+<span>Sale</span>
+</a>
+<a href="reports.html" class="mobile-nav-item" onclick="setActiveNav(this)">
+<i class="fas fa-chart-bar"></i>
+<span>Reports</span>
+</a>
+<a href="users.html" class="mobile-nav-item" onclick="setActiveNav(this)">
+<i class="fas fa-users"></i>
+<span>Users</span>
+</a>
+</nav>
 </body>
 </html>
