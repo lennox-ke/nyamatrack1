@@ -1,12 +1,11 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import MeatType, MeatCut, Stock, Sale, UserProfile
+from .models import MeatType, MeatCut, Stock, Sale, UserProfile, RemovalHistory
 
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = ['role', 'shop_name', 'phone_number']
-        # Add default values for missing fields
         extra_kwargs = {
             'role': {'default': 'butcher'},
             'shop_name': {'default': ''},
@@ -22,10 +21,8 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 'password', 'profile', 'date_joined']
     
     def to_representation(self, instance):
-        # Ensure profile exists when reading
         ret = super().to_representation(instance)
         if not hasattr(instance, 'profile') or instance.profile is None:
-            # Create profile if missing
             UserProfile.objects.create(user=instance)
             instance.refresh_from_db()
         try:
@@ -43,7 +40,6 @@ class UserSerializer(serializers.ModelSerializer):
             user.set_password(password)
             user.save()
         
-        # Create or update profile
         UserProfile.objects.update_or_create(
             user=user,
             defaults={
@@ -59,7 +55,6 @@ class UserSerializer(serializers.ModelSerializer):
         profile_data = validated_data.pop('profile', {})
         password = validated_data.pop('password', None)
         
-        # Update user fields
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         
@@ -68,7 +63,6 @@ class UserSerializer(serializers.ModelSerializer):
         
         instance.save()
         
-        # Update or create profile
         UserProfile.objects.update_or_create(
             user=instance,
             defaults={
@@ -98,21 +92,49 @@ class StockSerializer(serializers.ModelSerializer):
     is_spoilage_warning = serializers.BooleanField(read_only=True)
     is_low_stock = serializers.BooleanField(read_only=True)
     username = serializers.CharField(source='user.username', read_only=True)
+    total_weight = serializers.SerializerMethodField()
+    stock_entries = serializers.SerializerMethodField()
     
     class Meta:
         model = Stock
-        fields = '__all__'
+        fields = ['id', 'meat_cut', 'meat_cut_details', 'current_weight', 'total_weight', 
+                  'receive_date', 'is_active', 'user', 'username', 'days_since_received',
+                  'is_spoilage_warning', 'is_low_stock', 'stock_entries']
         read_only_fields = ['user']
+    
+    def get_total_weight(self, obj):
+        if hasattr(obj, 'total_weight'):
+            return obj.total_weight
+        return obj.current_weight
+    
+    def get_stock_entries(self, obj):
+        if hasattr(obj, 'stock_entries'):
+            return obj.stock_entries
+        return None
 
 class SaleSerializer(serializers.ModelSerializer):
     stock_details = StockSerializer(source='stock', read_only=True)
     username = serializers.CharField(source='user.username', read_only=True)
     meat_cut_name = serializers.CharField(source='stock.meat_cut.name', read_only=True)
+    fifo_details = serializers.JSONField(required=False, read_only=True)
     
     class Meta:
         model = Sale
-        fields = '__all__'
+        fields = ['id', 'stock', 'stock_details', 'weight_sold', 'sale_price', 
+                  'sale_date', 'user', 'username', 'meat_cut_name', 'fifo_details']
         read_only_fields = ['user']
+
+class RemovalHistorySerializer(serializers.ModelSerializer):
+    meat_cut_name = serializers.CharField(source='meat_cut.name', read_only=True)
+    meat_type_name = serializers.CharField(source='meat_cut.meat_type.name', read_only=True)
+    username = serializers.CharField(source='user.username', read_only=True)
+    reason_display = serializers.CharField(source='get_reason_display', read_only=True)
+    
+    class Meta:
+        model = RemovalHistory
+        fields = ['id', 'meat_cut', 'meat_cut_name', 'meat_type_name', 'stock_id',
+                  'weight_removed', 'reason', 'reason_display', 'custom_reason',
+                  'days_old_at_removal', 'receive_date', 'removed_at', 'notes', 'username']
 
 class DashboardStatsSerializer(serializers.Serializer):
     total_stock = serializers.DecimalField(max_digits=15, decimal_places=2)

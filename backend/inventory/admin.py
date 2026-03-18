@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import MeatType, MeatCut, Stock, Sale, UserProfile
+from .models import MeatType, MeatCut, Stock, Sale, UserProfile, RemovalHistory
 
 @admin.register(MeatType)
 class MeatTypeAdmin(admin.ModelAdmin):
@@ -25,3 +25,11 @@ class SaleAdmin(admin.ModelAdmin):
 class UserProfileAdmin(admin.ModelAdmin):
     list_display = ['user', 'role', 'shop_name']
     list_filter = ['role']
+
+@admin.register(RemovalHistory)
+class RemovalHistoryAdmin(admin.ModelAdmin):
+    list_display = ['meat_cut', 'weight_removed', 'reason', 'user', 'removed_at', 'days_old_at_removal']
+    list_filter = ['reason', 'removed_at', 'meat_cut__meat_type']
+    date_hierarchy = 'removed_at'
+    search_fields = ['meat_cut__name', 'user__username', 'notes']
+    readonly_fields = ['removed_at', 'stock_id', 'days_old_at_removal']

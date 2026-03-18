@@ -29,9 +29,10 @@ class Stock(models.Model):
     
     class Meta:
         verbose_name_plural = "Stock"
+        ordering = ['receive_date']  # Ensure FIFO ordering by default
     
     def __str__(self):
-        return f"{self.meat_cut.name} - {self.current_weight}kg"
+        return f"{self.meat_cut.name} - {self.current_weight}kg (Received: {self.receive_date.date()})"
     
     @property
     def days_since_received(self):
@@ -52,16 +53,38 @@ class Sale(models.Model):
     sale_price = models.DecimalField(max_digits=10, decimal_places=2)
     sale_date = models.DateTimeField(auto_now_add=True)
     
+    class Meta:
+        ordering = ['-sale_date']
+    
     def __str__(self):
         return f"{self.stock.meat_cut.name} - {self.weight_sold}kg - KES {self.sale_price}"
+
+class RemovalHistory(models.Model):
+    REMOVAL_REASONS = [
+        ('spoilage', 'Spoilage'),
+        ('expired', 'Expired'),
+        ('damaged', 'Damaged'),
+        ('quality_issue', 'Quality Issue'),
+        ('other', 'Other'),
+    ]
     
-    def save(self, *args, **kwargs):
-        # Deduct from stock
-        self.stock.current_weight -= self.weight_sold
-        if self.stock.current_weight <= 0:
-            self.stock.is_active = False
-        self.stock.save()
-        super().save(*args, **kwargs)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='removals')
+    meat_cut = models.ForeignKey(MeatCut, on_delete=models.CASCADE, related_name='removal_history')
+    stock_id = models.IntegerField(help_text='Original stock entry ID')
+    weight_removed = models.DecimalField(max_digits=10, decimal_places=2)
+    reason = models.CharField(max_length=20, choices=REMOVAL_REASONS, default='spoilage')
+    custom_reason = models.TextField(blank=True, help_text='Additional details if reason is "other"')
+    days_old_at_removal = models.IntegerField()
+    receive_date = models.DateTimeField(help_text='Original receive date of the stock')
+    removed_at = models.DateTimeField(auto_now_add=True)
+    notes = models.TextField(blank=True)
+    
+    class Meta:
+        verbose_name_plural = "Removal History"
+        ordering = ['-removed_at']
+    
+    def __str__(self):
+        return f"{self.meat_cut.name} - {self.weight_removed}kg removed by {self.user.username} on {self.removed_at.date()}"
 
 class UserProfile(models.Model):
     ROLE_CHOICES = [
