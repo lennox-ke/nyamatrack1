@@ -11,8 +11,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* ── Tile Selector Styles only — everything else comes from css/styles.css ── */
-
         .tile-section-label {
             font-size: 13px;
             font-weight: 600;
@@ -23,7 +21,6 @@
             gap: 6px;
         }
 
-        /* Meat type tiles */
         .meat-type-tiles {
             display: flex;
             flex-wrap: wrap;
@@ -75,7 +72,6 @@
 
         .meat-type-tile.selected i { color: #fff; }
 
-        /* Cut tiles */
         .cut-tiles-wrapper {
             margin-top: 4px;
             transition: opacity 0.2s;
@@ -129,12 +125,29 @@
             gap: 7px;
         }
 
-        /* Hide the backing hidden inputs */
         #meatTypeHidden, #meatCutHidden { display: none; }
+        
+        .batch-info {
+            font-size: 11px;
+            color: #6b7280;
+            font-style: italic;
+        }
+        
+        .fifo-notice {
+            background: #dbeafe;
+            border: 1px solid #3b82f6;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            color: #1e40af;
+        }
+        .fifo-notice i {
+            margin-right: 6px;
+        }
     </style>
 </head>
 <body>
-    <!-- Mobile Header with Modern Hamburger -->
     <header class="mobile-header">
         <div class="mobile-logo">
             <div class="mobile-logo-icon">
@@ -149,11 +162,9 @@
         </button>
     </header>
 
-    <!-- Sidebar Overlay -->
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
     <div class="app-container">
-        <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-brand">
@@ -181,10 +192,6 @@
                     <i class="fas fa-chart-bar"></i>
                     Reports
                 </a>
-                <a href="users.html" class="nav-item">
-                    <i class="fas fa-users"></i>
-                    Users
-                </a>
             </nav>
             
             <div class="sidebar-footer">
@@ -204,7 +211,12 @@
         <main class="main-content">
             <div class="page-header">
                 <h1>Record New Stock</h1>
-                <p>Add incoming meat deliveries to inventory</p>
+                <p>Add incoming meat deliveries to inventory (FIFO tracking)</p>
+            </div>
+
+            <div class="fifo-notice">
+                <i class="fas fa-info-circle"></i>
+                <strong>FIFO System:</strong> Each stock entry is tracked separately. Older stock is sold first to minimize spoilage.
             </div>
 
             <div class="card">
@@ -214,7 +226,6 @@
                             <div class="form-section">
                                 <h3><i class="fas fa-info-circle"></i> Meat Details</h3>
 
-                                <!-- Meat Type Tiles -->
                                 <div class="form-group">
                                     <div class="tile-section-label">
                                         <i class="fas fa-tag" style="color:#dc2626;font-size:11px;"></i>
@@ -228,7 +239,6 @@
                                     <input type="text" id="meatTypeHidden" required>
                                 </div>
 
-                                <!-- Cut Tiles -->
                                 <div class="form-group">
                                     <div class="tile-section-label">
                                         <i class="fas fa-cut" style="color:#dc2626;font-size:11px;"></i>
@@ -254,6 +264,9 @@
                                 <div class="form-group">
                                     <label class="form-label">Receive Date</label>
                                     <input type="datetime-local" class="form-input" id="receiveDate">
+                                    <small style="color: #6b7280; font-size: 11px;">
+                                        <i class="fas fa-info-circle"></i> New stock is tracked as a separate batch for FIFO management
+                                    </small>
                                 </div>
                             </div>
                         </div>
@@ -281,14 +294,15 @@
                         <thead>
                             <tr>
                                 <th>Meat Cut</th>
-                                <th>Current Weight</th>
-                                <th>Received</th>
+                                <th>Total Weight</th>
+                                <th>Batches</th>
+                                <th>Oldest Batch</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
                         <tbody id="stockTable">
                             <tr>
-                                <td colspan="4" class="empty-state">
+                                <td colspan="5" class="empty-state">
                                     <i class="fas fa-box-open"></i>
                                     <p>Loading stock...</p>
                                 </td>
@@ -300,7 +314,6 @@
         </main>
     </div>
 
-    <!-- Modern Bottom Navigation -->
     <nav class="mobile-nav">
         <a href="dashboard.html" class="mobile-nav-item">
             <i class="fas fa-home"></i>
@@ -317,10 +330,6 @@
         <a href="reports.html" class="mobile-nav-item">
             <i class="fas fa-chart-bar"></i>
             <span>Reports</span>
-        </a>
-        <a href="users.html" class="mobile-nav-item">
-            <i class="fas fa-users"></i>
-            <span>Users</span>
         </a>
     </nav>
 
@@ -342,7 +351,6 @@
         let selectedTypeId = null;
         let selectedCutId = null;
 
-        // ── Load role from API and display in sidebar ──
         async function loadUserProfile() {
             try {
                 const response = await fetch(`${API_URL}/users/`, {
@@ -367,7 +375,6 @@
             }
         }
 
-        // Map meat type names to Font Awesome icons
         const typeIcons = {
             'beef':    'fa-cow',
             'pork':    'fa-piggy-bank',
@@ -386,7 +393,6 @@
             return typeIcons.default;
         }
 
-        // ── Navigation ──
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebarOverlay');
@@ -413,7 +419,6 @@
             setTimeout(() => toast.remove(), 3000);
         }
 
-        // ── Load & Render Meat Type Tiles ──
         async function loadMeatTypes() {
             try {
                 const response = await fetch(`${API_URL}/meat-types/`, {
@@ -442,7 +447,6 @@
             `).join('');
         }
 
-        // ── Select Meat Type ──
         async function selectMeatType(typeId, el) {
             document.querySelectorAll('.meat-type-tile').forEach(t => t.classList.remove('selected'));
             el.classList.add('selected');
@@ -490,7 +494,6 @@
             wrapper.classList.remove('disabled');
         }
 
-        // ── Select Cut ──
         function selectCut(cutId, el) {
             document.querySelectorAll('.cut-tile').forEach(t => t.classList.remove('selected'));
             el.classList.add('selected');
@@ -498,7 +501,6 @@
             document.getElementById('meatCutHidden').value = cutId;
         }
 
-        // ── Reset Form ──
         function resetForm() {
             document.getElementById('stockForm').reset();
             document.querySelectorAll('.meat-type-tile').forEach(t => t.classList.remove('selected'));
@@ -513,7 +515,6 @@
             document.getElementById('receiveDate').value = new Date().toISOString().slice(0, 16);
         }
 
-        // ── Load Stock Table ──
         async function loadStock() {
             try {
                 const response = await fetch(`${API_URL}/stock/`, {
@@ -525,7 +526,7 @@
                 if (!stock.length) {
                     tbody.innerHTML = `
                         <tr>
-                            <td colspan="4" class="empty-state">
+                            <td colspan="5" class="empty-state">
                                 <i class="fas fa-box-open"></i>
                                 <p>No stock recorded yet</p>
                             </td>
@@ -533,27 +534,33 @@
                     return;
                 }
 
-                tbody.innerHTML = stock.map(item => `
-                    <tr>
-                        <td>${item.meat_cut_details.name}</td>
-                        <td>${item.current_weight} kg</td>
-                        <td>${new Date(item.receive_date).toLocaleDateString()}</td>
-                        <td>
-                            ${item.is_spoilage_warning ?
-                                '<span class="badge badge-danger">Spoilage Risk</span>' :
-                                item.is_low_stock ?
-                                '<span class="badge badge-warning">Low Stock</span>' :
-                                '<span class="badge badge-success">Good</span>'
-                            }
-                        </td>
-                    </tr>
-                `).join('');
+                tbody.innerHTML = stock.map(item => {
+                    const entries = item.stock_entries || [];
+                    const batchCount = entries.length;
+                    const oldestDate = item.receive_date ? new Date(item.receive_date).toLocaleDateString() : 'N/A';
+                    
+                    return `
+                        <tr>
+                            <td>${item.meat_cut_details?.name || 'Unknown'}</td>
+                            <td><strong>${item.current_weight} kg</strong></td>
+                            <td>${batchCount} batch${batchCount !== 1 ? 'es' : ''}</td>
+                            <td class="batch-info">${oldestDate} (${item.days_since_received} days ago)</td>
+                            <td>
+                                ${item.is_spoilage_warning ?
+                                    '<span class="badge badge-danger">Spoilage Risk</span>' :
+                                    item.is_low_stock ?
+                                    '<span class="badge badge-warning">Low Stock</span>' :
+                                    '<span class="badge badge-success">Good</span>'
+                                }
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
             } catch (e) {
                 console.error('Error loading stock:', e);
             }
         }
 
-        // ── Submit ──
         document.getElementById('stockForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
@@ -577,7 +584,7 @@
                 });
 
                 if (response.ok) {
-                    showToast('Stock recorded successfully!', 'success');
+                    showToast('Stock recorded successfully! Added as new batch for FIFO tracking.', 'success');
                     resetForm();
                     loadStock();
                 } else {

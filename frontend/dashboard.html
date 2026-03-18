@@ -8,10 +8,50 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Dashboard - NyamaTrack</title>
     <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css ">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .spoilage-action-btn {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: background 0.2s;
+        }
+        .spoilage-action-btn:hover {
+            background: #b91c1c;
+        }
+        .spoilage-action-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        .removal-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .removal-modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 400px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+    </style>
 </head>
 <body>
-    <!-- Mobile Header with Modern Hamburger -->
     <header class="mobile-header">
         <div class="mobile-logo">
             <div class="mobile-logo-icon">
@@ -26,11 +66,9 @@
         </button>
     </header>
 
-    <!-- Sidebar Overlay -->
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
     <div class="app-container">
-        <!-- Sidebar (Desktop + Mobile Drawer) -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-brand">
@@ -58,10 +96,6 @@
                     <i class="fas fa-chart-bar"></i>
                     Reports
                 </a>
-                <a href="users.html" class="nav-item">
-                    <i class="fas fa-users"></i>
-                    Users
-                </a>
             </nav>
             
             <div class="sidebar-footer">
@@ -78,17 +112,14 @@
             </div>
         </aside>
 
-        <!-- Main Content -->
         <main class="main-content">
             <div class="page-header">
                 <h1>Dashboard</h1>
                 <p>Overview of your butcher shop inventory</p>
             </div>
 
-            <!-- Alerts -->
             <div id="alertsContainer"></div>
 
-            <!-- Quick Actions -->
             <div class="quick-actions">
                 <a href="stock-entry.html" class="quick-action-btn">
                     <i class="fas fa-plus-circle"></i>
@@ -104,7 +135,6 @@
                 </a>
             </div>
 
-            <!-- Stats Grid -->
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-icon primary">
@@ -145,9 +175,23 @@
                     <div class="stat-value" id="spoilageCount">0</div>
                     <div class="stat-label">Spoilage Warnings</div>
                 </div>
+
+                <div class="stat-card" style="background: #f3f4f6; border-left: 4px solid #6b7280;">
+                    <div class="stat-icon" style="background: #6b7280;">
+                        <i class="fas fa-trash-alt"></i>
+                    </div>
+                    <div class="stat-value" id="removalsTodayDashboard">0 kg</div>
+                    <div class="stat-label">Removed Today</div>
+                </div>
             </div>
 
-            <!-- Recent Activity -->
+            <div class="card" id="spoilageCard" style="display: none; border-left: 4px solid var(--danger);">
+                <div class="card-header" style="background: #fee2e2;">
+                    <h2 style="color: #991b1b;"><i class="fas fa-exclamation-triangle"></i> Spoilage Alerts - Action Required</h2>
+                </div>
+                <div class="card-body" id="spoilageList"></div>
+            </div>
+
             <div class="card">
                 <div class="card-header">
                     <h2><i class="fas fa-history"></i> Recent Sales</h2>
@@ -178,29 +222,56 @@
         </main>
     </div>
 
-    <!-- Modern Bottom Navigation -->
     <nav class="mobile-nav">
-        <a href="dashboard.html" class="mobile-nav-item active" onclick="setActiveNav(this)">
+        <a href="dashboard.html" class="mobile-nav-item active">
             <i class="fas fa-home"></i>
             <span>Home</span>
         </a>
-        <a href="stock-entry.html" class="mobile-nav-item" onclick="setActiveNav(this)">
+        <a href="stock-entry.html" class="mobile-nav-item">
             <i class="fas fa-plus-circle"></i>
             <span>Stock</span>
         </a>
-        <a href="sales.html" class="mobile-nav-item" onclick="setActiveNav(this)">
+        <a href="sales.html" class="mobile-nav-item">
             <i class="fas fa-cash-register"></i>
             <span>Sale</span>
         </a>
-        <a href="reports.html" class="mobile-nav-item" onclick="setActiveNav(this)">
+        <a href="reports.html" class="mobile-nav-item">
             <i class="fas fa-chart-bar"></i>
             <span>Reports</span>
         </a>
-        <a href="users.html" class="mobile-nav-item" onclick="setActiveNav(this)">
-            <i class="fas fa-users"></i>
-            <span>Users</span>
-        </a>
     </nav>
+
+    <div class="removal-modal" id="removalModal">
+        <div class="removal-modal-content">
+            <h3 style="margin-bottom: 16px; color: #dc2626;"><i class="fas fa-exclamation-triangle"></i> Remove Spoiled Stock</h3>
+            <p style="margin-bottom: 16px; color: #6b7280; font-size: 14px;">You are about to remove <strong id="removalItemName">-</strong></p>
+            
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label class="form-label">Reason for Removal *</label>
+                <select class="form-input" id="removalReason" style="width: 100%;">
+                    <option value="spoilage">Spoilage</option>
+                    <option value="expired">Expired</option>
+                    <option value="damaged">Damaged</option>
+                    <option value="quality_issue">Quality Issue</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label class="form-label">Additional Details</label>
+                <textarea class="form-input" id="removalNotes" rows="2" placeholder="Optional notes..."></textarea>
+            </div>
+            
+            <div style="display: flex; gap: 12px;">
+                <button onclick="confirmRemoval()" class="action-btn action-btn-primary" style="flex: 1;">
+                    <i class="fas fa-trash"></i> Confirm Removal
+                </button>
+                <button onclick="closeRemovalModal()" class="action-btn action-btn-secondary" style="flex: 1;">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
 
     <div class="toast-container" id="toastContainer"></div>
 
@@ -213,32 +284,35 @@
         
         document.getElementById('userName').textContent = localStorage.getItem('username') || 'User';
         document.getElementById('userAvatar').textContent = (localStorage.getItem('username') || 'U')[0].toUpperCase();
-        async function loadUserProfile() {
-    try {
-        const response = await fetch(`${CONFIG.API_URL}/users/`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
         
-        if (response.ok) {
-            const users = await response.json();
-            const currentUser = users.find(u => u.username === localStorage.getItem('username'));
-            
-            if (currentUser && currentUser.profile) {
-                document.getElementById('userRole').textContent = 
-                    currentUser.profile.role.charAt(0).toUpperCase() + 
-                    currentUser.profile.role.slice(1);
-            } else {
-                document.getElementById('userRole').textContent = 'Butcher';
+        let pendingRemoval = null;
+
+        async function loadUserProfile() {
+            try {
+                const response = await fetch(`${CONFIG.API_URL}/users/`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    const users = await response.json();
+                    const currentUser = users.find(u => u.username === localStorage.getItem('username'));
+                    
+                    if (currentUser && currentUser.profile) {
+                        document.getElementById('userRole').textContent = 
+                            currentUser.profile.role.charAt(0).toUpperCase() + 
+                            currentUser.profile.role.slice(1);
+                    } else {
+                        document.getElementById('userRole').textContent = 'Butcher';
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                document.getElementById('userRole').textContent = 'User';
             }
         }
-    } catch (error) {
-        console.error('Error loading profile:', error);
-        document.getElementById('userRole').textContent = 'User';
-    }
-}
 
-// Call this after setting user info
-loadUserProfile();
+        loadUserProfile();
+        
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebarOverlay');
@@ -248,31 +322,35 @@ loadUserProfile();
             overlay.classList.toggle('show');
             hamburger.classList.toggle('active');
         }
-        // Add this function in the JavaScript section
-async function refreshAlerts() {
-    try {
-        // Fetch fresh dashboard data
-        const response = await fetch(`${CONFIG.API_URL}/dashboard/`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
         
-        if (response.ok) {
-            const data = await response.json();
-            
-            // Update alert counts
-            document.getElementById('lowStockCount').textContent = data.low_stock_count;
-            document.getElementById('spoilageCount').textContent = data.spoilage_warnings;
-            
-            // Show/hide alert banners
-            showAlerts(data.low_stock_count, data.spoilage_warnings);
+        async function refreshAlerts() {
+            try {
+                const response = await fetch(`${CONFIG.API_URL}/dashboard/`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    document.getElementById('lowStockCount').textContent = data.low_stock_count;
+                    document.getElementById('spoilageCount').textContent = data.spoilage_warnings;
+                    
+                    if (data.removals_today) {
+                        document.getElementById('removalsTodayDashboard').textContent = 
+                            `${parseFloat(data.removals_today.weight).toFixed(1)} kg`;
+                    }
+                    
+                    showAlerts(data.low_stock_count, data.spoilage_warnings);
+                    
+                    if (data.spoilage_warnings > 0) {
+                        loadSpoilageDetails();
+                    }
+                }
+            } catch (error) {
+                console.error('Error refreshing alerts:', error);
+            }
         }
-    } catch (error) {
-        console.error('Error refreshing alerts:', error);
-    }
-}
-
-// Call refreshAlerts() after any stock operation
-// Add this to your existing fetchDashboard or call it separately
+        
         function setActiveNav(element) {
             document.querySelectorAll('.mobile-nav-item').forEach(item => {
                 item.classList.remove('active');
@@ -295,6 +373,11 @@ async function refreshAlerts() {
                     document.getElementById('lowStockCount').textContent = data.low_stock_count;
                     document.getElementById('spoilageCount').textContent = data.spoilage_warnings;
                     
+                    if (data.removals_today) {
+                        document.getElementById('removalsTodayDashboard').textContent = 
+                            `${parseFloat(data.removals_today.weight).toFixed(1)} kg`;
+                    }
+                    
                     if (data.recent_sales && data.recent_sales.length > 0) {
                         const tbody = document.getElementById('recentSalesTable');
                         tbody.innerHTML = data.recent_sales.map(sale => `
@@ -309,6 +392,10 @@ async function refreshAlerts() {
                     }
                     
                     showAlerts(data.low_stock_count, data.spoilage_warnings);
+                    
+                    if (data.spoilage_warnings > 0) {
+                        loadSpoilageDetails();
+                    }
                 } else if (response.status === 401) {
                     localStorage.clear();
                     window.location.href = 'login.html';
@@ -316,6 +403,110 @@ async function refreshAlerts() {
             } catch (error) {
                 console.error('Error fetching dashboard:', error);
                 showToast('Failed to load dashboard data', 'error');
+            }
+        }
+        
+        async function loadSpoilageDetails() {
+            try {
+                const response = await fetch(`${CONFIG.API_URL}/alerts/spoilage/`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    const spoilageItems = await response.json();
+                    const card = document.getElementById('spoilageCard');
+                    const list = document.getElementById('spoilageList');
+                    
+                    if (spoilageItems.length > 0) {
+                        card.style.display = 'block';
+                        list.innerHTML = spoilageItems.map(item => `
+                            <div style="padding: 12px; background: ${item.is_expired ? '#fecaca' : '#fee2e2'}; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid ${item.is_expired ? '#991b1b' : '#dc2626'};">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                    <div>
+                                        <strong style="color: ${item.is_expired ? '#991b1b' : '#dc2626'};">
+                                            ${item.meat_cut} ${item.is_expired ? '(EXPIRED)' : '(SPOILAGE RISK)'}
+                                        </strong>
+                                        <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">
+                                            <i class="fas fa-clock"></i> ${item.days_old} days old (spoilage: ${item.spoilage_days} days)
+                                            <br><small>Received: ${new Date(item.receive_date).toLocaleDateString()}</small>
+                                            <br><small>Total: ${item.total_weight} kg across batches</small>
+                                        </div>
+                                    </div>
+                                    <button class="spoilage-action-btn" onclick="openRemovalModal(${item.id}, '${item.meat_cut}', ${item.total_weight})" id="btn-${item.id}">
+                                        <i class="fas fa-trash-alt"></i> Remove
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('');
+                    } else {
+                        card.style.display = 'none';
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading spoilage details:', error);
+            }
+        }
+        
+        function openRemovalModal(stockId, meatCutName, totalWeight) {
+            pendingRemoval = { stockId, meatCutName, totalWeight };
+            document.getElementById('removalItemName').textContent = `${meatCutName} (${totalWeight}kg)`;
+            document.getElementById('removalModal').style.display = 'flex';
+        }
+
+        function closeRemovalModal() {
+            pendingRemoval = null;
+            document.getElementById('removalModal').style.display = 'none';
+            document.getElementById('removalReason').value = 'spoilage';
+            document.getElementById('removalNotes').value = '';
+        }
+
+        async function confirmRemoval() {
+            if (!pendingRemoval) return;
+            
+            const reason = document.getElementById('removalReason').value;
+            const notes = document.getElementById('removalNotes').value;
+            
+            closeRemovalModal();
+            
+            const btn = document.getElementById(`btn-${pendingRemoval.stockId}`);
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Removing...';
+            }
+            
+            try {
+                const response = await fetch(`${CONFIG.API_URL}/stock/remove-spoiled/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        stock_id: pendingRemoval.stockId,
+                        reason: reason,
+                        notes: notes
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    showToast(data.message, 'success');
+                    fetchDashboard();
+                } else {
+                    const error = await response.json();
+                    showToast(error.error || 'Failed to remove stock', 'error');
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fas fa-trash-alt"></i> Remove';
+                    }
+                }
+            } catch (error) {
+                console.error('Error removing stock:', error);
+                showToast('Connection error', 'error');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-trash-alt"></i> Remove';
+                }
             }
         }
         
@@ -361,7 +552,6 @@ async function refreshAlerts() {
             window.location.href = 'login.html';
         }
         
-        // Close sidebar on window resize to desktop
         window.addEventListener('resize', () => {
             if (window.innerWidth > 1024) {
                 document.getElementById('sidebar').classList.remove('open');

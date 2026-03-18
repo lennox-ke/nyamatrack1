@@ -11,7 +11,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* ── Meat Type Tiles (matches stock-entry) ── */
         .tile-section-label {
             font-size: 13px;
             font-weight: 600;
@@ -78,7 +77,6 @@
             gap: 7px;
         }
 
-        /* ── Cut Cards Grid ── */
         .cuts-section {
             margin-top: 24px;
             display: none;
@@ -86,7 +84,7 @@
 
         .cuts-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 12px;
             margin-top: 12px;
         }
@@ -149,7 +147,6 @@
             margin-top: 6px;
         }
 
-        /* Badges */
         .badge {
             display: inline-block;
             font-size: 11px;
@@ -162,7 +159,6 @@
         .badge-warning { background: #fef9c3; color: #854d0e; }
         .badge-danger  { background: #fee2e2; color: #991b1b; }
 
-        /* ── Sale Panel ── */
         .sale-panel {
             display: none;
             margin-top: 24px;
@@ -177,13 +173,30 @@
             border-radius: 10px;
             padding: 14px 16px;
             margin-bottom: 18px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px 24px;
         }
         .selected-info-box.spoilage {
             background: #fee2e2;
             border-color: #dc2626;
+        }
+        
+        .fifo-info {
+            background: #dbeafe;
+            border: 1px solid #3b82f6;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 16px;
+            font-size: 13px;
+        }
+        .fifo-info i {
+            color: #3b82f6;
+            margin-right: 6px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+            margin-bottom: 12px;
         }
         .info-item {
             display: flex;
@@ -203,16 +216,17 @@
             color: #111;
         }
         .spoilage-warning {
-            width: 100%;
             font-size: 13px;
             font-weight: 600;
             color: #dc2626;
             display: flex;
             align-items: center;
             gap: 6px;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed #fca5a5;
         }
 
-        /* Empty/loading */
         .cuts-empty {
             text-align: center;
             padding: 36px 20px;
@@ -221,10 +235,16 @@
         }
         .cuts-empty i { font-size: 30px; margin-bottom: 10px; display: block; opacity: 0.5; }
         .cuts-empty p { font-size: 13px; }
+        
+        .batch-info {
+            font-size: 11px;
+            color: #6b7280;
+            margin-top: 4px;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
-    <!-- Mobile Header -->
     <header class="mobile-header">
         <div class="mobile-logo">
             <div class="mobile-logo-icon"><i class="fas fa-drumstick-bite"></i></div>
@@ -252,7 +272,6 @@
                 <a href="stock-entry.html" class="nav-item"><i class="fas fa-plus-circle"></i> Record Stock</a>
                 <a href="sales.html" class="nav-item active"><i class="fas fa-cash-register"></i> Record Sale</a>
                 <a href="reports.html" class="nav-item"><i class="fas fa-chart-bar"></i> Reports</a>
-                <a href="users.html" class="nav-item"><i class="fas fa-users"></i> Users</a>
             </nav>
             <div class="sidebar-footer">
                 <div class="user-info">
@@ -271,13 +290,12 @@
         <main class="main-content">
             <div class="page-header">
                 <h1>Record Sale</h1>
-                <p>Process customer transactions quickly</p>
+                <p>Process customer transactions (FIFO - Oldest First)</p>
             </div>
 
             <div class="card">
                 <div class="card-body">
 
-                    <!-- Step 1: Meat Type Tiles -->
                     <div class="form-section" style="margin-bottom: 0;">
                         <h3 style="margin-bottom: 14px;"><i class="fas fa-filter"></i> Step 1 — Select Meat Type</h3>
                         <div class="tile-section-label">
@@ -291,15 +309,18 @@
                         </div>
                     </div>
 
-                    <!-- Step 2: Cut Cards -->
                     <div class="cuts-section" id="cutsSection">
                         <h3 style="margin-bottom: 0;"><i class="fas fa-box"></i> Step 2 — Select a Cut</h3>
                         <div class="cuts-grid" id="cutsGrid"></div>
                     </div>
 
-                    <!-- Step 3: Sale Details -->
                     <div class="sale-panel" id="salePanel">
                         <h3 style="margin-bottom: 16px;"><i class="fas fa-calculator"></i> Step 3 — Enter Sale Details</h3>
+
+                        <div class="fifo-info">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>FIFO System Active:</strong> Sales will deduct from the oldest stock first to minimize spoilage.
+                        </div>
 
                         <div class="selected-info-box" id="selectedInfoBox"></div>
 
@@ -344,13 +365,11 @@
         </main>
     </div>
 
-    <!-- Bottom Navigation -->
     <nav class="mobile-nav">
         <a href="dashboard.html" class="mobile-nav-item"><i class="fas fa-home"></i><span>Home</span></a>
         <a href="stock-entry.html" class="mobile-nav-item"><i class="fas fa-plus-circle"></i><span>Stock</span></a>
         <a href="sales.html" class="mobile-nav-item active"><i class="fas fa-cash-register"></i><span>Sale</span></a>
         <a href="reports.html" class="mobile-nav-item"><i class="fas fa-chart-bar"></i><span>Reports</span></a>
-        <a href="users.html" class="mobile-nav-item"><i class="fas fa-users"></i><span>Users</span></a>
     </nav>
 
     <div class="toast-container" id="toastContainer"></div>
@@ -370,7 +389,6 @@
         let selectedTypeId = null;
         let selectedStockItem = null;
 
-        // Icon map — same logic as stock-entry
         const typeIcons = {
             'beef':    'fa-cow',
             'pork':    'fa-piggy-bank',
@@ -380,32 +398,33 @@
             'fish':    'fa-fish',
             'default': 'fa-drumstick-bite'
         };
-        async function loadUserProfile() {
-    try {
-        const response = await fetch(`${CONFIG.API_URL}/users/`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
         
-        if (response.ok) {
-            const users = await response.json();
-            const currentUser = users.find(u => u.username === localStorage.getItem('username'));
-            
-            if (currentUser && currentUser.profile) {
-                document.getElementById('userRole').textContent = 
-                    currentUser.profile.role.charAt(0).toUpperCase() + 
-                    currentUser.profile.role.slice(1);
-            } else {
-                document.getElementById('userRole').textContent = 'Butcher';
+        async function loadUserProfile() {
+            try {
+                const response = await fetch(`${CONFIG.API_URL}/users/`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    const users = await response.json();
+                    const currentUser = users.find(u => u.username === localStorage.getItem('username'));
+                    
+                    if (currentUser && currentUser.profile) {
+                        document.getElementById('userRole').textContent = 
+                            currentUser.profile.role.charAt(0).toUpperCase() + 
+                            currentUser.profile.role.slice(1);
+                    } else {
+                        document.getElementById('userRole').textContent = 'Butcher';
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                document.getElementById('userRole').textContent = 'User';
             }
         }
-    } catch (error) {
-        console.error('Error loading profile:', error);
-        document.getElementById('userRole').textContent = 'User';
-    }
-}
 
-// Call this after setting user info
-loadUserProfile();
+        loadUserProfile();
+        
         function getTypeIcon(name) {
             const key = (name || '').toLowerCase();
             for (const [k, icon] of Object.entries(typeIcons)) {
@@ -414,7 +433,6 @@ loadUserProfile();
             return typeIcons.default;
         }
 
-        // ── Navigation ──
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('open');
             document.getElementById('sidebarOverlay').classList.toggle('show');
@@ -434,7 +452,6 @@ loadUserProfile();
             setTimeout(() => toast.remove(), 3000);
         }
 
-        // ── Load Data ──
         async function loadData() {
             try {
                 const [typesRes, stockRes] = await Promise.all([
@@ -444,20 +461,19 @@ loadUserProfile();
                 meatTypes = await typesRes.json();
                 allStock  = await stockRes.json();
 
-                // Debug: inspect stock item shape in browser console
+                console.log('[NyamaTrack] Stock count:', allStock.length);
                 if (allStock.length) {
-                    console.log('[NyamaTrack] Stock count:', allStock.length);
-                    console.log('[NyamaTrack] Sample stock item:', JSON.stringify(allStock[0], null, 2));
+                    console.log('[NyamaTrack] Sample stock item:', allStock[0]);
                 }
 
                 renderTypeTiles();
                 if (selectedTypeId) renderCuts(selectedTypeId);
-            } catch {
+            } catch (err) {
+                console.error(err);
                 showToast('Failed to load data', 'error');
             }
         }
 
-        // ── Meat Type Tiles ──
         function renderTypeTiles() {
             const container = document.getElementById('typeTiles');
             if (!meatTypes.length) {
@@ -478,7 +494,6 @@ loadUserProfile();
             document.querySelectorAll('.meat-type-tile').forEach(t => t.classList.remove('active'));
             el.classList.add('active');
 
-            // Clear cut & sale selection
             selectedStockItem = null;
             document.getElementById('salePanel').classList.remove('visible');
             document.getElementById('saleForm').reset();
@@ -486,15 +501,12 @@ loadUserProfile();
             renderCuts(typeId);
         }
 
-        // ── Cut Cards ──
         function renderCuts(typeId) {
             const section = document.getElementById('cutsSection');
             const grid    = document.getElementById('cutsGrid');
+            
             const filtered = allStock.filter(item => {
-                const details = item.meat_cut_details || {};
-                // Handle all possible shapes the API might return
-                const mt = details.meat_type ?? details.meat_type_id ?? details.meat_type_details?.id ?? null;
-                return String(mt) === String(typeId);
+                return String(item.meat_cut_details?.meat_type) === String(typeId);
             });
 
             section.style.display = 'block';
@@ -516,21 +528,28 @@ loadUserProfile();
                                   : item.is_low_stock        ? 'Low Stock'
                                   :                            'Good';
                 const isSelected  = selectedStockItem && selectedStockItem.id === item.id;
+                
+                const entries = item.stock_entries || [];
+                const batchCount = entries.length;
+                const oldestDate = item.receive_date ? new Date(item.receive_date).toLocaleDateString() : 'Unknown';
+                
                 return `
                     <div class="cut-card ${isSelected ? 'selected' : ''}"
                          id="cut-card-${item.id}"
                          onclick="selectCut(${item.id})">
-                        <div class="cut-card-name">${item.meat_cut_details.name}</div>
-                        <div class="cut-card-weight">${item.current_weight} <span>kg left</span></div>
+                        <div class="cut-card-name">${item.meat_cut_details?.name || 'Unknown'}</div>
+                        <div class="cut-card-weight">${item.current_weight} <span>kg total</span></div>
+                        <div class="batch-info">
+                            <i class="fas fa-layer-group"></i> ${batchCount} batch${batchCount !== 1 ? 'es' : ''} • Oldest: ${oldestDate}
+                        </div>
                         <div class="cut-card-meta">
-                            <i class="fas fa-clock"></i> ${item.days_since_received} days old
+                            <i class="fas fa-clock"></i> ${item.days_since_received} days since oldest
                         </div>
                         <span class="badge ${statusClass}">${statusLabel}</span>
                     </div>`;
             }).join('');
         }
 
-        // ── Select a Cut ──
         function selectCut(stockId) {
             const item = allStock.find(s => s.id === stockId);
             if (!item) return;
@@ -542,28 +561,38 @@ loadUserProfile();
 
             document.getElementById('selectedStockId').value = stockId;
 
-            // Info box
+            const entries = item.stock_entries || [];
+            const batchInfo = entries.map(e => 
+                `Batch from ${new Date(e.receive_date).toLocaleDateString()}: ${e.current_weight}kg`
+            ).join('<br>');
+
             const infoBox = document.getElementById('selectedInfoBox');
             infoBox.className = 'selected-info-box' + (item.is_spoilage_warning ? ' spoilage' : '');
             infoBox.innerHTML = `
-                <div class="info-item">
-                    <span class="info-label">Cut</span>
-                    <span class="info-value">${item.meat_cut_details.name}</span>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Cut</span>
+                        <span class="info-value">${item.meat_cut_details?.name}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Total Available</span>
+                        <span class="info-value">${item.current_weight} kg</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Batches</span>
+                        <span class="info-value">${entries.length}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Oldest Batch</span>
+                        <span class="info-value">${item.days_since_received} days old</span>
+                    </div>
                 </div>
-                <div class="info-item">
-                    <span class="info-label">Available</span>
-                    <span class="info-value">${item.current_weight} kg</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Received</span>
-                    <span class="info-value">${new Date(item.receive_date).toLocaleDateString()}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Age</span>
-                    <span class="info-value">${item.days_since_received} days</span>
+                <div style="font-size: 12px; color: #6b7280; margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb;">
+                    <strong>Batch Breakdown:</strong><br>
+                    ${batchInfo || 'No batch details available'}
                 </div>
                 ${item.is_spoilage_warning
-                    ? '<div class="spoilage-warning"><i class="fas fa-exclamation-triangle"></i> Spoilage risk — sell immediately</div>'
+                    ? '<div class="spoilage-warning"><i class="fas fa-exclamation-triangle"></i> Oldest batch at spoilage risk — sell immediately!</div>'
                     : ''}
             `;
 
@@ -572,17 +601,15 @@ loadUserProfile();
             panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
             setTimeout(() => document.getElementById('weightSold').focus(), 400);
 
-            showToast(`${item.meat_cut_details.name} selected — enter weight to sell.`, 'success');
+            showToast(`${item.meat_cut_details?.name} selected — ${item.current_weight}kg available across ${entries.length} batch(es)`, 'success');
         }
 
-        // ── Calculations ──
         function calculateTotal() {
             const weight = parseFloat(document.getElementById('weightSold').value) || 0;
             const price  = parseFloat(document.getElementById('pricePerKg').value)  || 0;
             document.getElementById('totalPrice').value = (weight * price).toFixed(2);
         }
 
-        // ── Reset ──
         function resetAll() {
             selectedStockItem = null;
             document.getElementById('saleForm').reset();
@@ -590,7 +617,6 @@ loadUserProfile();
             document.querySelectorAll('.cut-card').forEach(c => c.classList.remove('selected'));
         }
 
-        // ── Submit ──
         document.getElementById('saleForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
@@ -598,29 +624,54 @@ loadUserProfile();
             const weightSold = parseFloat(document.getElementById('weightSold').value);
             const totalPrice = parseFloat(document.getElementById('totalPrice').value);
 
-            if (!selectedStockItem) { showToast('Please select a cut first', 'error'); return; }
+            if (!selectedStockItem) { 
+                showToast('Please select a cut first', 'error'); 
+                return; 
+            }
+            
             if (weightSold > selectedStockItem.current_weight) {
-                showToast(`Insufficient stock. Only ${selectedStockItem.current_weight} kg available`, 'error');
+                showToast(`Insufficient stock. Only ${selectedStockItem.current_weight} kg total available`, 'error');
                 return;
             }
+
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Processing...';
 
             try {
                 const response = await fetch(`${API_URL}/sales/`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ stock: stockId, weight_sold: weightSold, sale_price: totalPrice })
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Authorization': `Bearer ${token}` 
+                    },
+                    body: JSON.stringify({ 
+                        stock: stockId, 
+                        weight_sold: weightSold, 
+                        sale_price: totalPrice 
+                    })
                 });
 
                 if (response.ok) {
-                    showToast('Sale recorded successfully!', 'success');
+                    const result = await response.json();
+                    showToast('Sale recorded successfully! (FIFO: Oldest stock sold first)', 'success');
+                    
+                    if (result.fifo_details) {
+                        console.log('FIFO Details:', result.fifo_details);
+                    }
+                    
                     resetAll();
                     await loadData();
                 } else {
                     const err = await response.json();
                     showToast(err.error || err.detail || 'Failed to record sale', 'error');
                 }
-            } catch {
+            } catch (err) {
+                console.error(err);
                 showToast('Connection error', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Complete Sale';
             }
         });
 
