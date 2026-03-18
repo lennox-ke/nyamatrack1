@@ -43,22 +43,6 @@
             max-height: 90vh;
             overflow-y: auto;
         }
-
-        /* Debug panel — hidden by default */
-        #debugPanel {
-            display: none;
-            background: #1e1e1e;
-            color: #4ade80;
-            font-family: monospace;
-            font-size: 12px;
-            padding: 16px;
-            border-radius: 8px;
-            margin-bottom: 16px;
-            white-space: pre-wrap;
-            word-break: break-all;
-            max-height: 300px;
-            overflow-y: auto;
-        }
     </style>
 </head>
 <body>
@@ -110,9 +94,6 @@
                 <p>Overview of your butcher shop inventory</p>
             </div>
 
-            <!-- Debug panel (tap version number 5x to reveal) -->
-            <div id="debugPanel"></div>
-
             <div id="alertsContainer"></div>
 
             <div class="quick-actions">
@@ -163,7 +144,6 @@
                 </div>
             </div>
 
-            <!-- Spoilage alerts card -->
             <div class="card" id="spoilageCard" style="display:none;border-left:4px solid var(--danger);">
                 <div class="card-header" style="background:#fee2e2;">
                     <h2 style="color:#991b1b;"><i class="fas fa-exclamation-triangle"></i> Spoilage Alerts - Action Required</h2>
@@ -171,7 +151,6 @@
                 <div class="card-body" id="spoilageList"></div>
             </div>
 
-            <!-- Recent sales -->
             <div class="card">
                 <div class="card-header">
                     <h2><i class="fas fa-history"></i> Recent Sales</h2>
@@ -209,7 +188,6 @@
         <a href="reports.html" class="mobile-nav-item"><i class="fas fa-chart-bar"></i><span>Reports</span></a>
     </nav>
 
-    <!-- Removal modal -->
     <div class="removal-modal" id="removalModal">
         <div class="removal-modal-content">
             <h3 style="margin-bottom:16px;color:#dc2626;"><i class="fas fa-exclamation-triangle"></i> Remove Spoiled Stock</h3>
@@ -249,8 +227,7 @@
         document.getElementById('userName').textContent   = localStorage.getItem('username') || 'User';
         document.getElementById('userAvatar').textContent = (localStorage.getItem('username') || 'U')[0].toUpperCase();
 
-        let pendingRemoval  = null;
-        let debugTapCount   = 0;
+        let pendingRemoval = null;
 
         // ── Helpers ──────────────────────────────────────────────────────────────
         function showToast(message, type = 'success') {
@@ -270,39 +247,6 @@
 
         function logout() { localStorage.clear(); window.location.href = 'login.html'; }
 
-        // Tap version number 5x to show raw API response for debugging
-        function debugTap() {
-            debugTapCount++;
-            if (debugTapCount >= 5) {
-                document.getElementById('debugPanel').style.display = 'block';
-                debugTapCount = 0;
-            }
-        }
-
-        function debugLog(data) {
-            const panel = document.getElementById('debugPanel');
-            panel.textContent = '=== RAW API RESPONSE ===\n' + JSON.stringify(data, null, 2);
-        }
-
-        // ── Safely parse any removals_today format from API ──────────────────────
-        // API might return: null, a number, or {weight: x, count: y}
-        function parseRemovalsWeight(removals_today) {
-            if (removals_today === null || removals_today === undefined) return 0;
-            if (typeof removals_today === 'number')  return removals_today;
-            if (typeof removals_today === 'string')  return parseFloat(removals_today) || 0;
-            if (typeof removals_today === 'object') {
-                // could be {weight: x} or {total_weight: x} or {kg: x}
-                return parseFloat(
-                    removals_today.weight       ??
-                    removals_today.total_weight ??
-                    removals_today.kg           ??
-                    removals_today.total        ??
-                    0
-                );
-            }
-            return 0;
-        }
-
         // ── User profile ─────────────────────────────────────────────────────────
         async function loadUserProfile() {
             try {
@@ -317,34 +261,37 @@
                             ? me.profile.role.charAt(0).toUpperCase() + me.profile.role.slice(1)
                             : 'Butcher';
                 }
-            } catch (e) {
-                document.getElementById('userRole').textContent = 'User';
-            }
+            } catch { document.getElementById('userRole').textContent = 'User'; }
         }
 
         // ── Main dashboard fetch ─────────────────────────────────────────────────
         async function fetchDashboard() {
             try {
-                const res = await fetch(`${CONFIG.API_URL}/dashboard/`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                // Fire both requests in parallel — same pattern as reports page
+                const [dashRes, removalRes] = await Promise.all([
+                    fetch(`${CONFIG.API_URL}/dashboard/`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    }),
+                    fetch(`${CONFIG.API_URL}/removals/summary/`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    })
+                ]);
 
-                // Handle auth failure
-                if (res.status === 401) {
+                // Auth check
+                if (dashRes.status === 401) {
                     localStorage.clear();
                     window.location.href = 'login.html';
                     return;
                 }
 
-                if (!res.ok) {
-                    showToast(`Dashboard error: ${res.status}`, 'error');
+                if (!dashRes.ok) {
+                    showToast(`Dashboard error: ${dashRes.status}`, 'error');
                     return;
                 }
 
-                const data = await res.json();
-                debugLog(data); // always logs to hidden panel
+                const data = await dashRes.json();
 
-                // ── Stats ────────────────────────────────────────────────────────
+                // ── Core stats ───────────────────────────────────────────────────
                 document.getElementById('totalStock').textContent =
                     `${parseFloat(data.total_stock ?? 0).toFixed(1)} kg`;
 
@@ -354,16 +301,18 @@
                 document.getElementById('todayWeight').textContent =
                     `${parseFloat(data.total_weight_sold_today ?? 0).toFixed(1)} kg`;
 
-                document.getElementById('lowStockCount').textContent =
-                    data.low_stock_count ?? 0;
+                document.getElementById('lowStockCount').textContent  = data.low_stock_count  ?? 0;
+                document.getElementById('spoilageCount').textContent  = data.spoilage_warnings ?? 0;
 
-                document.getElementById('spoilageCount').textContent =
-                    data.spoilage_warnings ?? 0;
-
-                // ── Removals (handles any API response shape) ────────────────────
-                const removalKg = parseRemovalsWeight(data.removals_today);
-                document.getElementById('removalsTodayDashboard').textContent =
-                    `${removalKg.toFixed(1)} kg`;
+                // ── Removals — use /removals/summary/ just like reports page ─────
+                if (removalRes.ok) {
+                    const removalSummary = await removalRes.json();
+                    // reports page reads: summary.today.total_weight
+                    const kg = parseFloat(removalSummary?.today?.total_weight ?? 0);
+                    document.getElementById('removalsTodayDashboard').textContent = `${kg.toFixed(1)} kg`;
+                } else {
+                    document.getElementById('removalsTodayDashboard').textContent = '0.0 kg';
+                }
 
                 // ── Recent sales ─────────────────────────────────────────────────
                 const tbody = document.getElementById('recentSalesTable');
@@ -379,12 +328,10 @@
                     `).join('');
                 } else {
                     tbody.innerHTML = `
-                        <tr>
-                            <td colspan="5" class="empty-state">
-                                <i class="fas fa-inbox"></i>
-                                <p>No sales recorded today</p>
-                            </td>
-                        </tr>`;
+                        <tr><td colspan="5" class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <p>No sales recorded today</p>
+                        </td></tr>`;
                 }
 
                 // ── Alerts banner ────────────────────────────────────────────────
@@ -400,9 +347,6 @@
             } catch (err) {
                 console.error('fetchDashboard error:', err);
                 showToast('Failed to load dashboard — check connection', 'error');
-                // Show error in all stat fields
-                ['totalStock','todaySales','todayWeight','lowStockCount','spoilageCount','removalsTodayDashboard']
-                    .forEach(id => { document.getElementById(id).textContent = 'Error'; });
             }
         }
 
@@ -412,7 +356,6 @@
                 const res = await fetch(`${CONFIG.API_URL}/alerts/spoilage/`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-
                 if (!res.ok) return;
 
                 const items = await res.json();
@@ -509,7 +452,7 @@
                 if (res.ok) {
                     const result = await res.json();
                     showToast(result.message || `${meatCutName} removed successfully`, 'success');
-                    fetchDashboard();
+                    fetchDashboard(); // refreshes everything including removals
                 } else {
                     const err = await res.json();
                     showToast(err.error || 'Failed to remove stock', 'error');
