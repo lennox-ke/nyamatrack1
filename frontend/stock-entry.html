@@ -78,9 +78,9 @@
             <div class="stock-step-label">
               <span class="step-num">2</span> Select Cut *
             </div>
-            <div class="cut-chip-wrapper disabled" id="cutChipWrapper">
-              <div id="cutChips">
-                <span style="font-size:13px;color:var(--text-muted);">Select a meat type first</span>
+            <div id="cutChipWrapper" style="opacity:0.4;pointer-events:none;">
+              <div id="cutChips" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">
+                <span style="font-size:13px;color:var(--text-muted);grid-column:1/-1;">Select a meat type first</span>
               </div>
             </div>
             <input type="text" id="meatCutHidden" required style="display:none;">
@@ -175,16 +175,22 @@ async function selectMeatType(typeId, el) {
 
   const wrapper = document.getElementById('cutChipWrapper');
   const chips   = document.getElementById('cutChips');
-  wrapper.classList.add('disabled');
-  chips.innerHTML = '<span style="font-size:13px;color:var(--text-muted);display:flex;align-items:center;gap:6px;"><i class="fas fa-circle-notch fa-spin"></i> Loading…</span>';
+  wrapper.style.opacity = '0.4';
+  wrapper.style.pointerEvents = 'none';
+  chips.style.display = 'grid';
+  chips.innerHTML = '<span style="font-size:13px;color:var(--text-muted);grid-column:1/-1;display:flex;align-items:center;gap:6px;"><i class="fas fa-circle-notch fa-spin"></i> Loading…</span>';
 
   try {
     if (!allCuts.length) allCuts = await apiRequest('/meat-cuts/');
     const filtered = allCuts.filter(c => c.meat_type == typeId);
     chips.innerHTML = filtered.length
       ? filtered.map(c => `<div class="cut-chip" data-id="${c.id}" onclick="selectCut(${c.id},this)">${c.name}</div>`).join('')
-      : '<span style="font-size:13px;color:var(--text-muted);">No cuts for this type</span>';
-    wrapper.classList.remove('disabled');
+      : '<span style="font-size:13px;color:var(--text-muted);grid-column:1/-1;">No cuts for this type</span>';
+    wrapper.style.opacity = '1';
+    wrapper.style.pointerEvents = 'auto';
+    chips.style.display = 'grid';
+    chips.style.gridTemplateColumns = window.innerWidth >= 900 ? 'repeat(5,1fr)' : window.innerWidth >= 500 ? 'repeat(4,1fr)' : 'repeat(3,1fr)';
+    chips.style.gap = '6px';
   } catch { chips.innerHTML='<span style="color:var(--text-muted);">Failed to load</span>'; Toast.error('Failed to load cuts'); }
 }
 
@@ -203,7 +209,9 @@ function resetForm() {
   document.getElementById('meatTypeHidden').value = '';
   document.getElementById('meatCutHidden').value  = '';
   document.getElementById('cutChips').innerHTML   = '<span style="font-size:13px;color:var(--text-muted);">Select a meat type first</span>';
-  document.getElementById('cutChipWrapper').classList.add('disabled');
+  const cw = document.getElementById('cutChipWrapper');
+  cw.style.opacity = '0.4';
+  cw.style.pointerEvents = 'none';
   document.getElementById('receiveDate').value = DateUtils.getNow();
 }
 
