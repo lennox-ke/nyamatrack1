@@ -1,483 +1,281 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#dc2626">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Dashboard - NyamaTrack</title>
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .spoilage-action-btn {
-            background: #dc2626;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            cursor: pointer;
-            margin-top: 8px;
-            transition: background 0.2s;
-        }
-        .spoilage-action-btn:hover { background: #b91c1c; }
-        .spoilage-action-btn:disabled { background: #9ca3af; cursor: not-allowed; }
-
-        .removal-modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-        .removal-modal-content {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            max-width: 400px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#dc2626">
+<title>Dashboard — NyamaTrack</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <header class="mobile-header">
-        <div class="mobile-logo">
-            <div class="mobile-logo-icon"><i class="fas fa-drumstick-bite"></i></div>
-            NyamaTrack
+
+<header class="mobile-header">
+  <div class="mobile-logo">
+    <div class="mobile-logo-icon"><i class="fas fa-drumstick-bite"></i></div>
+    NyamaTrack
+  </div>
+  <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleSidebar()">
+    <span class="hamburger-line"></span>
+    <span class="hamburger-line"></span>
+    <span class="hamburger-line"></span>
+  </button>
+</header>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<div class="app-container">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">
+        <div class="sidebar-brand-icon"><i class="fas fa-drumstick-bite"></i></div>
+        NyamaTrack
+      </div>
+    </div>
+    <nav class="nav-menu"></nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar" id="userAvatar">U</div>
+        <div class="user-details">
+          <h4 id="userName">User</h4>
+          <p id="userRole">Role</p>
         </div>
-        <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleSidebar()">
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
+      </div>
+      <button onclick="logout()" class="btn btn-secondary" style="width:100%;justify-content:center;font-size:13px;">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="page-header">
+      <h1>Dashboard</h1>
+      <p>Live overview of your butcher shop inventory</p>
+    </div>
+
+    <div id="alertsContainer"></div>
+
+    <div class="quick-actions">
+      <a href="stock-entry.html" class="quick-action-btn"><i class="fas fa-plus-circle"></i><span>Record Stock</span></a>
+      <a href="sales.html"       class="quick-action-btn"><i class="fas fa-cash-register"></i><span>Record Sale</span></a>
+      <a href="reports.html"     class="quick-action-btn"><i class="fas fa-chart-bar"></i><span>Reports</span></a>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon primary"><i class="fas fa-weight-hanging"></i></div>
+        <div class="stat-value" id="totalStock">—</div>
+        <div class="stat-label">Total Stock</div>
+      </div>
+      <div class="stat-card success">
+        <div class="stat-icon success"><i class="fas fa-money-bill-wave"></i></div>
+        <div class="stat-value" id="todaySales">—</div>
+        <div class="stat-label">Today's Revenue</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon primary"><i class="fas fa-balance-scale"></i></div>
+        <div class="stat-value" id="todayWeight">—</div>
+        <div class="stat-label">Sold Today</div>
+      </div>
+      <div class="stat-card warning">
+        <div class="stat-icon warning"><i class="fas fa-exclamation-triangle"></i></div>
+        <div class="stat-value" id="lowStockCount">—</div>
+        <div class="stat-label">Low Stock</div>
+      </div>
+      <div class="stat-card danger">
+        <div class="stat-icon danger"><i class="fas fa-clock"></i></div>
+        <div class="stat-value" id="spoilageCount">—</div>
+        <div class="stat-label">Spoilage Warnings</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-trash-alt"></i></div>
+        <div class="stat-value" id="removalsTodayDashboard">—</div>
+        <div class="stat-label">Removed Today</div>
+      </div>
+    </div>
+
+    <div class="card" id="spoilageCard" style="display:none;border-left:4px solid var(--danger);">
+      <div class="card-header" style="background:var(--danger-bg);">
+        <h2 style="color:#991b1b;"><i class="fas fa-exclamation-triangle"></i> Spoilage Alerts</h2>
+      </div>
+      <div class="card-body" id="spoilageList"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2><i class="fas fa-history"></i> Recent Sales</h2>
+        <a href="reports.html" class="action-btn action-btn-secondary">View All</a>
+      </div>
+      <div class="card-body" style="padding:0;">
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead><tr><th>Time</th><th>Meat Cut</th><th>Weight</th><th>Amount</th><th>By</th></tr></thead>
+            <tbody id="recentSalesTable">
+              <tr><td colspan="5" class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>Loading…</p></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<nav class="mobile-nav"><div class="mobile-nav-inner"></div></nav>
+
+<!-- Removal Modal -->
+<div class="modal-overlay" id="removalModal">
+  <div class="modal">
+    <h3 style="color:var(--danger);"><i class="fas fa-exclamation-triangle"></i> Remove Spoiled Stock</h3>
+    <p>You are about to remove <strong id="removalItemName">—</strong></p>
+    <div class="form-group">
+      <label class="form-label">Reason *</label>
+      <select class="form-input" id="removalReason">
+        <option value="spoilage">Spoilage</option>
+        <option value="expired">Expired</option>
+        <option value="damaged">Damaged</option>
+        <option value="quality_issue">Quality Issue</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Additional Details</label>
+      <textarea class="form-input" id="removalNotes" rows="2" placeholder="Optional notes…"></textarea>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="confirmRemoval()" class="btn btn-primary" style="flex:1;justify-content:center;" id="confirmRemovalBtn">
+        <i class="fas fa-trash"></i> Confirm
+      </button>
+      <button onclick="closeRemovalModal()" class="btn btn-secondary" style="flex:1;justify-content:center;">
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="js/app.js"></script>
+<script>
+if (!requireAuth()) throw new Error('not authenticated');
+
+buildSidebar('dashboard.html');
+loadUserRole();
+
+let pendingRemoval = null;
+
+async function fetchDashboard() {
+  try {
+    const [data, removalSummary] = await Promise.all([
+      apiRequest('/dashboard/'),
+      apiRequest('/removals/summary/')
+    ]);
+
+    document.getElementById('totalStock').textContent    = `${parseFloat(data.total_stock ?? 0).toFixed(1)} kg`;
+    document.getElementById('todaySales').textContent    = Currency.format(data.total_sales_today ?? 0);
+    document.getElementById('todayWeight').textContent   = `${parseFloat(data.total_weight_sold_today ?? 0).toFixed(1)} kg`;
+    document.getElementById('lowStockCount').textContent = data.low_stock_count ?? 0;
+    document.getElementById('spoilageCount').textContent = data.spoilage_warnings ?? 0;
+    document.getElementById('removalsTodayDashboard').textContent =
+      `${parseFloat(removalSummary?.today?.total_weight ?? 0).toFixed(1)} kg`;
+
+    const tbody = document.getElementById('recentSalesTable');
+    if (data.recent_sales?.length) {
+      tbody.innerHTML = data.recent_sales.map(s => `
+        <tr>
+          <td>${new Date(s.sale_date).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</td>
+          <td>${s.meat_cut_name}</td>
+          <td>${s.weight_sold} kg</td>
+          <td>${Currency.format(s.sale_price)}</td>
+          <td>${s.username}</td>
+        </tr>`).join('');
+    } else {
+      tbody.innerHTML = `<tr><td colspan="5" class="empty-state"><i class="fas fa-inbox"></i><p>No sales today</p></td></tr>`;
+    }
+
+    showAlerts(data.low_stock_count ?? 0, data.spoilage_warnings ?? 0);
+    if ((data.spoilage_warnings ?? 0) > 0) loadSpoilageDetails();
+    else document.getElementById('spoilageCard').style.display = 'none';
+
+  } catch (err) {
+    Toast.error('Failed to load dashboard');
+    console.error(err);
+  }
+}
+
+async function loadSpoilageDetails() {
+  try {
+    const items = await apiRequest('/alerts/spoilage/');
+    const card = document.getElementById('spoilageCard');
+    const list = document.getElementById('spoilageList');
+    if (!items.length) { card.style.display = 'none'; return; }
+    card.style.display = 'block';
+    list.innerHTML = items.map(item => `
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:12px;background:${item.is_expired?'#fecaca':'var(--danger-bg)'};border-radius:8px;margin-bottom:8px;border-left:3px solid ${item.is_expired?'#991b1b':'var(--danger)'};">
+        <div>
+          <strong style="color:${item.is_expired?'#991b1b':'var(--danger)'};">
+            ${item.meat_cut}
+            <span class="badge badge-danger" style="margin-left:6px;">${item.is_expired?'EXPIRED':'Spoilage Risk'}</span>
+          </strong>
+          <div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">
+            <i class="fas fa-clock"></i> ${item.days_old} days old (limit: ${item.spoilage_days}) &nbsp;·&nbsp; ${item.total_weight} kg
+          </div>
+        </div>
+        <button class="spoilage-action-btn" id="btn-${item.id}"
+                onclick="openRemovalModal(${item.id},'${item.meat_cut}',${item.total_weight})">
+          <i class="fas fa-trash-alt"></i> Remove
         </button>
-    </header>
+      </div>`).join('');
+  } catch {}
+}
 
-    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+function showAlerts(low, spoilage) {
+  let html = '';
+  if (spoilage > 0) html += `<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i><span><strong>${spoilage} item${spoilage>1?'s':''}</strong> approaching spoilage. Act now!</span></div>`;
+  if (low > 0)      html += `<div class="alert alert-warning"><i class="fas fa-bell"></i><span><strong>${low} item${low>1?'s':''}</strong> running low. Consider restocking.</span></div>`;
+  document.getElementById('alertsContainer').innerHTML = html;
+}
 
-    <div class="app-container">
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-brand">
-                    <div class="sidebar-brand-icon"><i class="fas fa-drumstick-bite"></i></div>
-                    NyamaTrack
-                </div>
-            </div>
-            <nav class="nav-menu">
-                <a href="dashboard.html" class="nav-item active"><i class="fas fa-home"></i> Dashboard</a>
-                <a href="stock-entry.html" class="nav-item"><i class="fas fa-plus-circle"></i> Record Stock</a>
-                <a href="sales.html" class="nav-item"><i class="fas fa-cash-register"></i> Record Sale</a>
-                <a href="reports.html" class="nav-item"><i class="fas fa-chart-bar"></i> Reports</a>
-            </nav>
-            <div class="sidebar-footer">
-                <div class="user-info">
-                    <div class="user-avatar" id="userAvatar">U</div>
-                    <div class="user-details">
-                        <h4 id="userName">User</h4>
-                        <p id="userRole">Role</p>
-                    </div>
-                </div>
-                <button onclick="logout()" class="btn btn-secondary" style="margin-top:12px;font-size:14px;">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </button>
-            </div>
-        </aside>
+function openRemovalModal(stockId, name, weight) {
+  pendingRemoval = { stockId, name, weight };
+  document.getElementById('removalItemName').textContent = `${name} (${weight} kg)`;
+  document.getElementById('removalModal').classList.add('open');
+}
+function closeRemovalModal() {
+  pendingRemoval = null;
+  document.getElementById('removalModal').classList.remove('open');
+  document.getElementById('removalReason').value = 'spoilage';
+  document.getElementById('removalNotes').value = '';
+}
 
-        <main class="main-content">
-            <div class="page-header">
-                <h1>Dashboard</h1>
-                <p>Overview of your butcher shop inventory</p>
-            </div>
+async function confirmRemoval() {
+  if (!pendingRemoval) return;
+  const { stockId, name } = pendingRemoval;
+  const reason = document.getElementById('removalReason').value;
+  const notes  = document.getElementById('removalNotes').value;
+  const btn    = document.getElementById('confirmRemovalBtn');
+  Loading.show(btn, 'Removing…');
+  closeRemovalModal();
+  const itemBtn = document.getElementById(`btn-${stockId}`);
+  if (itemBtn) { itemBtn.disabled = true; itemBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>'; }
+  try {
+    const r = await apiRequest('/stock/remove-spoiled/', {
+      method: 'POST',
+      body: JSON.stringify({ stock_id: stockId, reason, notes })
+    });
+    Toast.success(r.message || `${name} removed`);
+    fetchDashboard();
+  } catch (err) {
+    Toast.error(err.message || 'Failed to remove');
+    if (itemBtn) { itemBtn.disabled = false; itemBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Remove'; }
+  }
+  Loading.hide(btn);
+}
 
-            <div id="alertsContainer"></div>
-
-            <div class="quick-actions">
-                <a href="stock-entry.html" class="quick-action-btn">
-                    <i class="fas fa-plus-circle"></i>
-                    <span>Record New Stock</span>
-                </a>
-                <a href="sales.html" class="quick-action-btn">
-                    <i class="fas fa-cash-register"></i>
-                    <span>Record Sale</span>
-                </a>
-                <a href="reports.html" class="quick-action-btn">
-                    <i class="fas fa-file-alt"></i>
-                    <span>View Reports</span>
-                </a>
-            </div>
-
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon primary"><i class="fas fa-weight-hanging"></i></div>
-                    <div class="stat-value" id="totalStock">— kg</div>
-                    <div class="stat-label">Total Stock Available</div>
-                </div>
-                <div class="stat-card success">
-                    <div class="stat-icon success"><i class="fas fa-money-bill-wave"></i></div>
-                    <div class="stat-value" id="todaySales">KES —</div>
-                    <div class="stat-label">Today's Revenue</div>
-                </div>
-                <div class="stat-card" style="border-left:4px solid var(--primary);">
-                    <div class="stat-icon primary"><i class="fas fa-balance-scale"></i></div>
-                    <div class="stat-value" id="todayWeight">— kg</div>
-                    <div class="stat-label">Total KG Sold Today</div>
-                </div>
-                <div class="stat-card warning">
-                    <div class="stat-icon warning"><i class="fas fa-exclamation-triangle"></i></div>
-                    <div class="stat-value" id="lowStockCount">—</div>
-                    <div class="stat-label">Low Stock Alerts</div>
-                </div>
-                <div class="stat-card danger">
-                    <div class="stat-icon danger"><i class="fas fa-clock"></i></div>
-                    <div class="stat-value" id="spoilageCount">—</div>
-                    <div class="stat-label">Spoilage Warnings</div>
-                </div>
-                <div class="stat-card" style="background:#f3f4f6;border-left:4px solid #6b7280;">
-                    <div class="stat-icon" style="background:#6b7280;"><i class="fas fa-trash-alt"></i></div>
-                    <div class="stat-value" id="removalsTodayDashboard">— kg</div>
-                    <div class="stat-label">Removed Today</div>
-                </div>
-            </div>
-
-            <div class="card" id="spoilageCard" style="display:none;border-left:4px solid var(--danger);">
-                <div class="card-header" style="background:#fee2e2;">
-                    <h2 style="color:#991b1b;"><i class="fas fa-exclamation-triangle"></i> Spoilage Alerts - Action Required</h2>
-                </div>
-                <div class="card-body" id="spoilageList"></div>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <h2><i class="fas fa-history"></i> Recent Sales</h2>
-                    <a href="reports.html" class="action-btn action-btn-secondary">View All</a>
-                </div>
-                <div class="card-body">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Time</th>
-                                <th>Meat Cut</th>
-                                <th>Weight</th>
-                                <th>Amount</th>
-                                <th>Sold By</th>
-                            </tr>
-                        </thead>
-                        <tbody id="recentSalesTable">
-                            <tr>
-                                <td colspan="5" class="empty-state">
-                                    <i class="fas fa-spinner fa-spin"></i>
-                                    <p>Loading sales...</p>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <nav class="mobile-nav">
-        <a href="dashboard.html" class="mobile-nav-item active"><i class="fas fa-home"></i><span>Home</span></a>
-        <a href="stock-entry.html" class="mobile-nav-item"><i class="fas fa-plus-circle"></i><span>Stock</span></a>
-        <a href="sales.html" class="mobile-nav-item"><i class="fas fa-cash-register"></i><span>Sale</span></a>
-        <a href="reports.html" class="mobile-nav-item"><i class="fas fa-chart-bar"></i><span>Reports</span></a>
-    </nav>
-
-    <div class="removal-modal" id="removalModal">
-        <div class="removal-modal-content">
-            <h3 style="margin-bottom:16px;color:#dc2626;"><i class="fas fa-exclamation-triangle"></i> Remove Spoiled Stock</h3>
-            <p style="margin-bottom:16px;color:#6b7280;font-size:14px;">You are about to remove <strong id="removalItemName">-</strong></p>
-            <div class="form-group" style="margin-bottom:16px;">
-                <label class="form-label">Reason for Removal *</label>
-                <select class="form-input" id="removalReason" style="width:100%;">
-                    <option value="spoilage">Spoilage</option>
-                    <option value="expired">Expired</option>
-                    <option value="damaged">Damaged</option>
-                    <option value="quality_issue">Quality Issue</option>
-                    <option value="other">Other</option>
-                </select>
-            </div>
-            <div class="form-group" style="margin-bottom:16px;">
-                <label class="form-label">Additional Details</label>
-                <textarea class="form-input" id="removalNotes" rows="2" placeholder="Optional notes..."></textarea>
-            </div>
-            <div style="display:flex;gap:12px;">
-                <button onclick="confirmRemoval()" class="action-btn action-btn-primary" style="flex:1;">
-                    <i class="fas fa-trash"></i> Confirm Removal
-                </button>
-                <button onclick="closeRemovalModal()" class="action-btn action-btn-secondary" style="flex:1;">
-                    Cancel
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div class="toast-container" id="toastContainer"></div>
-
-    <script src="js/config.js"></script>
-    <script>
-        const token = localStorage.getItem('access_token');
-        if (!token) window.location.href = 'login.html';
-
-        document.getElementById('userName').textContent   = localStorage.getItem('username') || 'User';
-        document.getElementById('userAvatar').textContent = (localStorage.getItem('username') || 'U')[0].toUpperCase();
-
-        let pendingRemoval = null;
-
-        // ── Helpers ──────────────────────────────────────────────────────────────
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'exclamation-circle'}"></i><span>${message}</span>`;
-            container.appendChild(toast);
-            setTimeout(() => toast.remove(), 3500);
-        }
-
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('open');
-            document.getElementById('sidebarOverlay').classList.toggle('show');
-            document.getElementById('hamburgerBtn').classList.toggle('active');
-        }
-
-        function logout() { localStorage.clear(); window.location.href = 'login.html'; }
-
-        // ── User profile ─────────────────────────────────────────────────────────
-        async function loadUserProfile() {
-            try {
-                const res = await fetch(`${CONFIG.API_URL}/users/`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (res.ok) {
-                    const users = await res.json();
-                    const me = users.find(u => u.username === localStorage.getItem('username'));
-                    document.getElementById('userRole').textContent =
-                        me?.profile?.role
-                            ? me.profile.role.charAt(0).toUpperCase() + me.profile.role.slice(1)
-                            : 'Butcher';
-                }
-            } catch { document.getElementById('userRole').textContent = 'User'; }
-        }
-
-        // ── Main dashboard fetch ─────────────────────────────────────────────────
-        async function fetchDashboard() {
-            try {
-                // Fire both requests in parallel — same pattern as reports page
-                const [dashRes, removalRes] = await Promise.all([
-                    fetch(`${CONFIG.API_URL}/dashboard/`, {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    }),
-                    fetch(`${CONFIG.API_URL}/removals/summary/`, {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    })
-                ]);
-
-                // Auth check
-                if (dashRes.status === 401) {
-                    localStorage.clear();
-                    window.location.href = 'login.html';
-                    return;
-                }
-
-                if (!dashRes.ok) {
-                    showToast(`Dashboard error: ${dashRes.status}`, 'error');
-                    return;
-                }
-
-                const data = await dashRes.json();
-
-                // ── Core stats ───────────────────────────────────────────────────
-                document.getElementById('totalStock').textContent =
-                    `${parseFloat(data.total_stock ?? 0).toFixed(1)} kg`;
-
-                document.getElementById('todaySales').textContent =
-                    `KES ${parseFloat(data.total_sales_today ?? 0).toFixed(0)}`;
-
-                document.getElementById('todayWeight').textContent =
-                    `${parseFloat(data.total_weight_sold_today ?? 0).toFixed(1)} kg`;
-
-                document.getElementById('lowStockCount').textContent  = data.low_stock_count  ?? 0;
-                document.getElementById('spoilageCount').textContent  = data.spoilage_warnings ?? 0;
-
-                // ── Removals — use /removals/summary/ just like reports page ─────
-                if (removalRes.ok) {
-                    const removalSummary = await removalRes.json();
-                    // reports page reads: summary.today.total_weight
-                    const kg = parseFloat(removalSummary?.today?.total_weight ?? 0);
-                    document.getElementById('removalsTodayDashboard').textContent = `${kg.toFixed(1)} kg`;
-                } else {
-                    document.getElementById('removalsTodayDashboard').textContent = '0.0 kg';
-                }
-
-                // ── Recent sales ─────────────────────────────────────────────────
-                const tbody = document.getElementById('recentSalesTable');
-                if (data.recent_sales && data.recent_sales.length > 0) {
-                    tbody.innerHTML = data.recent_sales.map(sale => `
-                        <tr>
-                            <td>${new Date(sale.sale_date).toLocaleTimeString()}</td>
-                            <td>${sale.meat_cut_name}</td>
-                            <td>${sale.weight_sold} kg</td>
-                            <td>KES ${parseFloat(sale.sale_price).toFixed(0)}</td>
-                            <td>${sale.username}</td>
-                        </tr>
-                    `).join('');
-                } else {
-                    tbody.innerHTML = `
-                        <tr><td colspan="5" class="empty-state">
-                            <i class="fas fa-inbox"></i>
-                            <p>No sales recorded today</p>
-                        </td></tr>`;
-                }
-
-                // ── Alerts banner ────────────────────────────────────────────────
-                showAlerts(data.low_stock_count ?? 0, data.spoilage_warnings ?? 0);
-
-                // ── Spoilage detail card ──────────────────────────────────────────
-                if ((data.spoilage_warnings ?? 0) > 0) {
-                    loadSpoilageDetails();
-                } else {
-                    document.getElementById('spoilageCard').style.display = 'none';
-                }
-
-            } catch (err) {
-                console.error('fetchDashboard error:', err);
-                showToast('Failed to load dashboard — check connection', 'error');
-            }
-        }
-
-        // ── Spoilage details ─────────────────────────────────────────────────────
-        async function loadSpoilageDetails() {
-            try {
-                const res = await fetch(`${CONFIG.API_URL}/alerts/spoilage/`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (!res.ok) return;
-
-                const items = await res.json();
-                const card  = document.getElementById('spoilageCard');
-                const list  = document.getElementById('spoilageList');
-
-                if (items.length > 0) {
-                    card.style.display = 'block';
-                    list.innerHTML = items.map(item => `
-                        <div style="padding:12px;background:${item.is_expired ? '#fecaca' : '#fee2e2'};border-radius:8px;margin-bottom:8px;border-left:4px solid ${item.is_expired ? '#991b1b' : '#dc2626'};">
-                            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-                                <div>
-                                    <strong style="color:${item.is_expired ? '#991b1b' : '#dc2626'};">
-                                        ${item.meat_cut} ${item.is_expired ? '(EXPIRED)' : '(SPOILAGE RISK)'}
-                                    </strong>
-                                    <div style="font-size:12px;color:#6b7280;margin-top:4px;">
-                                        <i class="fas fa-clock"></i> ${item.days_old} days old (limit: ${item.spoilage_days} days)
-                                        <br><small>Received: ${new Date(item.receive_date).toLocaleDateString()}</small>
-                                        <br><small>Weight: ${item.total_weight} kg</small>
-                                    </div>
-                                </div>
-                                <button class="spoilage-action-btn"
-                                        onclick="openRemovalModal(${item.id}, '${item.meat_cut}', ${item.total_weight})"
-                                        id="btn-${item.id}">
-                                    <i class="fas fa-trash-alt"></i> Remove
-                                </button>
-                            </div>
-                        </div>
-                    `).join('');
-                } else {
-                    card.style.display = 'none';
-                }
-            } catch (err) {
-                console.error('loadSpoilageDetails error:', err);
-            }
-        }
-
-        // ── Alerts banner ────────────────────────────────────────────────────────
-        function showAlerts(lowStock, spoilage) {
-            let html = '';
-            if (spoilage > 0) {
-                html += `
-                    <div class="alert alert-danger">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <span><strong>${spoilage} item${spoilage > 1 ? 's' : ''}</strong> approaching spoilage. Check your inventory!</span>
-                    </div>`;
-            }
-            if (lowStock > 0) {
-                html += `
-                    <div class="alert alert-warning">
-                        <i class="fas fa-bell"></i>
-                        <span><strong>${lowStock} item${lowStock > 1 ? 's' : ''}</strong> running low. Consider restocking soon.</span>
-                    </div>`;
-            }
-            document.getElementById('alertsContainer').innerHTML = html;
-        }
-
-        // ── Removal modal ────────────────────────────────────────────────────────
-        function openRemovalModal(stockId, meatCutName, totalWeight) {
-            pendingRemoval = { stockId, meatCutName, totalWeight };
-            document.getElementById('removalItemName').textContent = `${meatCutName} (${totalWeight} kg)`;
-            document.getElementById('removalModal').style.display = 'flex';
-        }
-
-        function closeRemovalModal() {
-            pendingRemoval = null;
-            document.getElementById('removalModal').style.display = 'none';
-            document.getElementById('removalReason').value = 'spoilage';
-            document.getElementById('removalNotes').value  = '';
-        }
-
-        async function confirmRemoval() {
-            if (!pendingRemoval) return;
-
-            const { stockId, meatCutName } = pendingRemoval;
-            const reason = document.getElementById('removalReason').value;
-            const notes  = document.getElementById('removalNotes').value;
-
-            closeRemovalModal();
-
-            const btn = document.getElementById(`btn-${stockId}`);
-            if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Removing...'; }
-
-            try {
-                const res = await fetch(`${CONFIG.API_URL}/stock/remove-spoiled/`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ stock_id: stockId, reason, notes })
-                });
-
-                if (res.ok) {
-                    const result = await res.json();
-                    showToast(result.message || `${meatCutName} removed successfully`, 'success');
-                    fetchDashboard(); // refreshes everything including removals
-                } else {
-                    const err = await res.json();
-                    showToast(err.error || 'Failed to remove stock', 'error');
-                    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-trash-alt"></i> Remove'; }
-                }
-            } catch (err) {
-                console.error('confirmRemoval error:', err);
-                showToast('Connection error — try again', 'error');
-                if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-trash-alt"></i> Remove'; }
-            }
-        }
-
-        // ── Resize guard ─────────────────────────────────────────────────────────
-        window.addEventListener('resize', () => {
-            if (window.innerWidth > 1024) {
-                document.getElementById('sidebar').classList.remove('open');
-                document.getElementById('sidebarOverlay').classList.remove('show');
-                document.getElementById('hamburgerBtn').classList.remove('active');
-            }
-        });
-
-        // ── Init ─────────────────────────────────────────────────────────────────
-        loadUserProfile();
-        fetchDashboard();
-        setInterval(fetchDashboard, 30000);
-    </script>
+fetchDashboard();
+setInterval(fetchDashboard, 30000);
+</script>
 </body>
 </html>

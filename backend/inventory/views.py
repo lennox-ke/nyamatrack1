@@ -6,6 +6,8 @@ from django.contrib.auth.models import User
 from django.db.models import Sum, Q, F, Min, Max, Count
 from django.utils import timezone
 from datetime import timedelta, datetime
+import logging
+import traceback
 
 from .models import MeatType, MeatCut, Stock, Sale, UserProfile, RemovalHistory
 from .serializers import (
@@ -13,6 +15,9 @@ from .serializers import (
     StockSerializer, SaleSerializer, DashboardStatsSerializer,
     RemovalHistorySerializer
 )
+
+logger = logging.getLogger(__name__)
+
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all().order_by('-date_joined')
@@ -28,15 +33,18 @@ class UserViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save()
 
+
 class MeatTypeViewSet(viewsets.ModelViewSet):
     queryset = MeatType.objects.all()
     serializer_class = MeatTypeSerializer
     permission_classes = [IsAuthenticated]
 
+
 class MeatCutViewSet(viewsets.ModelViewSet):
     queryset = MeatCut.objects.all()
     serializer_class = MeatCutSerializer
     permission_classes = [IsAuthenticated]
+
 
 class StockViewSet(viewsets.ModelViewSet):
     serializer_class = StockSerializer
@@ -144,7 +152,6 @@ class StockViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
-            # Create removal history record
             removal_record = RemovalHistory.objects.create(
                 user=request.user,
                 meat_cut=stock.meat_cut,
@@ -157,7 +164,6 @@ class StockViewSet(viewsets.ModelViewSet):
                 notes=notes or f'Removed due to {reason}'
             )
             
-            # Mark stock as inactive
             removed_weight = float(stock.current_weight)
             stock_name = stock.meat_cut.name
             stock.is_active = False
@@ -208,7 +214,6 @@ class StockViewSet(viewsets.ModelViewSet):
                 if days_old >= stock.meat_cut.spoilage_days - 1:
                     removed_weight = float(stock.current_weight)
                     
-                    # Create removal history for each batch
                     removal_record = RemovalHistory.objects.create(
                         user=request.user,
                         meat_cut=stock.meat_cut,
@@ -254,6 +259,7 @@ class StockViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+
 class RemovalHistoryViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = RemovalHistorySerializer
     permission_classes = [IsAuthenticated]
@@ -261,7 +267,6 @@ class RemovalHistoryViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         queryset = RemovalHistory.objects.select_related('meat_cut', 'meat_cut__meat_type', 'user')
         
-        # Filter by date range
         date_from = self.request.query_params.get('from', None)
         date_to = self.request.query_params.get('to', None)
         reason = self.request.query_params.get('reason', None)
@@ -280,29 +285,24 @@ class RemovalHistoryViewSet(viewsets.ReadOnlyModelViewSet):
     
     @action(detail=False, methods=['get'], url_path='summary')
     def summary(self, request):
-        """Get summary statistics for removals"""
         today = timezone.now().date()
         
-        # Today's removals
         today_removals = RemovalHistory.objects.filter(removed_at__date=today).aggregate(
             total_weight=Sum('weight_removed'),
             count=Count('id')
         )
         
-        # This month's removals
         month_start = today.replace(day=1)
         month_removals = RemovalHistory.objects.filter(removed_at__date__gte=month_start).aggregate(
             total_weight=Sum('weight_removed'),
             count=Count('id')
         )
         
-        # By reason
         by_reason = RemovalHistory.objects.values('reason').annotate(
             total_weight=Sum('weight_removed'),
             count=Count('id')
         ).order_by('-total_weight')
         
-        # Top removed items
         top_items = RemovalHistory.objects.values('meat_cut__name').annotate(
             total_weight=Sum('weight_removed'),
             count=Count('id')
@@ -321,12 +321,13 @@ class RemovalHistoryViewSet(viewsets.ReadOnlyModelViewSet):
             'top_items': list(top_items)
         })
 
+
 class SaleViewSet(viewsets.ModelViewSet):
     serializer_class = SaleSerializer
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
-        queryset = Sale.objects.all()
+        queryset = Sale.objects.all().select_related('stock', 'stock__meat_cut', 'user')
         date_from = self.request.query_params.get('from', None)
         date_to = self.request.query_params.get('to', None)
         
@@ -341,97 +342,109 @@ class SaleViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
     
     def create(self, request, *args, **kwargs):
-        stock_id = request.data.get('stock')
-        weight_sold = float(request.data.get('weight_sold', 0))
-        
         try:
-            stock = Stock.objects.get(id=stock_id, is_active=True)
+            stock_id = request.data.get('stock')
+            weight_sold = float(request.data.get('weight_sold', 0))
+            sale_price = float(request.data.get('sale_price', 0))
+        except (TypeError, ValueError) as e:
+            return Response(
+                {'error': f'Invalid numeric value: {str(e)}'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not stock_id:
+            return Response({'error': 'stock is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if weight_sold <= 0:
+            return Response({'error': 'weight_sold must be greater than 0'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if sale_price <= 0:
+            return Response({'error': 'sale_price must be greater than 0'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Resolve meat_cut from the provided stock_id.
+        # Accept the stock even if it's the aggregated "display" id from the frontend.
+        try:
+            initial_stock = Stock.objects.select_related('meat_cut').get(id=stock_id)
         except Stock.DoesNotExist:
-            try:
-                all_stock = Stock.objects.filter(
-                    meat_cut__id=stock_id,
-                    is_active=True,
-                    current_weight__gt=0
-                ).order_by('receive_date')
-                
-                if not all_stock.exists():
-                    return Response(
-                        {'error': 'Stock not found'},
-                        status=status.HTTP_404_NOT_FOUND
-                    )
-                
-                stock = all_stock.first()
-                
-            except Exception:
-                return Response(
-                    {'error': 'Stock not found'},
-                    status=status.HTTP_404_NOT_FOUND
-                )
-        
+            return Response({'error': 'Stock not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        meat_cut = initial_stock.meat_cut
+
+        # Check total available weight across ALL active batches for this meat cut
         total_available = Stock.objects.filter(
-            meat_cut=stock.meat_cut,
+            meat_cut=meat_cut,
             is_active=True,
             current_weight__gt=0
         ).aggregate(total=Sum('current_weight'))['total'] or 0
-        
-        if total_available < weight_sold:
+
+        if float(total_available) < weight_sold:
             return Response(
-                {'error': f'Insufficient stock available. Only {total_available} kg total across all batches.'},
+                {'error': f'Insufficient stock. Available: {float(total_available):.2f}kg, Requested: {weight_sold}kg'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+
+        # FIFO deduction — oldest batches first
         remaining_to_sell = weight_sold
         stock_entries_used = []
-        
+        reference_stock = None  # will hold the first batch touched (for Sale FK)
+
         fifo_stock = Stock.objects.filter(
-            meat_cut=stock.meat_cut,
+            meat_cut=meat_cut,
             is_active=True,
             current_weight__gt=0
         ).order_by('receive_date')
-        
+
         for entry in fifo_stock:
             if remaining_to_sell <= 0:
                 break
-            
+
             available = float(entry.current_weight)
             deduct = min(available, remaining_to_sell)
-            
-            entry.current_weight -= deduct
+
+            entry.current_weight = round(available - deduct, 2)
+            if entry.current_weight <= 0:
+                entry.is_active = False
             entry.save()
-            
+
             stock_entries_used.append({
                 'stock_id': entry.id,
                 'deducted': deduct,
                 'remaining': float(entry.current_weight)
             })
-            
-            remaining_to_sell -= deduct
-            
-            if entry.current_weight <= 0:
-                entry.is_active = False
-                entry.save()
-        
-        sale_data = {
-            'stock': stock.id,
-            'weight_sold': weight_sold,
-            'sale_price': request.data.get('sale_price', 0),
-            'user': request.user.id
-        }
-        
-        serializer = self.get_serializer(data=sale_data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        
-        headers = self.get_success_headers(serializer.data)
-        
-        response_data = serializer.data
+
+            if reference_stock is None:
+                reference_stock = entry  # remember first batch used for Sale FK
+
+            remaining_to_sell = round(remaining_to_sell - deduct, 10)
+
+        # reference_stock is guaranteed non-None because we checked total_available > 0
+        # Create the Sale record directly — bypasses serializer stock-weight re-validation
+        # (stock weights were already deducted above; re-validating would always fail)
+        try:
+            sale = Sale.objects.create(
+                user=request.user,
+                stock=reference_stock,
+                weight_sold=weight_sold,
+                sale_price=sale_price,
+            )
+        except Exception as e:
+            logger.error(f"Sale creation failed: {e}\n{traceback.format_exc()}")
+            return Response(
+                {'error': f'Failed to record sale: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        serializer = self.get_serializer(sale)
+        response_data = dict(serializer.data)
         response_data['fifo_details'] = {
             'message': 'Sold using FIFO (oldest stock first)',
             'entries_used': stock_entries_used,
-            'total_deducted': weight_sold
+            'total_deducted': weight_sold,
         }
-        
+
+        headers = self.get_success_headers(serializer.data)
         return Response(response_data, status=status.HTTP_201_CREATED, headers=headers)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -474,7 +487,6 @@ def dashboard_stats(request):
             if days_old >= oldest.meat_cut.spoilage_days - 1:
                 spoilage_warnings += 1
     
-    # Today's removals
     today_removals = RemovalHistory.objects.filter(removed_at__date=today).aggregate(
         total_weight=Sum('weight_removed'),
         count=Count('id')
@@ -483,20 +495,20 @@ def dashboard_stats(request):
     recent_sales = Sale.objects.all().order_by('-sale_date')[:10]
     
     data = {
-        'total_stock': total_stock,
-        'total_sales_today': today_revenue,
-        'total_weight_sold_today': today_weight,
+        'total_stock': float(total_stock) if total_stock else 0,
+        'total_sales_today': float(today_revenue),
+        'total_weight_sold_today': float(today_weight),
         'low_stock_count': low_stock,
         'spoilage_warnings': spoilage_warnings,
         'removals_today': {
             'count': today_removals['count'] or 0,
-            'weight': today_removals['total_weight'] or 0
+            'weight': float(today_removals['total_weight']) if today_removals['total_weight'] else 0
         },
-        'recent_sales': recent_sales
+        'recent_sales': SaleSerializer(recent_sales, many=True).data
     }
     
-    serializer = DashboardStatsSerializer(data)
-    return Response(serializer.data)
+    return Response(data)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -533,6 +545,7 @@ def low_stock_alerts(request):
     
     return Response(alerts)
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def spoilage_alerts(request):
@@ -557,7 +570,7 @@ def spoilage_alerts(request):
         if stock.receive_date < stock_by_cut[cut_id]['oldest_date']:
             stock_by_cut[cut_id]['oldest_date'] = stock.receive_date
         if stock.receive_date > stock_by_cut[cut_id]['newest_date']:
-            stock_by_cut[cut_id]['newest_receive_date'] = stock.receive_date
+            stock_by_cut[cut_id]['newest_date'] = stock.receive_date
     
     for cut_id, data in stock_by_cut.items():
         days_old = (timezone.now() - data['oldest_date']).days
@@ -576,6 +589,7 @@ def spoilage_alerts(request):
     
     return Response(alerts)
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def daily_report(request):
@@ -592,14 +606,20 @@ def daily_report(request):
                 status=status.HTTP_400_BAD_REQUEST
             )
     
-    day_sales = Sale.objects.filter(sale_date__date=target_date).order_by('-sale_date')
+    day_sales = Sale.objects.filter(
+        sale_date__date=target_date
+    ).select_related(
+        'stock', 
+        'stock__meat_cut', 
+        'stock__meat_cut__meat_type',
+        'user'
+    ).order_by('-sale_date')
     
     aggregates = day_sales.aggregate(
         total_revenue=Sum('sale_price'),
         total_weight=Sum('weight_sold')
     )
     
-    # Get removals for this date
     day_removals = RemovalHistory.objects.filter(removed_at__date=target_date)
     removal_stats = day_removals.aggregate(
         total_weight=Sum('weight_removed'),
@@ -608,7 +628,16 @@ def daily_report(request):
     
     sales_by_type = {}
     for sale in day_sales:
-        meat_type = sale.stock.meat_cut.meat_type.name
+        try:
+            if sale.stock and sale.stock.meat_cut and sale.stock.meat_cut.meat_type:
+                meat_type = sale.stock.meat_cut.meat_type.name
+            else:
+                meat_type = 'Unknown'
+                logger.warning(f"Sale {sale.id} has missing stock relation")
+        except Exception as e:
+            meat_type = 'Unknown'
+            logger.error(f"Error accessing meat_type for sale {sale.id}: {e}")
+        
         if meat_type not in sales_by_type:
             sales_by_type[meat_type] = {
                 'total_weight': 0,
@@ -621,7 +650,11 @@ def daily_report(request):
     
     sales_by_user = {}
     for sale in day_sales:
-        username = sale.user.username
+        try:
+            username = sale.user.username if sale.user else 'Unknown'
+        except:
+            username = 'Unknown'
+        
         if username not in sales_by_user:
             sales_by_user[username] = {
                 'total_weight': 0,
@@ -635,12 +668,12 @@ def daily_report(request):
     data = {
         'date': target_date.isoformat(),
         'summary': {
-            'total_revenue': aggregates['total_revenue'] or 0,
-            'total_weight_sold': aggregates['total_weight'] or 0,
+            'total_revenue': float(aggregates['total_revenue']) if aggregates['total_revenue'] else 0,
+            'total_weight_sold': float(aggregates['total_weight']) if aggregates['total_weight'] else 0,
             'total_transactions': day_sales.count(),
         },
         'removals': {
-            'total_weight': removal_stats['total_weight'] or 0,
+            'total_weight': float(removal_stats['total_weight']) if removal_stats['total_weight'] else 0,
             'count': removal_stats['count'] or 0,
             'details': RemovalHistorySerializer(day_removals, many=True).data
         },

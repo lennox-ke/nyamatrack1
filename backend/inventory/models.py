@@ -103,14 +103,8 @@ class UserProfile(models.Model):
         return f"{self.user.username} - {self.role}"
 
 # Signal to create UserProfile automatically when User is created
+# Only runs on CREATE — not on every save — to avoid extra DB hits on login
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
-        UserProfile.objects.create(user=instance)
-
-@receiver(post_save, sender=User)
-def save_user_profile(sender, instance, **kwargs):
-    if hasattr(instance, 'profile'):
-        instance.profile.save()
-    else:
-        UserProfile.objects.create(user=instance)
+        UserProfile.objects.get_or_create(user=instance)

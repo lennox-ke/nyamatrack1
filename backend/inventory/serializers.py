@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import MeatType, MeatCut, Stock, Sale, UserProfile, RemovalHistory
 
+
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
@@ -11,6 +12,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'shop_name': {'default': ''},
             'phone_number': {'default': ''}
         }
+
 
 class UserSerializer(serializers.ModelSerializer):
     profile = UserProfileSerializer(required=False)
@@ -22,13 +24,14 @@ class UserSerializer(serializers.ModelSerializer):
     
     def to_representation(self, instance):
         ret = super().to_representation(instance)
-        if not hasattr(instance, 'profile') or instance.profile is None:
-            UserProfile.objects.create(user=instance)
-            instance.refresh_from_db()
         try:
-            ret['profile'] = UserProfileSerializer(instance.profile).data
+            # Use cached profile if available (set by select_related), else fetch once
+            profile = instance.profile
+            ret['profile'] = UserProfileSerializer(profile).data
         except UserProfile.DoesNotExist:
-            ret['profile'] = {'role': 'butcher', 'shop_name': '', 'phone_number': ''}
+            # Create missing profile lazily — one DB write, no refresh needed
+            profile, _ = UserProfile.objects.get_or_create(user=instance)
+            ret['profile'] = UserProfileSerializer(profile).data
         return ret
     
     def create(self, validated_data):
@@ -74,10 +77,12 @@ class UserSerializer(serializers.ModelSerializer):
         
         return instance
 
+
 class MeatTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = MeatType
         fields = '__all__'
+
 
 class MeatCutSerializer(serializers.ModelSerializer):
     meat_type_name = serializers.CharField(source='meat_type.name', read_only=True)
@@ -85,6 +90,7 @@ class MeatCutSerializer(serializers.ModelSerializer):
     class Meta:
         model = MeatCut
         fields = '__all__'
+
 
 class StockSerializer(serializers.ModelSerializer):
     meat_cut_details = MeatCutSerializer(source='meat_cut', read_only=True)
@@ -112,6 +118,7 @@ class StockSerializer(serializers.ModelSerializer):
             return obj.stock_entries
         return None
 
+
 class SaleSerializer(serializers.ModelSerializer):
     stock_details = StockSerializer(source='stock', read_only=True)
     username = serializers.CharField(source='user.username', read_only=True)
@@ -122,7 +129,22 @@ class SaleSerializer(serializers.ModelSerializer):
         model = Sale
         fields = ['id', 'stock', 'stock_details', 'weight_sold', 'sale_price', 
                   'sale_date', 'user', 'username', 'meat_cut_name', 'fifo_details']
-        read_only_fields = ['user']
+        read_only_fields = ['user', 'sale_date']
+    
+    def validate(self, data):
+        # Stock weight validation is intentionally skipped here.
+        # The view's FIFO logic already checks total_available and deducts
+        # weights BEFORE calling the serializer, so re-checking current_weight
+        # would always see the already-reduced value and incorrectly reject valid sales.
+        weight_sold = data.get('weight_sold')
+        if weight_sold is not None and weight_sold <= 0:
+            raise serializers.ValidationError('weight_sold must be greater than 0')
+        return data
+
+    def create(self, validated_data):
+        validated_data.pop('fifo_details', None)
+        return super().create(validated_data)
+
 
 class RemovalHistorySerializer(serializers.ModelSerializer):
     meat_cut_name = serializers.CharField(source='meat_cut.name', read_only=True)
@@ -136,10 +158,16 @@ class RemovalHistorySerializer(serializers.ModelSerializer):
                   'weight_removed', 'reason', 'reason_display', 'custom_reason',
                   'days_old_at_removal', 'receive_date', 'removed_at', 'notes', 'username']
 
+
 class DashboardStatsSerializer(serializers.Serializer):
     total_stock = serializers.DecimalField(max_digits=15, decimal_places=2)
     total_sales_today = serializers.DecimalField(max_digits=15, decimal_places=2)
     total_weight_sold_today = serializers.DecimalField(max_digits=15, decimal_places=2)
     low_stock_count = serializers.IntegerField()
     spoilage_warnings = serializers.IntegerField()
-    recent_sales = SaleSerializer(many=True)
+    recent_sales = serializers.SerializerMethodField()
+    
+    def get_recent_sales(self, obj):
+        if isinstance(obj.get('recent_sales'), list):
+            return obj['recent_sales']
+        return SaleSerializer(obj.get('recent_sales', []), many=True).data

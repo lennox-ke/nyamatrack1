@@ -1,1007 +1,423 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#dc2626">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Reports - NyamaTrack</title>
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <style>
-        .summary-cards {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            margin-bottom: 4px;
-        }
-        .summary-card {
-            background: var(--background, #f8f9fa);
-            border: 1px solid var(--border, #e5e7eb);
-            border-radius: 12px;
-            padding: 16px 12px;
-            text-align: center;
-        }
-        .summary-card h4 {
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--text-secondary, #6b7280);
-            font-weight: 600;
-            margin-bottom: 6px;
-        }
-        .summary-card .value {
-            font-size: 18px;
-            font-weight: 800;
-            color: var(--primary, #dc2626);
-            line-height: 1.2;
-        }
-
-        .stats-grid {
-            display: grid;
-            gap: 14px;
-        }
-
-        .filter-row {
-            display: flex;
-            gap: 12px;
-            align-items: flex-end;
-            flex-wrap: wrap;
-        }
-        .filter-row .form-group {
-            margin: 0;
-            flex: 1;
-            min-width: 130px;
-        }
-        .filter-row .btn-group {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .daily-lookup-row {
-            display: grid;
-            grid-template-columns: 1fr auto;
-            gap: 12px;
-            align-items: flex-end;
-        }
-        .daily-lookup-row .form-group {
-            margin: 0;
-        }
-
-        .sales-by-type-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 10px;
-        }
-        .type-stat-card {
-            background: var(--background, #f8f9fa);
-            padding: 14px;
-            border-radius: 10px;
-            border-left: 4px solid var(--primary, #dc2626);
-        }
-        .type-stat-card strong {
-            font-size: 13px;
-            color: var(--primary, #dc2626);
-            display: block;
-            margin-bottom: 4px;
-        }
-        .type-stat-card small {
-            font-size: 12px;
-            color: var(--text-secondary, #6b7280);
-        }
-
-        .alerts-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-        }
-        .alert-item {
-            padding: 12px 14px;
-            border-radius: 10px;
-            margin-bottom: 8px;
-            border-left: 4px solid;
-        }
-        .alert-item.spoilage {
-            background: #fee2e2;
-            border-color: var(--danger, #dc2626);
-        }
-        .alert-item.low-stock {
-            background: #fef3c7;
-            border-color: var(--warning, #f59e0b);
-        }
-        .alert-item strong { font-size: 13px; display: block; margin-bottom: 2px; }
-        .alert-item small  { font-size: 12px; color: #6b7280; }
-
-        .table-scroll {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            border-radius: 8px;
-        }
-        .table-scroll .data-table {
-            min-width: 480px;
-        }
-
-        .section-heading {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--text-primary, #111);
-            margin: 20px 0 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .remove-spoilage-btn {
-            background: #dc2626;
-            color: white;
-            border: none;
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-size: 11px;
-            cursor: pointer;
-            margin-left: 8px;
-            transition: background 0.2s;
-        }
-        .remove-spoilage-btn:hover {
-            background: #b91c1c;
-        }
-        .remove-spoilage-btn:disabled {
-            background: #9ca3af;
-            cursor: not-allowed;
-        }
-
-        .batch-info {
-            font-size: 11px;
-            color: #6b7280;
-            font-style: italic;
-        }
-
-        @media (max-width: 768px) {
-            .stats-grid {
-                grid-template-columns: repeat(3, 1fr) !important;
-                gap: 10px;
-            }
-            .stat-card {
-                padding: 14px 10px;
-            }
-            .stat-value {
-                font-size: 18px !important;
-            }
-            .stat-label {
-                font-size: 10px !important;
-            }
-            .stat-icon {
-                width: 36px !important;
-                height: 36px !important;
-                font-size: 14px !important;
-            }
-
-            .summary-card .value {
-                font-size: 16px;
-            }
-
-            .alerts-grid {
-                grid-template-columns: 1fr;
-                gap: 16px;
-            }
-
-            .filter-row {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .filter-row .form-group {
-                min-width: unset;
-            }
-            .filter-row .btn-group {
-                flex-direction: row;
-            }
-            .filter-row .btn-group .action-btn {
-                flex: 1;
-                justify-content: center;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .page-header h1 { font-size: 22px; }
-            .page-header p  { font-size: 13px; }
-
-            .card-body { padding: 14px !important; }
-            .card-header { padding: 14px 16px !important; }
-
-            .daily-lookup-row {
-                grid-template-columns: 1fr;
-            }
-            .daily-lookup-row button {
-                width: 100%;
-                justify-content: center;
-            }
-
-            .summary-cards {
-                gap: 8px;
-            }
-            .summary-card {
-                padding: 12px 8px;
-            }
-            .summary-card h4  { font-size: 10px; }
-            .summary-card .value { font-size: 15px; }
-
-            .stats-grid {
-                grid-template-columns: repeat(3, 1fr) !important;
-                gap: 8px;
-            }
-            .stat-card { padding: 12px 8px; }
-            .stat-value { font-size: 15px !important; }
-            .stat-label { font-size: 9px !important; }
-            .stat-icon  { display: none !important; }
-
-            .sales-by-type-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .filter-row .form-group { width: 100%; }
-            .filter-row .btn-group  { width: 100%; }
-            .filter-row .btn-group .action-btn { flex: 1; font-size: 13px; }
-
-            #reportDate { font-size: 14px; }
-
-            .card { border-radius: 12px; }
-
-            .main-content { padding-bottom: 80px; }
-        }
-
-        @media (max-width: 360px) {
-            .summary-card .value { font-size: 13px; }
-            .stat-value { font-size: 13px !important; }
-            .card-body { padding: 12px !important; }
-            .action-btn { padding: 10px 14px; font-size: 12px; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#dc2626">
+<title>Reports — NyamaTrack</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <header class="mobile-header">
-        <div class="mobile-logo">
-            <div class="mobile-logo-icon">
-                <i class="fas fa-drumstick-bite"></i>
-            </div>
-            NyamaTrack
+
+<header class="mobile-header">
+  <div class="mobile-logo">
+    <div class="mobile-logo-icon"><i class="fas fa-drumstick-bite"></i></div>
+    NyamaTrack
+  </div>
+  <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleSidebar()">
+    <span class="hamburger-line"></span><span class="hamburger-line"></span><span class="hamburger-line"></span>
+  </button>
+</header>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<div class="app-container">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">
+        <div class="sidebar-brand-icon"><i class="fas fa-drumstick-bite"></i></div>
+        NyamaTrack
+      </div>
+    </div>
+    <nav class="nav-menu"></nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar" id="userAvatar">U</div>
+        <div class="user-details"><h4 id="userName">User</h4><p id="userRole">Role</p></div>
+      </div>
+      <button onclick="logout()" class="btn btn-secondary" style="width:100%;justify-content:center;font-size:13px;">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="page-header">
+      <h1>Reports & Analytics</h1>
+      <p>Sales history, inventory reports, and removal tracking</p>
+    </div>
+
+    <!-- Daily Report -->
+    <div class="card" style="border-top:4px solid var(--primary);">
+      <div class="card-header">
+        <h2><i class="fas fa-calendar-day"></i> Daily Report</h2>
+      </div>
+      <div class="card-body">
+        <div class="daily-lookup-row">
+          <div class="form-group">
+            <label class="form-label">Select Date</label>
+            <input type="date" class="form-input" id="specificDate" style="border-color:var(--primary);">
+          </div>
+          <button onclick="loadDailyReport()" class="btn btn-primary" id="dailyBtn">
+            <i class="fas fa-search"></i> View
+          </button>
         </div>
-        <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleSidebar()">
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
-        </button>
-    </header>
 
-    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+        <div id="dailyReportResults" style="margin-top:20px;display:none;">
+          <h3 style="font-size:16px;font-weight:700;color:var(--primary);margin-bottom:14px;">
+            Report for <span id="reportDate"></span>
+          </h3>
+          <div class="summary-cards">
+            <div class="summary-card"><h4>Revenue</h4><div class="value" id="dailyRevenue">KES 0</div></div>
+            <div class="summary-card"><h4>Weight</h4><div class="value" id="dailyWeight">0 kg</div></div>
+            <div class="summary-card"><h4>Sales</h4><div class="value" id="dailyTransactions">0</div></div>
+          </div>
+          <div class="section-heading"><i class="fas fa-drumstick-bite"></i> Sales by Meat Type</div>
+          <div class="sales-by-type-grid" id="salesByType"></div>
+          <div class="section-heading" style="margin-top:16px;"><i class="fas fa-receipt"></i> Transactions</div>
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead><tr><th>Time</th><th>Cut</th><th>Weight</th><th>Price</th><th>By</th></tr></thead>
+              <tbody id="dailyTransactionsTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    <div class="app-container">
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-brand">
-                    <div class="sidebar-brand-icon">
-                        <i class="fas fa-drumstick-bite"></i>
-                    </div>
-                    NyamaTrack
-                </div>
+    <!-- Date Range -->
+    <div class="card">
+      <div class="card-header"><h2><i class="fas fa-filter"></i> Date Range Filter</h2></div>
+      <div class="card-body">
+        <div class="filter-row">
+          <div class="form-group"><label class="form-label">From</label><input type="date" class="form-input" id="dateFrom"></div>
+          <div class="form-group"><label class="form-label">To</label><input type="date" class="form-input" id="dateTo"></div>
+          <div style="display:flex;gap:8px;flex-shrink:0;">
+            <button onclick="loadReports()" class="action-btn action-btn-primary"><i class="fas fa-filter"></i> Filter</button>
+            <button onclick="exportReport()" class="action-btn action-btn-secondary"><i class="fas fa-download"></i> CSV</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px;">
+      <div class="stat-card">
+        <div class="stat-icon primary"><i class="fas fa-shopping-cart"></i></div>
+        <div class="stat-value" id="totalSales">0</div>
+        <div class="stat-label">Transactions</div>
+      </div>
+      <div class="stat-card success">
+        <div class="stat-icon success"><i class="fas fa-money-bill-wave"></i></div>
+        <div class="stat-value" id="totalRevenue">KES 0</div>
+        <div class="stat-label">Revenue</div>
+      </div>
+      <div class="stat-card warning">
+        <div class="stat-icon warning"><i class="fas fa-weight"></i></div>
+        <div class="stat-value" id="totalWeight">0 kg</div>
+        <div class="stat-label">Weight Sold</div>
+      </div>
+    </div>
+
+    <!-- Sales History -->
+    <div class="card">
+      <div class="card-header"><h2><i class="fas fa-list-alt"></i> Sales History</h2></div>
+      <div class="card-body" style="padding:0;">
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead><tr><th>Date & Time</th><th>Cut</th><th>Weight</th><th>Price</th><th>By</th></tr></thead>
+            <tbody id="salesTable">
+              <tr><td colspan="5" class="empty-state"><i class="fas fa-inbox"></i><p>Select a date range above</p></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alerts -->
+    <div class="card">
+      <div class="card-header"><h2><i class="fas fa-bell"></i> Inventory Alerts</h2></div>
+      <div class="card-body">
+        <div class="alerts-grid">
+          <div>
+            <h3 style="font-size:13px;font-weight:700;color:var(--danger);margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+              <i class="fas fa-exclamation-triangle"></i> Spoilage Warnings
+            </h3>
+            <div id="spoilageList"><p style="color:var(--text-muted);font-size:13px;">Loading…</p></div>
+          </div>
+          <div>
+            <h3 style="font-size:13px;font-weight:700;color:var(--warning);margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+              <i class="fas fa-arrow-down"></i> Low Stock
+            </h3>
+            <div id="lowStockList"><p style="color:var(--text-muted);font-size:13px;">Loading…</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Removal History -->
+    <div class="card" style="border-top:4px solid var(--text-secondary);">
+      <div class="card-header">
+        <h2><i class="fas fa-trash-alt" style="color:var(--text-secondary);"></i> Removal History</h2>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <select id="removalReasonFilter" onchange="loadRemovalHistory()" class="form-input" style="width:auto;font-size:13px;padding:8px 12px;">
+            <option value="">All Reasons</option>
+            <option value="spoilage">Spoilage</option>
+            <option value="expired">Expired</option>
+            <option value="damaged">Damaged</option>
+            <option value="quality_issue">Quality Issue</option>
+            <option value="other">Other</option>
+          </select>
+          <button onclick="exportRemovals()" class="action-btn action-btn-secondary" style="padding:8px 12px;font-size:12px;">
+            <i class="fas fa-download"></i> CSV
+          </button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;">
+          <div class="summary-card" style="background:linear-gradient(135deg,var(--danger),#991b1b);">
+            <h4>Today</h4><div class="value" id="removalsToday">0 kg</div>
+            <small style="opacity:.8;font-size:11px;"><span id="removalsTodayCount">0</span> items</small>
+          </div>
+          <div class="summary-card" style="background:linear-gradient(135deg,var(--warning),#d97706);">
+            <h4>This Month</h4><div class="value" id="removalsMonth">0 kg</div>
+            <small style="opacity:.8;font-size:11px;"><span id="removalsMonthCount">0</span> items</small>
+          </div>
+          <div class="summary-card" style="background:linear-gradient(135deg,var(--info),#1d4ed8);">
+            <h4>Top Reason</h4><div class="value" style="font-size:14px;line-height:1.3;" id="topReason">—</div>
+          </div>
+          <div class="summary-card" style="background:linear-gradient(135deg,var(--success),#059669);">
+            <h4>Most Removed</h4><div class="value" style="font-size:14px;line-height:1.3;" id="topRemoved">—</div>
+          </div>
+        </div>
+
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead><tr><th>Date & Time</th><th>Meat Cut</th><th>Weight</th><th>Reason</th><th>Age</th><th>Received</th><th>By</th><th>Notes</th></tr></thead>
+            <tbody id="removalTable">
+              <tr><td colspan="8" class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>Loading…</p></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="display:flex;justify-content:center;gap:6px;margin-top:14px;" id="removalPagination"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<nav class="mobile-nav"><div class="mobile-nav-inner"></div></nav>
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="js/app.js"></script>
+<script>
+if (!requireAuth()) throw new Error('not authenticated');
+
+buildSidebar('reports.html');
+loadUserRole();
+
+const today    = new Date();
+const lastWeek = new Date(today.getTime() - 7*24*60*60*1000);
+document.getElementById('dateTo').value       = DateUtils.getToday();
+document.getElementById('dateFrom').value     = lastWeek.toISOString().split('T')[0];
+document.getElementById('specificDate').value = DateUtils.getToday();
+
+let removalPage=1, removalPageSize=10, allRemovals=[];
+
+async function loadDailyReport() {
+  const date = document.getElementById('specificDate').value;
+  if (!date) { Toast.warning('Please select a date'); return; }
+  const btn = document.getElementById('dailyBtn');
+  Loading.show(btn, 'Loading…');
+  try {
+    const data = await apiRequest(`/reports/daily/?date=${date}`);
+    document.getElementById('dailyReportResults').style.display = 'block';
+    document.getElementById('reportDate').textContent =
+      new Date(date).toLocaleDateString('en-KE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+    document.getElementById('dailyRevenue').textContent      = Currency.format(data.summary.total_revenue);
+    document.getElementById('dailyWeight').textContent       = `${parseFloat(data.summary.total_weight_sold).toFixed(1)} kg`;
+    document.getElementById('dailyTransactions').textContent = data.summary.total_transactions;
+
+    const tc = document.getElementById('salesByType');
+    tc.innerHTML = Object.keys(data.sales_by_type).length
+      ? Object.entries(data.sales_by_type).map(([type,s]) => `
+          <div class="type-stat-card">
+            <strong>${type}</strong>
+            <small>${s.transactions} sales · ${s.total_weight.toFixed(1)} kg · ${Currency.format(s.total_revenue)}</small>
+          </div>`).join('')
+      : '<p style="color:var(--text-muted);font-size:13px;">No sales for this date</p>';
+
+    document.getElementById('dailyTransactionsTable').innerHTML = data.transactions.length
+      ? data.transactions.map(t => `<tr>
+          <td>${new Date(t.sale_date).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</td>
+          <td>${t.meat_cut_name}</td><td>${t.weight_sold} kg</td>
+          <td>${Currency.format(t.sale_price)}</td><td>${t.username}</td>
+        </tr>`).join('')
+      : `<tr><td colspan="5" class="empty-state" style="padding:24px;"><i class="fas fa-inbox"></i><p>No transactions</p></td></tr>`;
+
+    document.getElementById('dailyReportResults').scrollIntoView({behavior:'smooth',block:'start'});
+  } catch (err) { Toast.error(err.message || 'Failed to load report'); }
+  Loading.hide(btn);
+}
+
+async function loadReports() {
+  const from = document.getElementById('dateFrom').value;
+  const to   = document.getElementById('dateTo').value;
+  try {
+    let url = '/sales/';
+    if (from && to) url += `?from=${from}&to=${to}`;
+    const sales = await apiRequest(url);
+    document.getElementById('totalSales').textContent   = sales.length;
+    const rev = sales.reduce((s,x)=>s+parseFloat(x.sale_price),0);
+    const wt  = sales.reduce((s,x)=>s+parseFloat(x.weight_sold),0);
+    document.getElementById('totalRevenue').textContent = Currency.format(rev);
+    document.getElementById('totalWeight').textContent  = `${wt.toFixed(1)} kg`;
+    document.getElementById('salesTable').innerHTML = sales.length
+      ? sales.map(s => `<tr>
+          <td>${DateUtils.formatDateTime(s.sale_date)}</td>
+          <td>${s.meat_cut_name}</td><td>${s.weight_sold} kg</td>
+          <td>${Currency.format(s.sale_price)}</td><td>${s.username}</td>
+        </tr>`).join('')
+      : `<tr><td colspan="5" class="empty-state"><i class="fas fa-inbox"></i><p>No sales in this period</p></td></tr>`;
+  } catch (err) { Toast.error('Failed to load reports'); }
+}
+
+async function loadAlerts() {
+  try {
+    const [spoilage, lowStock] = await Promise.all([
+      apiRequest('/alerts/spoilage/'),
+      apiRequest('/alerts/low-stock/')
+    ]);
+
+    document.getElementById('spoilageList').innerHTML = spoilage.length
+      ? spoilage.map(i => `
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:10px 12px;background:${i.is_expired?'#fecaca':'var(--danger-bg)'};border-radius:8px;margin-bottom:8px;border-left:3px solid ${i.is_expired?'#991b1b':'var(--danger)'};">
+            <div>
+              <strong style="color:${i.is_expired?'#991b1b':'var(--danger)'};font-size:13px;">${i.meat_cut} ${i.is_expired?'(EXPIRED)':'(Risk)'}</strong>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:3px;"><i class="fas fa-clock"></i> ${i.days_old}d · ${i.total_weight} kg</div>
             </div>
-            
-            <nav class="nav-menu">
-                <a href="dashboard.html" class="nav-item">
-                    <i class="fas fa-home"></i>
-                    Dashboard
-                </a>
-                <a href="stock-entry.html" class="nav-item">
-                    <i class="fas fa-plus-circle"></i>
-                    Record Stock
-                </a>
-                <a href="sales.html" class="nav-item">
-                    <i class="fas fa-cash-register"></i>
-                    Record Sale
-                </a>
-                <a href="reports.html" class="nav-item active">
-                    <i class="fas fa-chart-bar"></i>
-                    Reports
-                </a>
-            </nav>
-            
-            <div class="sidebar-footer">
-                <div class="user-info">
-                    <div class="user-avatar" id="userAvatar">U</div>
-                    <div class="user-details">
-                        <h4 id="userName">User</h4>
-                        <p id="userRole">Role</p>
-                    </div>
-                </div>
-                <button onclick="logout()" class="btn btn-secondary" style="margin-top: 12px; font-size: 14px;">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </button>
-            </div>
-        </aside>
+            <button class="remove-spoilage-btn" id="btn-${i.id}" onclick="removeSpoiled(${i.id},'${i.meat_cut}')">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>`).join('')
+      : '<p style="color:var(--success);font-size:13px;"><i class="fas fa-check-circle"></i> No spoilage warnings!</p>';
 
-        <main class="main-content">
-            <div class="page-header">
-                <h1>Reports & Analytics</h1>
-                <p>View sales history, inventory reports, and removal tracking</p>
-            </div>
+    document.getElementById('lowStockList').innerHTML = lowStock.length
+      ? lowStock.map(i => `
+          <div style="padding:10px 12px;background:var(--warning-bg);border-radius:8px;margin-bottom:8px;border-left:3px solid var(--warning);">
+            <strong style="font-size:13px;color:#92400e;">${i.meat_cut}</strong>
+            <div style="font-size:11px;color:#92400e;margin-top:3px;">${i.current_weight} kg remaining · threshold: ${i.threshold} kg</div>
+          </div>`).join('')
+      : '<p style="color:var(--success);font-size:13px;"><i class="fas fa-check-circle"></i> All stock levels healthy!</p>';
+  } catch {}
+}
 
-            <div class="card" style="border: 2px solid var(--primary); margin-bottom: 20px;">
-                <div class="card-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white;">
-                    <h2><i class="fas fa-calendar-day"></i> Daily Report Lookup</h2>
-                </div>
-                <div class="card-body">
-                    <div class="daily-lookup-row">
-                        <div class="form-group">
-                            <label class="form-label" style="font-weight: 600;">Select Specific Date</label>
-                            <input type="date" class="form-input" id="specificDate" style="border-color: var(--primary);">
-                        </div>
-                        <button onclick="loadDailyReport()" class="action-btn action-btn-primary" style="padding: 13px 22px;">
-                            <i class="fas fa-search"></i>
-                            View Report
-                        </button>
-                    </div>
+async function removeSpoiled(stockId, name) {
+  if (!confirm(`Remove ${name} due to spoilage?`)) return;
+  const btn = document.getElementById(`btn-${stockId}`);
+  if (btn) { btn.disabled=true; btn.innerHTML='<i class="fas fa-circle-notch fa-spin"></i>'; }
+  try {
+    const d = await apiRequest('/stock/remove-spoiled/', {
+      method:'POST', body: JSON.stringify({stock_id:stockId,reason:'spoilage'})
+    });
+    Toast.success(d.message);
+    loadAlerts(); loadRemovalHistory();
+  } catch (err) {
+    Toast.error(err.message||'Failed to remove');
+    if (btn) { btn.disabled=false; btn.innerHTML='<i class="fas fa-trash"></i>'; }
+  }
+}
 
-                    <div id="dailyReportResults" style="margin-top: 20px; display: none;">
-                        <h3 style="color: var(--primary); margin-bottom: 14px; font-size: 16px;">
-                            Report for <span id="reportDate"></span>
-                        </h3>
+async function loadRemovalHistory() {
+  const reason = document.getElementById('removalReasonFilter').value;
+  let url = '/removals/';
+  if (reason) url += `?reason=${reason}`;
+  try {
+    const [history, summary] = await Promise.all([
+      apiRequest(url),
+      apiRequest('/removals/summary/')
+    ]);
+    document.getElementById('removalsToday').textContent      = `${parseFloat(summary.today.total_weight||0).toFixed(1)} kg`;
+    document.getElementById('removalsTodayCount').textContent = summary.today.count;
+    document.getElementById('removalsMonth').textContent      = `${parseFloat(summary.this_month.total_weight||0).toFixed(1)} kg`;
+    document.getElementById('removalsMonthCount').textContent = summary.this_month.count;
+    const tr = summary.by_reason[0];
+    document.getElementById('topReason').textContent  = tr ? `${tr.reason} (${parseFloat(tr.total_weight).toFixed(0)}kg)` : '—';
+    const ti = summary.top_items[0];
+    document.getElementById('topRemoved').textContent = ti ? `${ti.meat_cut__name} (${parseFloat(ti.total_weight).toFixed(0)}kg)` : '—';
+    allRemovals = Array.isArray(history) ? history : (history.results||[]);
+    removalPage = 1;
+    renderRemovalTable();
+  } catch {
+    document.getElementById('removalTable').innerHTML =
+      `<tr><td colspan="8" class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Failed to load</p></td></tr>`;
+  }
+}
 
-                        <div class="summary-cards">
-                            <div class="summary-card">
-                                <h4>Revenue</h4>
-                                <div class="value" id="dailyRevenue">KES 0</div>
-                            </div>
-                            <div class="summary-card">
-                                <h4>Weight</h4>
-                                <div class="value" id="dailyWeight">0 kg</div>
-                            </div>
-                            <div class="summary-card">
-                                <h4>Sales</h4>
-                                <div class="value" id="dailyTransactions">0</div>
-                            </div>
-                        </div>
+const reasonColors = { spoilage:'#dc2626', expired:'#991b1b', damaged:'#d97706', quality_issue:'#6b7280', other:'#2563eb' };
 
-                        <div class="section-heading">
-                            <i class="fas fa-drumstick-bite" style="color:var(--primary);font-size:13px;"></i>
-                            Sales by Meat Type
-                        </div>
-                        <div class="sales-by-type-grid" id="salesByType"></div>
+function renderRemovalTable() {
+  const tbody = document.getElementById('removalTable');
+  const page  = allRemovals.slice((removalPage-1)*removalPageSize, removalPage*removalPageSize);
+  if (!page.length) {
+    tbody.innerHTML = `<tr><td colspan="8" class="empty-state"><i class="fas fa-inbox"></i><p>No removals recorded</p></td></tr>`;
+    renderRemovalPagination(0); return;
+  }
+  tbody.innerHTML = page.map(item => {
+    const c = reasonColors[item.reason]||'#6b7280';
+    return `<tr>
+      <td>${DateUtils.formatDateTime(item.removed_at)}</td>
+      <td><strong>${item.meat_cut_name}</strong><br><small style="color:var(--text-muted);">${item.meat_type_name}</small></td>
+      <td><strong>${parseFloat(item.weight_removed).toFixed(2)} kg</strong></td>
+      <td><span style="display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:700;background:${c}18;color:${c};">${item.reason_display}</span></td>
+      <td>${item.days_old_at_removal}d</td>
+      <td style="font-size:12px;color:var(--text-muted);">${DateUtils.formatDate(item.receive_date)}</td>
+      <td>${item.username}</td>
+      <td style="font-size:12px;color:var(--text-muted);max-width:140px;overflow:hidden;text-overflow:ellipsis;">${item.notes||'—'}</td>
+    </tr>`;
+  }).join('');
+  renderRemovalPagination(Math.ceil(allRemovals.length/removalPageSize));
+}
 
-                        <div class="section-heading">
-                            <i class="fas fa-receipt" style="color:var(--primary);font-size:13px;"></i>
-                            Transaction Detail
-                        </div>
-                        <div class="table-scroll">
-                            <table class="data-table">
-                                <thead>
-                                    <tr>
-                                        <th>Time</th>
-                                        <th>Cut</th>
-                                        <th>Weight</th>
-                                        <th>Price</th>
-                                        <th>By</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="dailyTransactionsTable"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
+function renderRemovalPagination(total) {
+  const c = document.getElementById('removalPagination');
+  if (total <= 1) { c.innerHTML=''; return; }
+  const s = (active) => `style="padding:6px 12px;border:1px solid ${active?'var(--primary)':'var(--border)'};border-radius:6px;background:${active?'var(--primary)':'var(--surface)'};color:${active?'#fff':'var(--text-primary)'};cursor:pointer;font-size:13px;"`;
+  let html = `<button onclick="changeRemovalPage(${removalPage-1})" ${removalPage===1?'disabled':''} ${s(false)}><i class="fas fa-chevron-left"></i></button>`;
+  for (let i=1;i<=total;i++) {
+    if (i===1||i===total||(i>=removalPage-1&&i<=removalPage+1)) html+=`<button onclick="changeRemovalPage(${i})" ${s(i===removalPage)}>${i}</button>`;
+    else if (i===removalPage-2||i===removalPage+2) html+=`<span style="padding:6px 4px;color:var(--text-muted);">…</span>`;
+  }
+  html+=`<button onclick="changeRemovalPage(${removalPage+1})" ${removalPage===total?'disabled':''} ${s(false)}><i class="fas fa-chevron-right"></i></button>`;
+  c.innerHTML = html;
+}
+function changeRemovalPage(p) { removalPage=p; renderRemovalTable(); }
 
-            <div class="card" style="margin-bottom: 20px;">
-                <div class="card-header">
-                    <h2><i class="fas fa-filter"></i> Date Range Filter</h2>
-                </div>
-                <div class="card-body">
-                    <div class="filter-row">
-                        <div class="form-group">
-                            <label class="form-label">From</label>
-                            <input type="date" class="form-input" id="dateFrom">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">To</label>
-                            <input type="date" class="form-input" id="dateTo">
-                        </div>
-                        <div class="btn-group">
-                            <button onclick="loadReports()" class="action-btn action-btn-primary">
-                                <i class="fas fa-filter"></i> Filter
-                            </button>
-                            <button onclick="exportReport()" class="action-btn action-btn-secondary">
-                                <i class="fas fa-download"></i> CSV
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+function exportReport() {
+  const from=document.getElementById('dateFrom').value, to=document.getElementById('dateTo').value;
+  const rows = document.querySelectorAll('#salesTable tr');
+  let csv = 'Date,Meat Cut,Weight,Price,Sold By\n';
+  rows.forEach(r=>{const cells=r.querySelectorAll('td');if(cells.length===5)csv+=Array.from(cells).map(c=>c.textContent.replace(/,/g,'')).join(',')+'\n';});
+  Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([csv],{type:'text/csv'})),download:`sales-${from}-to-${to}.csv`}).click();
+  Toast.success('Report exported!');
+}
 
-            <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 20px;">
-                <div class="stat-card">
-                    <div class="stat-icon primary">
-                        <i class="fas fa-shopping-cart"></i>
-                    </div>
-                    <div class="stat-value" id="totalSales">0</div>
-                    <div class="stat-label">Transactions</div>
-                </div>
-                <div class="stat-card success">
-                    <div class="stat-icon success">
-                        <i class="fas fa-money-bill-wave"></i>
-                    </div>
-                    <div class="stat-value" id="totalRevenue">KES 0</div>
-                    <div class="stat-label">Revenue</div>
-                </div>
-                <div class="stat-card warning">
-                    <div class="stat-icon warning">
-                        <i class="fas fa-weight"></i>
-                    </div>
-                    <div class="stat-value" id="totalWeight">0 kg</div>
-                    <div class="stat-label">Weight Sold</div>
-                </div>
-            </div>
+function exportRemovals() {
+  const rows = document.querySelectorAll('#removalTable tr');
+  let csv = 'Date,Meat Cut,Type,Weight,Reason,Age,Received,By,Notes\n';
+  rows.forEach(r=>{const cells=r.querySelectorAll('td');if(cells.length===8)csv+=Array.from(cells).map(c=>`"${c.textContent.replace(/"/g,"'").replace(/\n/g,' ').trim()}"`).join(',')+'\n';});
+  const date=DateUtils.getToday();
+  Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([csv],{type:'text/csv'})),download:`removals-${date}.csv`}).click();
+  Toast.success('Removals exported!');
+}
 
-            <div class="card" style="margin-bottom: 20px;">
-                <div class="card-header">
-                    <h2><i class="fas fa-list-alt"></i> Sales History</h2>
-                </div>
-                <div class="card-body">
-                    <div class="table-scroll">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Date & Time</th>
-                                    <th>Cut</th>
-                                    <th>Weight</th>
-                                    <th>Price</th>
-                                    <th>By</th>
-                                </tr>
-                            </thead>
-                            <tbody id="salesTable">
-                                <tr>
-                                    <td colspan="5" class="empty-state">
-                                        <i class="fas fa-inbox"></i>
-                                        <p>Select date range to view reports</p>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card" style="margin-bottom: 20px;">
-                <div class="card-header">
-                    <h2><i class="fas fa-bell"></i> Inventory Alerts</h2>
-                </div>
-                <div class="card-body">
-                    <div class="alerts-grid">
-                        <div>
-                            <h3 style="margin-bottom: 12px; color: var(--danger); font-size: 14px;">
-                                <i class="fas fa-exclamation-triangle"></i> Spoilage Warnings
-                            </h3>
-                            <div id="spoilageList">
-                                <p style="color: var(--text-secondary); font-size: 13px;">Loading...</p>
-                            </div>
-                        </div>
-                        <div>
-                            <h3 style="margin-bottom: 12px; color: var(--warning); font-size: 14px;">
-                                <i class="fas fa-arrow-down"></i> Low Stock
-                            </h3>
-                            <div id="lowStockList">
-                                <p style="color: var(--text-secondary); font-size: 13px;">Loading...</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card" style="margin-bottom: 20px; border-left: 4px solid #6b7280;">
-                <div class="card-header" style="background: #f3f4f6;">
-                    <h2><i class="fas fa-trash-alt" style="color: #6b7280;"></i> Removal History</h2>
-                    <div style="display: flex; gap: 8px;">
-                        <select id="removalReasonFilter" onchange="loadRemovalHistory()" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #d1d5db; font-size: 13px;">
-                            <option value="">All Reasons</option>
-                            <option value="spoilage">Spoilage</option>
-                            <option value="expired">Expired</option>
-                            <option value="damaged">Damaged</option>
-                            <option value="quality_issue">Quality Issue</option>
-                            <option value="other">Other</option>
-                        </select>
-                        <button onclick="exportRemovals()" class="action-btn action-btn-secondary" style="padding: 8px 14px; font-size: 13px;">
-                            <i class="fas fa-download"></i> CSV
-                        </button>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="summary-cards" style="margin-bottom: 20px; grid-template-columns: repeat(4, 1fr);">
-                        <div class="summary-card" style="background: #fee2e2; border-color: #fecaca;">
-                            <h4 style="color: #991b1b;">Today</h4>
-                            <div class="value" style="color: #dc2626;" id="removalsToday">0 kg</div>
-                            <small style="color: #6b7280; font-size: 11px;"><span id="removalsTodayCount">0</span> items</small>
-                        </div>
-                        <div class="summary-card" style="background: #fef3c7; border-color: #fde68a;">
-                            <h4 style="color: #92400e;">This Month</h4>
-                            <div class="value" style="color: #f59e0b;" id="removalsMonth">0 kg</div>
-                            <small style="color: #6b7280; font-size: 11px;"><span id="removalsMonthCount">0</span> items</small>
-                        </div>
-                        <div class="summary-card" style="background: #dbeafe; border-color: #bfdbfe;">
-                            <h4 style="color: #1e40af;">Top Reason</h4>
-                            <div class="value" style="color: #3b82f6; font-size: 14px;" id="topReason">-</div>
-                        </div>
-                        <div class="summary-card" style="background: #dcfce7; border-color: #bbf7d0;">
-                            <h4 style="color: #166534;">Most Removed</h4>
-                            <div class="value" style="color: #22c55e; font-size: 14px;" id="topRemoved">-</div>
-                        </div>
-                    </div>
-
-                    <div class="table-scroll">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Date & Time</th>
-                                    <th>Meat Cut</th>
-                                    <th>Weight</th>
-                                    <th>Reason</th>
-                                    <th>Age When Removed</th>
-                                    <th>Received</th>
-                                    <th>Removed By</th>
-                                    <th>Notes</th>
-                                </tr>
-                            </thead>
-                            <tbody id="removalTable">
-                                <tr>
-                                    <td colspan="8" class="empty-state">
-                                        <i class="fas fa-inbox"></i>
-                                        <p>Loading removal history...</p>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <div style="display: flex; justify-content: center; gap: 8px; margin-top: 16px;" id="removalPagination"></div>
-                </div>
-            </div>
-        </main>
-    </nav>
-
-    <div class="toast-container" id="toastContainer"></div>
-
-    <script src="js/config.js"></script>
-    <script>
-        const API_URL = CONFIG.API_URL;
-        const token = localStorage.getItem('access_token');
-
-        if (!token) window.location.href = 'login.html';
-
-        document.getElementById('userName').textContent = localStorage.getItem('username') || 'User';
-        document.getElementById('userAvatar').textContent = (localStorage.getItem('username') || 'U')[0].toUpperCase();
-
-        const today    = new Date();
-        const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-        document.getElementById('dateTo').value       = today.toISOString().split('T')[0];
-        document.getElementById('dateFrom').value     = lastWeek.toISOString().split('T')[0];
-        document.getElementById('specificDate').value = today.toISOString().split('T')[0];
-
-        let removalPage = 1;
-        const removalPageSize = 10;
-        let allRemovals = [];
-
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('open');
-            document.getElementById('sidebarOverlay').classList.toggle('show');
-            document.getElementById('hamburgerBtn').classList.toggle('active');
-        }
-
-        function logout() {
-            localStorage.clear();
-            window.location.href = 'login.html';
-        }
-
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerHTML = `
-                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
-                <span>${message}</span>
-            `;
-            container.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
-        }
-
-        async function loadDailyReport() {
-            const date = document.getElementById('specificDate').value;
-            if (!date) { showToast('Please select a date', 'warning'); return; }
-
-            try {
-                const response = await fetch(`${API_URL}/reports/daily/?date=${date}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (!response.ok) { showToast('Failed to load daily report', 'error'); return; }
-
-                const data = await response.json();
-                document.getElementById('dailyReportResults').style.display = 'block';
-                document.getElementById('reportDate').textContent = new Date(date).toLocaleDateString('en-KE', {
-                    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-                });
-
-                document.getElementById('dailyRevenue').textContent      = `KES ${parseFloat(data.summary.total_revenue).toFixed(0)}`;
-                document.getElementById('dailyWeight').textContent        = `${parseFloat(data.summary.total_weight_sold).toFixed(1)} kg`;
-                document.getElementById('dailyTransactions').textContent  = data.summary.total_transactions;
-
-                const typeContainer = document.getElementById('salesByType');
-                if (!Object.keys(data.sales_by_type).length) {
-                    typeContainer.innerHTML = '<p style="color:var(--text-secondary);font-size:13px;">No sales for this date</p>';
-                } else {
-                    typeContainer.innerHTML = Object.entries(data.sales_by_type).map(([type, stats]) => `
-                        <div class="type-stat-card">
-                            <strong>${type}</strong>
-                            <small>${stats.transactions} sales · ${stats.total_weight.toFixed(1)} kg · KES ${stats.total_revenue.toFixed(0)}</small>
-                        </div>
-                    `).join('');
-                }
-
-                const tbody = document.getElementById('dailyTransactionsTable');
-                if (!data.transactions.length) {
-                    tbody.innerHTML = `<tr><td colspan="5" class="empty-state" style="padding:32px;"><i class="fas fa-inbox"></i><p>No transactions on this date</p></td></tr>`;
-                } else {
-                    tbody.innerHTML = data.transactions.map(t => `
-                        <tr>
-                            <td>${new Date(t.sale_date).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</td>
-                            <td>${t.meat_cut_name}</td>
-                            <td>${t.weight_sold} kg</td>
-                            <td>KES ${t.sale_price}</td>
-                            <td>${t.username}</td>
-                        </tr>
-                    `).join('');
-                }
-
-                document.getElementById('dailyReportResults').scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-            } catch (error) {
-                console.error(error);
-                showToast('Connection error', 'error');
-            }
-        }
-
-        async function loadReports() {
-            const from = document.getElementById('dateFrom').value;
-            const to   = document.getElementById('dateTo').value;
-
-            try {
-                let url = `${API_URL}/sales/`;
-                if (from && to) url += `?from=${from}&to=${to}`;
-
-                const response = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
-                const sales = await response.json();
-
-                document.getElementById('totalSales').textContent   = sales.length;
-                const totalRevenue = sales.reduce((s, x) => s + parseFloat(x.sale_price), 0);
-                const totalWeight  = sales.reduce((s, x) => s + parseFloat(x.weight_sold), 0);
-                document.getElementById('totalRevenue').textContent = `KES ${totalRevenue.toFixed(0)}`;
-                document.getElementById('totalWeight').textContent  = `${totalWeight.toFixed(1)} kg`;
-
-                const tbody = document.getElementById('salesTable');
-                if (!sales.length) {
-                    tbody.innerHTML = `<tr><td colspan="5" class="empty-state"><i class="fas fa-inbox"></i><p>No sales found for selected period</p></td></tr>`;
-                } else {
-                    tbody.innerHTML = sales.map(sale => `
-                        <tr>
-                            <td>${new Date(sale.sale_date).toLocaleString([], {dateStyle:'short',timeStyle:'short'})}</td>
-                            <td>${sale.meat_cut_name}</td>
-                            <td>${sale.weight_sold} kg</td>
-                            <td>KES ${sale.sale_price}</td>
-                            <td>${sale.username}</td>
-                        </tr>
-                    `).join('');
-                }
-            } catch {
-                showToast('Failed to load reports', 'error');
-            }
-        }
-
-        async function loadAlerts() {
-            try {
-                const spoilageRes = await fetch(`${API_URL}/alerts/spoilage/`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const spoilage = await spoilageRes.json();
-                
-                const spoilageDiv = document.getElementById('spoilageList');
-                if (spoilage.length === 0) {
-                    spoilageDiv.innerHTML = '<p style="color: var(--success);"><i class="fas fa-check-circle"></i> No spoilage warnings - all fresh!</p>';
-                } else {
-                    spoilageDiv.innerHTML = spoilage.map(item => `
-                        <div style="padding: 12px; background: ${item.is_expired ? '#fecaca' : '#fee2e2'}; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid ${item.is_expired ? '#991b1b' : '#dc2626'};">
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                                <div>
-                                    <strong style="color: ${item.is_expired ? '#991b1b' : '#dc2626'};">
-                                        ${item.meat_cut} ${item.is_expired ? '(EXPIRED)' : '(SPOILAGE RISK)'}
-                                    </strong>
-                                    <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">
-                                        <i class="fas fa-clock"></i> ${item.days_old} days old (spoilage: ${item.spoilage_days} days)
-                                        <br><small>Received: ${new Date(item.receive_date).toLocaleDateString()}</small>
-                                        <br><small>Total: ${item.total_weight} kg</small>
-                                    </div>
-                                </div>
-                                <button class="remove-spoilage-btn" onclick="removeSpoiledStock(${item.id}, '${item.meat_cut}')" id="btn-${item.id}">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                    `).join('');
-                }
-                
-                const lowStockRes = await fetch(`${API_URL}/alerts/low-stock/`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const lowStock = await lowStockRes.json();
-                
-                const lowStockDiv = document.getElementById('lowStockList');
-                if (lowStock.length === 0) {
-                    lowStockDiv.innerHTML = '<p style="color: var(--success);"><i class="fas fa-check-circle"></i> All stock levels healthy!</p>';
-                } else {
-                    lowStockDiv.innerHTML = lowStock.map(item => `
-                        <div style="padding: 12px; background: #fef3c7; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid var(--warning);">
-                            <strong style="color: #92400e;">${item.meat_cut}</strong>
-                            <div style="font-size: 12px; color: #92400e; margin-top: 4px;">
-                                <i class="fas fa-weight-hanging"></i> ${item.current_weight} kg remaining
-                                <br><small>Threshold: ${item.threshold} kg</small>
-                            </div>
-                        </div>
-                    `).join('');
-                }
-                
-            } catch (error) {
-                console.error('Error loading alerts:', error);
-            }
-        }
-
-        async function removeSpoiledStock(stockId, meatCutName) {
-            if (!confirm(`Remove ${meatCutName} due to spoilage?`)) return;
-            
-            const btn = document.getElementById(`btn-${stockId}`);
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
-            
-            try {
-                const response = await fetch(`${API_URL}/stock/remove-spoiled/`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ stock_id: stockId, reason: 'spoilage' })
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    showToast(data.message, 'success');
-                    loadAlerts();
-                    loadRemovalHistory();
-                } else {
-                    const error = await response.json();
-                    showToast(error.error || 'Failed to remove', 'error');
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="fas fa-trash"></i>';
-                }
-            } catch (error) {
-                showToast('Connection error', 'error');
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-trash"></i>';
-            }
-        }
-
-        async function loadRemovalHistory() {
-            try {
-                const reason = document.getElementById('removalReasonFilter').value;
-                let url = `${API_URL}/removals/`;
-                if (reason) url += `?reason=${reason}`;
-                
-                const [historyRes, summaryRes] = await Promise.all([
-                    fetch(url, { headers: { 'Authorization': `Bearer ${token}` } }),
-                    fetch(`${API_URL}/removals/summary/`, { headers: { 'Authorization': `Bearer ${token}` } })
-                ]);
-                
-                const history = await historyRes.json();
-                const summary = await summaryRes.json();
-                
-                document.getElementById('removalsToday').textContent = `${parseFloat(summary.today.total_weight).toFixed(1)} kg`;
-                document.getElementById('removalsTodayCount').textContent = summary.today.count;
-                
-                document.getElementById('removalsMonth').textContent = `${parseFloat(summary.this_month.total_weight).toFixed(1)} kg`;
-                document.getElementById('removalsMonthCount').textContent = summary.this_month.count;
-                
-                const topReason = summary.by_reason[0];
-                document.getElementById('topReason').textContent = topReason ? 
-                    `${topReason.reason} (${parseFloat(topReason.total_weight).toFixed(0)}kg)` : '-';
-                
-                const topItem = summary.top_items[0];
-                document.getElementById('topRemoved').textContent = topItem ? 
-                    `${topItem.meat_cut__name} (${parseFloat(topItem.total_weight).toFixed(0)}kg)` : '-';
-                
-                allRemovals = Array.isArray(history) ? history : (history.results || []);
-                
-                renderRemovalTable();
-                
-            } catch (error) {
-                console.error('Error loading removal history:', error);
-                document.getElementById('removalTable').innerHTML = `
-                    <tr><td colspan="8" class="empty-state">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <p>Failed to load removal history</p>
-                    </td></tr>`;
-            }
-        }
-
-        function renderRemovalTable() {
-            const tbody = document.getElementById('removalTable');
-            const start = (removalPage - 1) * removalPageSize;
-            const end = start + removalPageSize;
-            const pageData = allRemovals.slice(start, end);
-            
-            if (!pageData.length) {
-                tbody.innerHTML = `
-                    <tr><td colspan="8" class="empty-state">
-                        <i class="fas fa-inbox"></i>
-                        <p>No removals recorded yet</p>
-                    </td></tr>`;
-                renderRemovalPagination(0);
-                return;
-            }
-            
-            tbody.innerHTML = pageData.map(item => {
-                const reasonColors = {
-                    'spoilage': '#dc2626',
-                    'expired': '#991b1b',
-                    'damaged': '#f59e0b',
-                    'quality_issue': '#6b7280',
-                    'other': '#3b82f6'
-                };
-                const reasonColor = reasonColors[item.reason] || '#6b7280';
-                
-                return `
-                    <tr>
-                        <td>${new Date(item.removed_at).toLocaleString([], {dateStyle:'short',timeStyle:'short'})}</td>
-                        <td><strong>${item.meat_cut_name}</strong><br><small style="color: #6b7280;">${item.meat_type_name}</small></td>
-                        <td><strong>${parseFloat(item.weight_removed).toFixed(2)} kg</strong></td>
-                        <td>
-                            <span style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; background: ${reasonColor}20; color: ${reasonColor};">
-                                <i class="fas fa-${item.reason === 'spoilage' || item.reason === 'expired' ? 'exclamation-triangle' : 'trash'}"></i>
-                                ${item.reason_display}
-                            </span>
-                            ${item.custom_reason ? `<br><small style="color: #6b7280;">${item.custom_reason}</small>` : ''}
-                        </td>
-                        <td>${item.days_old_at_removal} days</td>
-                        <td class="batch-info">${new Date(item.receive_date).toLocaleDateString()}</td>
-                        <td>${item.username}</td>
-                        <td style="font-size: 12px; color: #6b7280; max-width: 150px; overflow: hidden; text-overflow: ellipsis;">${item.notes || '-'}</td>
-                    </tr>
-                `;
-            }).join('');
-            
-            renderRemovalPagination(Math.ceil(allRemovals.length / removalPageSize));
-        }
-
-        function renderRemovalPagination(totalPages) {
-            const container = document.getElementById('removalPagination');
-            if (totalPages <= 1) {
-                container.innerHTML = '';
-                return;
-            }
-            
-            let html = `
-                <button onclick="changeRemovalPage(${removalPage - 1})" ${removalPage === 1 ? 'disabled' : ''} 
-                        style="padding: 6px 12px; border: 1px solid #d1d5db; border-radius: 6px; background: white; cursor: pointer;">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-            `;
-            
-            for (let i = 1; i <= totalPages; i++) {
-                if (i === 1 || i === totalPages || (i >= removalPage - 1 && i <= removalPage + 1)) {
-                    html += `
-                        <button onclick="changeRemovalPage(${i})" 
-                                style="padding: 6px 12px; border: 1px solid ${i === removalPage ? '#dc2626' : '#d1d5db'}; 
-                                       border-radius: 6px; background: ${i === removalPage ? '#dc2626' : 'white'}; 
-                                       color: ${i === removalPage ? 'white' : '#374151'}; cursor: pointer;">
-                            ${i}
-                        </button>
-                    `;
-                } else if (i === removalPage - 2 || i === removalPage + 2) {
-                    html += `<span style="padding: 6px;">...</span>`;
-                }
-            }
-            
-            html += `
-                <button onclick="changeRemovalPage(${removalPage + 1})" ${removalPage === totalPages ? 'disabled' : ''} 
-                        style="padding: 6px 12px; border: 1px solid #d1d5db; border-radius: 6px; background: white; cursor: pointer;">
-                    <i class="fas fa-chevron-right"></i>
-                </button>
-            `;
-            
-            container.innerHTML = html;
-        }
-
-        function changeRemovalPage(page) {
-            removalPage = page;
-            renderRemovalTable();
-        }
-
-        function exportRemovals() {
-            const rows = document.querySelectorAll('#removalTable tr');
-            let csv = 'Date,Meat Cut,Type,Weight,Reason,Age When Removed,Received Date,Removed By,Notes\n';
-            
-            rows.forEach(row => {
-                const cells = row.querySelectorAll('td');
-                if (cells.length === 8) {
-                    const data = Array.from(cells).map(c => {
-                        const text = c.textContent.replace(/,/g, ' ').replace(/\n/g, ' ').trim();
-                        return `"${text}"`;
-                    });
-                    csv += data.join(',') + '\n';
-                }
-            });
-            
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            const date = new Date().toISOString().split('T')[0];
-            a.href = url;
-            a.download = `removal-history-${date}.csv`;
-            a.click();
-            showToast('Removal history exported!', 'success');
-        }
-
-        async function loadUserProfile() {
-            try {
-                const response = await fetch(`${API_URL}/users/`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (response.ok) {
-                    const raw   = await response.json();
-                    const users = Array.isArray(raw) ? raw : (raw.results ?? []);
-                    const currentUser = users.find(u => u.username === localStorage.getItem('username'));
-                    if (currentUser?.profile?.role) {
-                        const role = currentUser.profile.role;
-                        document.getElementById('userRole').textContent = role.charAt(0).toUpperCase() + role.slice(1);
-                    }
-                }
-            } catch { document.getElementById('userRole').textContent = 'User'; }
-        }
-
-        function exportReport() {
-            const from = document.getElementById('dateFrom').value;
-            const to   = document.getElementById('dateTo').value;
-            const rows = document.querySelectorAll('#salesTable tr');
-            let csv = 'Date,Meat Cut,Weight,Price,Sold By\n';
-            rows.forEach(row => {
-                const cells = row.querySelectorAll('td');
-                if (cells.length === 5) {
-                    csv += Array.from(cells).map(c => c.textContent.replace(/,/g, '')).join(',') + '\n';
-                }
-            });
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url  = window.URL.createObjectURL(blob);
-            const a    = document.createElement('a');
-            a.href = url; a.download = `sales-${from}-to-${to}.csv`; a.click();
-            showToast('Report downloaded!', 'success');
-        }
-
-        window.addEventListener('resize', () => {
-            if (window.innerWidth > 1024) {
-                document.getElementById('sidebar').classList.remove('open');
-                document.getElementById('sidebarOverlay').classList.remove('show');
-                document.getElementById('hamburgerBtn').classList.remove('active');
-            }
-        });
-
-        loadUserProfile();
-        loadReports();
-        loadAlerts();
-        loadRemovalHistory();
-    </script>
+loadReports();
+loadAlerts();
+loadRemovalHistory();
+</script>
 </body>
 </html>

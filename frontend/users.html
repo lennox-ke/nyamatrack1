@@ -1,414 +1,311 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#dc2626">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>User Management - NyamaTrack</title>
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#dc2626">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>User Management — NyamaTrack</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <!-- Mobile Header with Modern Hamburger -->
-    <header class="mobile-header">
-        <div class="mobile-logo">
-            <div class="mobile-logo-icon">
-                <i class="fas fa-drumstick-bite"></i>
-            </div>
-            NyamaTrack
+
+<header class="mobile-header">
+  <div class="mobile-logo">
+    <div class="mobile-logo-icon"><i class="fas fa-drumstick-bite"></i></div>
+    NyamaTrack
+  </div>
+  <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleSidebar()">
+    <span class="hamburger-line"></span>
+    <span class="hamburger-line"></span>
+    <span class="hamburger-line"></span>
+  </button>
+</header>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<div class="app-container">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">
+        <div class="sidebar-brand-icon"><i class="fas fa-drumstick-bite"></i></div>
+        NyamaTrack
+      </div>
+    </div>
+    <nav class="nav-menu"></nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar" id="userAvatar">U</div>
+        <div class="user-details">
+          <h4 id="userName">User</h4>
+          <p id="userRole">Role</p>
         </div>
-        <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleSidebar()">
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
-        </button>
-    </header>
+      </div>
+      <button onclick="logout()" class="btn btn-secondary" style="width:100%;justify-content:center;font-size:13px;">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </button>
+    </div>
+  </aside>
 
-    <!-- Sidebar Overlay -->
-    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-
-    <div class="app-container">
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-brand">
-                    <div class="sidebar-brand-icon">
-                        <i class="fas fa-drumstick-bite"></i>
-                    </div>
-                    NyamaTrack
-                </div>
-            </div>
-            
-            <nav class="nav-menu">
-                <a href="dashboard.html" class="nav-item">
-                    <i class="fas fa-home"></i>
-                    Dashboard
-                </a>
-                <a href="stock-entry.html" class="nav-item">
-                    <i class="fas fa-plus-circle"></i>
-                    Record Stock
-                </a>
-                <a href="sales.html" class="nav-item">
-                    <i class="fas fa-cash-register"></i>
-                    Record Sale
-                </a>
-                <a href="reports.html" class="nav-item">
-                    <i class="fas fa-chart-bar"></i>
-                    Reports
-                </a>
-                <a href="users.html" class="nav-item active">
-                    <i class="fas fa-users"></i>
-                    Users
-                </a>
-            </nav>
-            
-            <div class="sidebar-footer">
-                <div class="user-info">
-                    <div class="user-avatar" id="userAvatar">U</div>
-                    <div class="user-details">
-                        <h4 id="userName">User</h4>
-                        <p id="userRole">Role</p>
-                    </div>
-                </div>
-                <button onclick="logout()" class="btn btn-secondary" style="margin-top: 12px; font-size: 14px;">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </button>
-            </div>
-        </aside>
-
-        <main class="main-content">
-            <div class="page-header">
-                <h1>User Management</h1>
-                <p>Manage system users and permissions</p>
-            </div>
-
-            <div class="card" style="margin-bottom: 24px;">
-                <div class="card-header">
-                    <h2><i class="fas fa-user-plus"></i> Add New User</h2>
-                </div>
-                <div class="card-body">
-                    <form id="addUserForm">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label class="form-label">First Name *</label>
-                                <input type="text" class="form-input" id="newFirstName" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Last Name *</label>
-                                <input type="text" class="form-input" id="newLastName" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Username *</label>
-                                <input type="text" class="form-input" id="newUsername" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Email *</label>
-                                <input type="email" class="form-input" id="newEmail" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Role *</label>
-                                <select class="form-input" id="newRole" required>
-                                    <option value="owner">Shop Owner</option>
-                                    <option value="keeper">Stock Keeper</option>
-                                    <option value="butcher">Butcher</option>
-                                    <option value="admin">System Administrator</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Shop Name</label>
-                                <input type="text" class="form-input" id="newShopName">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Password *</label>
-                                <input type="password" class="form-input" id="newPassword" required minlength="6">
-                            </div>
-                            <div class="form-group" style="display: flex; align-items: flex-end;">
-                                <button type="submit" class="action-btn action-btn-primary" style="width: 100%;">
-                                    <i class="fas fa-plus"></i>
-                                    Add User
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <h2><i class="fas fa-users"></i> All Users</h2>
-                </div>
-                <div class="card-body">
-                    <div style="overflow-x: auto;">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>User</th>
-                                    <th>Role</th>
-                                    <th>Shop</th>
-                                    <th>Joined</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="usersTable">
-                                <tr>
-                                    <td colspan="5" class="empty-state">
-                                        <i class="fas fa-spinner fa-spin"></i>
-                                        <p>Loading users...</p>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </main>
+  <main class="main-content">
+    <div class="page-header">
+      <h1>User Management</h1>
+      <p>Manage system users and access permissions</p>
     </div>
 
-    <!-- Modern Bottom Navigation -->
-    <nav class="mobile-nav">
-        <a href="dashboard.html" class="mobile-nav-item">
-            <i class="fas fa-home"></i>
-            <span>Home</span>
-        </a>
-        <a href="stock-entry.html" class="mobile-nav-item">
-            <i class="fas fa-plus-circle"></i>
-            <span>Stock</span>
-        </a>
-        <a href="sales.html" class="mobile-nav-item">
-            <i class="fas fa-cash-register"></i>
-            <span>Sale</span>
-        </a>
-        <a href="reports.html" class="mobile-nav-item">
-            <i class="fas fa-chart-bar"></i>
-            <span>Reports</span>
-        </a>
-        <a href="users.html" class="mobile-nav-item active">
-            <i class="fas fa-users"></i>
-            <span>Users</span>
-        </a>
-    </nav>
+    <!-- Add User -->
+    <div class="card">
+      <div class="card-header">
+        <h2><i class="fas fa-user-plus"></i> Add New User</h2>
+      </div>
+      <div class="card-body">
+        <form id="addUserForm">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">First Name *</label>
+              <input type="text" class="form-input" id="newFirstName" required autocomplete="given-name">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Last Name *</label>
+              <input type="text" class="form-input" id="newLastName" required autocomplete="family-name">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Username *</label>
+              <input type="text" class="form-input" id="newUsername" required autocomplete="username">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email *</label>
+              <input type="email" class="form-input" id="newEmail" required autocomplete="email">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Role *</label>
+              <select class="form-input" id="newRole" required>
+                <option value="owner">Shop Owner</option>
+                <option value="keeper">Stock Keeper</option>
+                <option value="butcher" selected>Butcher</option>
+                <option value="admin">System Administrator</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Shop Name</label>
+              <input type="text" class="form-input" id="newShopName" placeholder="Optional">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Password *</label>
+              <input type="password" class="form-input" id="newPassword" required minlength="6" autocomplete="new-password">
+            </div>
+            <div class="form-group" style="display:flex;align-items:flex-end;">
+              <button type="submit" class="btn btn-primary" id="addUserBtn" style="width:100%;">
+                <i class="fas fa-plus"></i> Add User
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
 
-    <div class="toast-container" id="toastContainer"></div>
+    <!-- Users Table -->
+    <div class="card">
+      <div class="card-header">
+        <h2><i class="fas fa-users"></i> All Users</h2>
+        <span id="userCount" style="font-size:13px;color:var(--text-secondary);font-weight:500;"></span>
+      </div>
+      <div class="card-body" style="padding:0;">
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Role</th>
+                <th>Shop</th>
+                <th>Joined</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="usersTable">
+              <tr>
+                <td colspan="5" class="empty-state">
+                  <i class="fas fa-spinner fa-spin"></i>
+                  <p>Loading users…</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
 
-    <script src="js/config.js"></script>
-    <script>
-        const API_URL = CONFIG.API_URL;
-        const token = localStorage.getItem('access_token');
+  </main>
+</div>
 
-        if (!token) window.location.href = 'login.html';
+<!-- Mobile Nav — 5 items including Users -->
+<nav class="mobile-nav">
+  <div class="mobile-nav-inner" style="grid-template-columns:repeat(5,1fr);">
+    <a href="dashboard.html"  class="mobile-nav-item"><i class="fas fa-home"></i><span>Home</span></a>
+    <a href="stock-entry.html" class="mobile-nav-item"><i class="fas fa-plus-circle"></i><span>Stock</span></a>
+    <a href="sales.html"      class="mobile-nav-item"><i class="fas fa-cash-register"></i><span>Sale</span></a>
+    <a href="reports.html"    class="mobile-nav-item"><i class="fas fa-chart-bar"></i><span>Reports</span></a>
+    <a href="users.html"      class="mobile-nav-item active"><i class="fas fa-users"></i><span>Users</span></a>
+  </div>
+</nav>
 
-        document.getElementById('userName').textContent = localStorage.getItem('username') || 'User';
-        document.getElementById('userAvatar').textContent = (localStorage.getItem('username') || 'U')[0].toUpperCase();
+<div class="toast-container" id="toastContainer"></div>
 
-        // isOwner is false until confirmed from the API — never trust localStorage alone
-        let isOwner = false;
+<script src="js/app.js"></script>
+<script>
+if (!requireAuth()) throw new Error('not authenticated');
 
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebarOverlay');
-            const hamburger = document.getElementById('hamburgerBtn');
-            sidebar.classList.toggle('open');
-            overlay.classList.toggle('show');
-            hamburger.classList.toggle('active');
+// Users page has 5 nav items — add Users to the sidebar too
+const USERS_NAV = [
+  { href:'dashboard.html',   icon:'fa-home',          label:'Dashboard',    short:'Home'    },
+  { href:'stock-entry.html', icon:'fa-plus-circle',   label:'Record Stock', short:'Stock'   },
+  { href:'sales.html',       icon:'fa-cash-register', label:'Record Sale',  short:'Sale'    },
+  { href:'reports.html',     icon:'fa-chart-bar',     label:'Reports',      short:'Reports' },
+  { href:'users.html',       icon:'fa-users',         label:'Users',        short:'Users'   },
+];
+// Temporarily override NAV_PAGES for this page only
+(function buildUsersNav() {
+  const navMenu = document.querySelector('.sidebar .nav-menu');
+  if (navMenu) {
+    navMenu.innerHTML = USERS_NAV.map(p => `
+      <a href="${p.href}" class="nav-item ${p.href==='users.html'?'active':''}">
+        <i class="fas ${p.icon}"></i> ${p.label}
+      </a>`).join('');
+  }
+  const username = localStorage.getItem('username') || 'User';
+  document.getElementById('userName').textContent   = username;
+  document.getElementById('userAvatar').textContent = username[0].toUpperCase();
+})();
+
+// isOwner is confirmed from API — never trust localStorage alone
+let isOwner = false;
+
+function getRoleBadge(role) {
+  const map = { admin:'badge-danger', owner:'badge-success', keeper:'badge-warning', butcher:'badge-success' };
+  const cls  = map[role] || 'badge-success';
+  const label = role ? role.charAt(0).toUpperCase() + role.slice(1) : '—';
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+
+async function init() {
+  try {
+    const raw   = await apiRequest('/users/');
+    const users = Array.isArray(raw) ? raw : (raw.results ?? raw.data ?? []);
+
+    // Determine current user's role from the API response — never from localStorage alone
+    const me   = users.find(u => u.username === localStorage.getItem('username'));
+    const role = (me?.profile?.role || me?.role || '').toLowerCase();
+
+    document.getElementById('userRole').textContent = role
+      ? role.charAt(0).toUpperCase() + role.slice(1)
+      : 'User';
+    localStorage.setItem('role', role);
+
+    isOwner = (role === 'owner' || role === 'admin');
+    renderUsers(users);
+
+  } catch (err) {
+    document.getElementById('usersTable').innerHTML =
+      `<tr><td colspan="5" class="empty-state"><i class="fas fa-exclamation-circle"></i><p>${err.message || 'Failed to load users'}</p></td></tr>`;
+    Toast.error(err.message || 'Failed to load users');
+  }
+}
+
+function renderUsers(users) {
+  const tbody = document.getElementById('usersTable');
+  const countEl = document.getElementById('userCount');
+  if (countEl) countEl.textContent = `${users.length} user${users.length!==1?'s':''}`;
+
+  if (!users.length) {
+    tbody.innerHTML = `<tr><td colspan="5" class="empty-state"><i class="fas fa-users"></i><p>No users found</p></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = users.map(user => {
+    const profile  = user.profile || user.user_profile || {};
+    const role     = (profile.role     || user.role     || '').toLowerCase();
+    const shop     = profile.shop_name || user.shop_name || '—';
+    const fullName = ((user.first_name||'') + ' ' + (user.last_name||'')).trim() || user.username;
+    const initial  = (user.first_name || user.username || '?')[0].toUpperCase();
+    const joined   = user.date_joined ? DateUtils.formatDate(user.date_joined) : '—';
+    const isMe     = user.username === localStorage.getItem('username');
+
+    return `
+      <tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div class="user-avatar" style="width:36px;height:36px;font-size:14px;flex-shrink:0;">${initial}</div>
+            <div>
+              <div style="font-weight:600;font-size:14px;">${fullName} ${isMe?'<span style="font-size:11px;color:var(--primary);font-weight:600;">(you)</span>':''}</div>
+              <div style="font-size:12px;color:var(--text-secondary);">@${user.username}</div>
+            </div>
+          </div>
+        </td>
+        <td>${getRoleBadge(role)}</td>
+        <td style="font-size:13px;">${shop}</td>
+        <td style="font-size:13px;color:var(--text-secondary);">${joined}</td>
+        <td>
+          ${isOwner && !isMe
+            ? `<button onclick="deleteUser(${user.id}, '${fullName}')"
+                       class="action-btn"
+                       style="background:var(--danger-bg);color:var(--danger);border:1px solid #fca5a5;">
+                 <i class="fas fa-trash"></i>
+               </button>`
+            : '<span style="color:var(--text-muted);font-size:12px;">—</span>'
+          }
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+document.getElementById('addUserForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('addUserBtn');
+  Loading.show(btn, 'Adding…');
+  try {
+    await apiRequest('/users/', {
+      method: 'POST',
+      body: JSON.stringify({
+        username:   document.getElementById('newUsername').value,
+        email:      document.getElementById('newEmail').value,
+        first_name: document.getElementById('newFirstName').value,
+        last_name:  document.getElementById('newLastName').value,
+        password:   document.getElementById('newPassword').value,
+        profile: {
+          role:      document.getElementById('newRole').value,
+          shop_name: document.getElementById('newShopName').value
         }
+      })
+    });
+    Toast.success('User created successfully!');
+    document.getElementById('addUserForm').reset();
+    document.getElementById('newRole').value = 'butcher';
+    await init();
+  } catch (err) {
+    let msg = err.message || 'Failed to create user';
+    if (msg.includes('username')) msg = 'Username already exists';
+    else if (msg.includes('email')) msg = 'Email already registered';
+    Toast.error(msg);
+  }
+  Loading.hide(btn);
+});
 
-        function logout() {
-            localStorage.clear();
-            window.location.href = 'login.html';
-        }
+async function deleteUser(userId, name) {
+  if (!confirm(`Delete user "${name}"? This cannot be undone.`)) return;
+  try {
+    await apiRequest(`/users/${userId}/`, { method: 'DELETE' });
+    Toast.success(`${name} deleted`);
+    await init();
+  } catch (err) {
+    Toast.error(err.message || 'Failed to delete user');
+  }
+}
 
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerHTML = `
-                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
-                <span>${message}</span>
-            `;
-            container.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
-        }
-
-        function getRoleBadgeClass(role) {
-            switch (role) {
-                case 'admin':  return 'badge-danger';
-                case 'owner':  return 'badge-success';
-                case 'keeper': return 'badge-warning';
-                default:       return 'badge-success';
-            }
-        }
-
-        // ── Step 1: fetch all users, identify the logged-in user's role,
-        //            THEN render the table so isOwner is set correctly ──
-        async function init() {
-            try {
-                const response = await fetch(`${API_URL}/users/`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (!response.ok) {
-                    const errText = await response.text();
-                    console.error('[NyamaTrack] /users/ responded with', response.status, errText);
-                    document.getElementById('usersTable').innerHTML =
-                        `<tr><td colspan="5" class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Error ${response.status} — check console</p></td></tr>`;
-                    return;
-                }
-
-                const raw = await response.json();
-                console.log('[NyamaTrack] /users/ raw response:', JSON.stringify(raw, null, 2));
-
-                const users = Array.isArray(raw) ? raw : (raw.results ?? raw.data ?? []);
-                const currentUsername = localStorage.getItem('username');
-                const currentUser = users.find(u => u.username === currentUsername);
-
-                if (currentUser) {
-                    const profile = currentUser.profile || currentUser.user_profile || {};
-                    const role = (profile.role || currentUser.role || '').toLowerCase();
-
-                    // Update sidebar role label
-                    document.getElementById('userRole').textContent =
-                        role ? role.charAt(0).toUpperCase() + role.slice(1) : 'User';
-
-                    // Cache for other pages
-                    localStorage.setItem('role', role);
-
-                    // This is the key — set BEFORE renderUsers is called
-                    isOwner = role === 'owner';
-                }
-
-                renderUsers(users);
-
-            } catch (error) {
-                console.error('[NyamaTrack] init error:', error);
-                document.getElementById('usersTable').innerHTML =
-                    `<tr><td colspan="5" class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Failed to load users — check console</p></td></tr>`;
-                showToast('Failed to load users', 'error');
-            }
-        }
-
-        function renderUsers(users) {
-            const tbody = document.getElementById('usersTable');
-
-            if (!users.length) {
-                tbody.innerHTML = `<tr><td colspan="5" class="empty-state"><i class="fas fa-users"></i><p>No users found</p></td></tr>`;
-                return;
-            }
-
-            tbody.innerHTML = users.map(user => {
-                const profile   = user.profile || user.user_profile || {};
-                const role      = profile.role      || user.role      || '—';
-                const shopName  = profile.shop_name || user.shop_name || '—';
-                const firstName = user.first_name || '';
-                const lastName  = user.last_name  || '';
-                const fullName  = (firstName + ' ' + lastName).trim() || user.username;
-                const initial   = (firstName || user.username || '?')[0].toUpperCase();
-                const joined    = user.date_joined ? new Date(user.date_joined).toLocaleDateString() : '—';
-
-                return `
-                    <tr>
-                        <td>
-                            <div style="display:flex;align-items:center;gap:12px;">
-                                <div class="user-avatar" style="width:36px;height:36px;font-size:14px;">
-                                    ${initial}
-                                </div>
-                                <div>
-                                    <div style="font-weight:600;">${fullName}</div>
-                                    <div style="font-size:12px;color:var(--text-secondary);">@${user.username}</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <span class="badge ${getRoleBadgeClass(role)}">${role}</span>
-                        </td>
-                        <td>${shopName}</td>
-                        <td>${joined}</td>
-                        <td>
-                            ${isOwner
-                                ? `<button onclick="deleteUser(${user.id})" class="action-btn" style="background:#fee2e2;color:var(--danger);">
-                                       <i class="fas fa-trash"></i>
-                                   </button>`
-                                : '—'
-                            }
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        // Refresh after add/delete — re-runs init so isOwner stays correct
-        async function loadUsers() {
-            await init();
-        }
-
-        document.getElementById('addUserForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const userData = {
-                username:   document.getElementById('newUsername').value,
-                email:      document.getElementById('newEmail').value,
-                first_name: document.getElementById('newFirstName').value,
-                last_name:  document.getElementById('newLastName').value,
-                password:   document.getElementById('newPassword').value,
-                profile: {
-                    role:      document.getElementById('newRole').value,
-                    shop_name: document.getElementById('newShopName').value
-                }
-            };
-
-            try {
-                const response = await fetch(`${API_URL}/users/`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(userData)
-                });
-
-                if (response.ok) {
-                    showToast('User created successfully!', 'success');
-                    document.getElementById('addUserForm').reset();
-                    loadUsers();
-                } else {
-                    const error = await response.json();
-                    showToast(error.detail || 'Failed to create user', 'error');
-                }
-            } catch (error) {
-                showToast('Connection error', 'error');
-            }
-        });
-
-        async function deleteUser(userId) {
-            if (!confirm('Are you sure you want to delete this user?')) return;
-
-            try {
-                const response = await fetch(`${API_URL}/users/${userId}/`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (response.ok || response.status === 204) {
-                    showToast('User deleted', 'success');
-                    loadUsers();
-                } else {
-                    showToast('Failed to delete user', 'error');
-                }
-            } catch (error) {
-                showToast('Connection error', 'error');
-            }
-        }
-
-        window.addEventListener('resize', () => {
-            if (window.innerWidth > 1024) {
-                document.getElementById('sidebar').classList.remove('open');
-                document.getElementById('sidebarOverlay').classList.remove('show');
-                document.getElementById('hamburgerBtn').classList.remove('active');
-            }
-        });
-
-        // Kick off — role check happens before table renders
-        init();
-    </script>
+init();
+</script>
 </body>
 </html>

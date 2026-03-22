@@ -1,356 +1,179 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#dc2626">
-<meta charset="UTF-8">
-<title>NyamaTrack - Login</title>
+<title>NyamaTrack — Sign In</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/styles.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<style>
-    /* ── Background image layer (img tag used so styles.css cannot override it) ── */
-    #bg-img {
-        position: fixed;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        object-position: center;
-        z-index: -2;
-        display: block;
-    }
-
-    /* Lighter tint overlay — lets the image breathe */
-    #bg-overlay {
-        position: fixed;
-        inset: 0;
-        background: linear-gradient(
-            160deg,
-            rgba(140, 20, 20, 0.52) 0%,
-            rgba(40, 8, 8, 0.58) 100%
-        );
-        z-index: -1;
-        pointer-events: none;
-    }
-
-    /* Force body/html to be transparent so the fixed img shows through */
-    html, body {
-        background: transparent !important;
-        min-height: 100%;
-        margin: 0;
-        padding: 0;
-    }
-
-    /* Ensure all page content sits above the overlay */
-    .mobile-header,
-    .sidebar-overlay,
-    .login-container,
-    .mobile-nav,
-    .toast-container,
-    #registerModal {
-        position: relative;
-        z-index: 1;
-    }
-
-    /* Override whatever background styles.css gives .login-container */
-    .login-container {
-        background: transparent !important;
-        min-height: calc(100vh - 60px - 64px);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 24px 16px;
-        box-sizing: border-box;
-    }
-
-    /* Frosted white card */
-    .login-card {
-        background: rgba(255, 255, 255, 0.97) !important;
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5) !important;
-        border: 1px solid rgba(255,255,255,0.2);
-    }
-
-    /* ── Toast notifications from the top ── */
-    .toast-container {
-        position: fixed !important;
-        top: 80px !important;
-        left: 50% !important;
-        transform: translateX(-50%) !important;
-        bottom: auto !important;
-        z-index: 9999 !important;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-        width: auto;
-        min-width: 280px;
-        pointer-events: none;
-    }
-
-    .toast {
-        animation: slideDownFade 0.35s ease forwards;
-        pointer-events: all;
-    }
-
-    @keyframes slideDownFade {
-        from {
-            opacity: 0;
-            transform: translateY(-20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-</style>
 </head>
 <body>
-<!-- Background image pinned to viewport — cannot be overridden by styles.css background-color -->
-<img id="bg-img" src="https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=1600&q=80" alt="">
-<!-- Dark tint overlay -->
-<div id="bg-overlay"></div>
 
-<!-- Mobile Header -->
-<header class="mobile-header">
-<div class="mobile-logo">
-<div class="mobile-logo-icon">
-<i class="fas fa-drumstick-bite"></i>
-</div>
-    NyamaTrack
-</div>
-<button class="hamburger-btn" id="hamburgerBtn" onclick="toggleSidebar()">
-<span class="hamburger-line"></span>
-<span class="hamburger-line"></span>
-<span class="hamburger-line"></span>
-</button>
-</header>
+<div class="login-page">
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="login-brand-icon"><i class="fas fa-drumstick-bite"></i></div>
+      <h1>NyamaTrack</h1>
+      <p>Smart Inventory for Butcher Shops</p>
+    </div>
 
-<!-- Sidebar Overlay -->
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <form id="loginForm">
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <input type="text" class="form-input" id="username" placeholder="Enter your username" required autocomplete="username">
+      </div>
+      <div class="form-group" style="margin-bottom:20px;">
+        <label class="form-label">Password</label>
+        <input type="password" class="form-input" id="password" placeholder="Enter your password" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn btn-primary" id="loginBtn">
+        <i class="fas fa-sign-in-alt"></i> Sign In
+      </button>
+    </form>
 
-<div class="login-container">
-<div class="login-card">
-<div class="brand">
-<div class="brand-icon">
-<i class="fas fa-drumstick-bite"></i>
-</div>
-<h1>NyamaTrack</h1>
-<p>Smart Inventory Management for Butcher Shops</p>
-</div>
-<form id="loginForm">
-<div class="form-group">
-<label class="form-label">Username</label>
-<input type="text" class="form-input" id="username" placeholder="Enter your username" required>
-</div>
-<div class="form-group">
-<label class="form-label">Password</label>
-<input type="password" class="form-input" id="password" placeholder="Enter your password" required>
-</div>
-<button type="submit" class="btn btn-primary">
-<i class="fas fa-sign-in-alt"></i>
-                Sign In
-</button>
-</form>
-<div style="text-align: center; margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border);">
-<p style="color: var(--text-secondary); font-size: 14px;">
-    Don't have an account? <a href="#" onclick="showRegister()" style="color: var(--primary); text-decoration: none; font-weight: 600;">Register</a>
-</p>
-</div>
-</div>
+    <div style="text-align:center;margin-top:20px;padding-top:20px;border-top:1px solid var(--border);">
+      <p style="font-size:13px;color:var(--text-secondary);">
+        No account? <a href="#" onclick="showRegister()" style="color:var(--primary);font-weight:600;">Register here</a>
+      </p>
+    </div>
+  </div>
 </div>
 
 <!-- Register Modal -->
-<div id="registerModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center;">
-<div class="login-card" style="max-width: 480px; max-height: 90vh; overflow-y: auto;">
-<div class="brand">
-<h2>Create Account</h2>
-<p>Join NyamaTrack today</p>
-</div>
-<form id="registerForm">
-<div class="form-grid" style="grid-template-columns: 1fr 1fr;">
-<div class="form-group">
-<label class="form-label">First Name *</label>
-<input type="text" class="form-input" id="regFirstName" required>
-</div>
-<div class="form-group">
-<label class="form-label">Last Name *</label>
-<input type="text" class="form-input" id="regLastName" required>
-</div>
-</div>
-<div class="form-group">
-<label class="form-label">Username *</label>
-<input type="text" class="form-input" id="regUsername" required>
-</div>
-<div class="form-group">
-<label class="form-label">Email *</label>
-<input type="email" class="form-input" id="regEmail" required>
-</div>
-<div class="form-group">
-<label class="form-label">Shop Name</label>
-<input type="text" class="form-input" id="regShopName" placeholder="Your butcher shop name">
-</div>
-<div class="form-group">
-<label class="form-label">Role *</label>
-<select class="form-input" id="regRole">
-<option value="owner">Shop Owner</option>
-<option value="keeper">Stock Keeper</option>
-<option value="butcher">Butcher</option>
-</select>
-</div>
-<div class="form-group">
-<label class="form-label">Password *</label>
-<input type="password" class="form-input" id="regPassword" required minlength="6">
-</div>
-<button type="submit" class="btn btn-primary">
-<i class="fas fa-user-plus"></i>
-                Create Account
-</button>
-<button type="button" class="btn btn-secondary" onclick="hideRegister()" style="margin-top: 12px;">
-                Cancel
-</button>
-</form>
-</div>
+<div class="modal-overlay" id="registerModal">
+  <div class="modal" style="max-width:480px;">
+    <h3>Create Account</h3>
+    <p>Join NyamaTrack today</p>
+    <form id="registerForm">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+        <div class="form-group" style="margin:0;">
+          <label class="form-label">First Name *</label>
+          <input type="text" class="form-input" id="regFirstName" required>
+        </div>
+        <div class="form-group" style="margin:0;">
+          <label class="form-label">Last Name *</label>
+          <input type="text" class="form-input" id="regLastName" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Username *</label>
+        <input type="text" class="form-input" id="regUsername" required autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email *</label>
+        <input type="email" class="form-input" id="regEmail" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Shop Name</label>
+        <input type="text" class="form-input" id="regShopName" placeholder="Your butcher shop name">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Role *</label>
+          <select class="form-input" id="regRole">
+            <option value="owner">Shop Owner</option>
+            <option value="keeper">Stock Keeper</option>
+            <option value="butcher">Butcher</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Password *</label>
+          <input type="password" class="form-input" id="regPassword" required minlength="6" autocomplete="new-password">
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:20px;">
+        <button type="submit" class="btn btn-primary" id="registerBtn" style="flex:1;">
+          <i class="fas fa-user-plus"></i> Create Account
+        </button>
+        <button type="button" class="btn btn-secondary" onclick="hideRegister()" style="flex:1;">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <div class="toast-container" id="toastContainer"></div>
 
-<script src="js/config.js"></script>
+<script src="js/app.js"></script>
 <script>
-const API_URL = CONFIG.API_URL;
+// Redirect if already logged in
+if (Auth.isAuthenticated()) window.location.href = 'dashboard.html';
 
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
-    
-    const submitBtn = e.target.querySelector('button[type="submit"]');
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Signing in...';
-    
-    try {
-        const response = await fetch(`${API_URL}/token/`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password })
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            localStorage.setItem('access_token', data.access);
-            localStorage.setItem('refresh_token', data.refresh);
-            localStorage.setItem('username', username);
-            showToast('Login successful!', 'success');
-            // Immediate redirect - no delay
-            window.location.href = 'dashboard.html';
-        } else {
-            const error = await response.json();
-            showToast(error.detail || 'Invalid credentials', 'error');
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In';
-        }
-    } catch (error) {
-        showToast('Connection error. Is the server running?', 'error');
-        console.error(error);
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In';
+  e.preventDefault();
+  const username = document.getElementById('username').value;
+  const password = document.getElementById('password').value;
+  const btn = document.getElementById('loginBtn');
+  Loading.show(btn, 'Signing in…');
+
+  try {
+    const res = await fetch(`${CONFIG.API_URL}/token/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      Auth.setTokens(data.access, data.refresh);
+      localStorage.setItem('username', username);
+      Toast.success('Login successful!');
+      window.location.href = 'dashboard.html';
+    } else {
+      const err = await res.json();
+      Toast.error(err.detail || 'Invalid credentials');
+      Loading.hide(btn);
     }
+  } catch {
+    Toast.error('Connection error. Is the server running?');
+    Loading.hide(btn);
+  }
 });
 
 document.getElementById('registerForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const userData = {
-        username: document.getElementById('regUsername').value,
-        email: document.getElementById('regEmail').value,
-        first_name: document.getElementById('regFirstName').value,
-        last_name: document.getElementById('regLastName').value,
-        password: document.getElementById('regPassword').value,
-        profile: {
-            role: document.getElementById('regRole').value,
-            shop_name: document.getElementById('regShopName').value
-        }
-    };
-    
-    const submitBtn = e.target.querySelector('button[type="submit"]');
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Creating...';
-    
-    try {
-        const response = await fetch(`${API_URL}/users/`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(userData)
-        });
-        
-        if (response.ok) {
-            showToast('Account created! Please login.', 'success');
-            hideRegister();
-            document.getElementById('username').value = userData.username;
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
-        } else {
-            const error = await response.json();
-            let message = 'Registration failed';
-            if (error.username) message = 'Username already exists';
-            else if (error.email) message = 'Email already registered';
-            else if (error.password) message = 'Password too weak';
-            showToast(message, 'error');
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
-        }
-    } catch (error) {
-        showToast('Connection error', 'error');
-        console.error(error);
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
+  e.preventDefault();
+  const userData = {
+    username:   document.getElementById('regUsername').value,
+    email:      document.getElementById('regEmail').value,
+    first_name: document.getElementById('regFirstName').value,
+    last_name:  document.getElementById('regLastName').value,
+    password:   document.getElementById('regPassword').value,
+    profile: {
+      role:      document.getElementById('regRole').value,
+      shop_name: document.getElementById('regShopName').value
     }
+  };
+  const btn = document.getElementById('registerBtn');
+  Loading.show(btn, 'Creating…');
+
+  try {
+    const res = await fetch(`${CONFIG.API_URL}/users/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(userData)
+    });
+    if (res.ok) {
+      Toast.success('Account created! Please log in.');
+      hideRegister();
+      document.getElementById('username').value = userData.username;
+    } else {
+      const err = await res.json();
+      let msg = 'Registration failed';
+      if (err.username) msg = 'Username already exists';
+      else if (err.email) msg = 'Email already registered';
+      else if (err.password) msg = 'Password too weak (min 6 chars)';
+      Toast.error(msg);
+    }
+  } catch { Toast.error('Connection error'); }
+  Loading.hide(btn);
 });
 
-function showRegister() {
-    document.getElementById('registerModal').style.display = 'flex';
-}
-
-function hideRegister() {
-    document.getElementById('registerModal').style.display = 'none';
-}
-
-function showToast(message, type = 'success') {
-    const container = document.getElementById('toastContainer');
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    toast.innerHTML = `
-        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
-        <span>${message}</span>
-    `;
-    container.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
-}
-
-// Check if already logged in
-if (localStorage.getItem('access_token')) {
-    window.location.href = 'dashboard.html';
-}
+function showRegister() { document.getElementById('registerModal').classList.add('open'); }
+function hideRegister()  { document.getElementById('registerModal').classList.remove('open'); }
 </script>
-
-<!-- Bottom Navigation -->
-<nav class="mobile-nav">
-<a href="dashboard.html" class="mobile-nav-item">
-<i class="fas fa-home"></i>
-<span>Home</span>
-</a>
-<a href="stock-entry.html" class="mobile-nav-item">
-<i class="fas fa-plus-circle"></i>
-<span>Stock</span>
-</a>
-<a href="sales.html" class="mobile-nav-item">
-<i class="fas fa-cash-register"></i>
-<span>Sale</span>
-</a>
-<a href="reports.html" class="mobile-nav-item">
-<i class="fas fa-chart-bar"></i>
-<span>Reports</span>
-</a>
-</nav>
 </body>
 </html>

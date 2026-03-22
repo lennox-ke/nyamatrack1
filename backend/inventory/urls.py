@@ -7,7 +7,7 @@ router.register(r'users', views.UserViewSet)
 router.register(r'meat-types', views.MeatTypeViewSet)
 router.register(r'meat-cuts', views.MeatCutViewSet)
 router.register(r'stock', views.StockViewSet, basename='stock')
-router.register(r'sales', views.SaleViewSet, basename='sale')
+router.register(r'sales', views.SaleViewSet, basename='sales')  # Changed from 'sale' to 'sales'
 router.register(r'removals', views.RemovalHistoryViewSet, basename='removal')
 
 urlpatterns = [
