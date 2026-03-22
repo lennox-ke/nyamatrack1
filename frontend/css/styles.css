@@ -423,7 +423,7 @@ input[type="date"], input[type="datetime-local"] { font-family: inherit; font-si
 .type-tile.active i { color: #fff; }
 
 .cut-chip {
-  padding: 7px 14px;
+  padding: 7px 12px;
   border: 1.5px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--surface);
@@ -433,10 +433,12 @@ input[type="date"], input[type="datetime-local"] { font-family: inherit; font-si
   color: var(--text-secondary);
   transition: all 0.15s ease;
   user-select: none;
+  text-align: center;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  text-align: center;
+  display: block;
+  width: 100%;
 }
 .cut-chip:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-bg); }
 .cut-chip.selected {
@@ -445,17 +447,15 @@ input[type="date"], input[type="datetime-local"] { font-family: inherit; font-si
   color: #fff;
   box-shadow: 0 2px 8px rgba(220,38,38,0.3);
 }
-/* Single scrollable row — never wraps downward */
+/* 3-column grid on mobile → 4 → 5 on desktop — never a single column */
 .cut-chip-wrapper {
-  display: flex;
-  flex-wrap: nowrap;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 6px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none; /* Firefox */
-  padding-bottom: 4px;
 }
-.cut-chip-wrapper::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+@media (min-width: 500px)  { .cut-chip-wrapper { grid-template-columns: repeat(4, 1fr); } }
+@media (min-width: 900px)  { .cut-chip-wrapper { grid-template-columns: repeat(5, 1fr); } }
+@media (min-width: 1200px) { .cut-chip-wrapper { grid-template-columns: repeat(6, 1fr); } }
 .cut-chip-wrapper.disabled { opacity: 0.4; pointer-events: none; }
 
 /* Cut Cards */
