@@ -73,7 +73,7 @@
             <span style="background:var(--primary);color:#fff;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:10px;flex-shrink:0;">2</span>
             Select a Cut
           </div>
-          <div class="cuts-grid" id="cutsGrid"></div>
+          <div id="cutsGrid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:14px;"></div>
         </div>
 
         <!-- Step 3 -->
@@ -182,19 +182,43 @@ function renderCuts(typeId) {
     return;
   }
   grid.innerHTML = filtered.map(item => {
-    const entries = item.stock_entries || [];
-    const oldest  = item.receive_date ? DateUtils.formatDate(item.receive_date) : '—';
-    const badge   = item.is_spoilage_warning ? '<span class="badge badge-danger">Spoilage Risk</span>'
-                  : item.is_low_stock        ? '<span class="badge badge-warning">Low Stock</span>'
-                  :                            '<span class="badge badge-success">Good</span>';
+    const entries     = item.stock_entries || [];
+    const statusColor = item.is_spoilage_warning ? '#dc2626'
+                      : item.is_low_stock        ? '#d97706'
+                      :                            '#16a34a';
+    const statusBg    = item.is_spoilage_warning ? '#fee2e2'
+                      : item.is_low_stock        ? '#fef3c7'
+                      :                            '#dcfce7';
+    const statusLabel = item.is_spoilage_warning ? 'Spoilage Risk'
+                      : item.is_low_stock        ? 'Low Stock'
+                      :                            'Good';
     const sel = selectedStockItem?.id === item.id;
     return `
-      <div class="cut-card ${sel?'selected':''}" id="cut-card-${item.id}" onclick="selectCut(${item.id})">
-        <div class="cut-card-name">${item.meat_cut_details?.name||'Unknown'}</div>
-        <div class="cut-card-weight">${item.current_weight} <span>kg total</span></div>
-        <div class="cut-card-meta"><i class="fas fa-layer-group"></i> ${entries.length} batch${entries.length!==1?'es':''} · Oldest: ${oldest}</div>
-        <div class="cut-card-meta" style="margin-top:4px;"><i class="fas fa-clock"></i> ${item.days_since_received} days since oldest</div>
-        ${badge}
+      <div id="cut-card-${item.id}" onclick="selectCut(${item.id})" style="
+        background:${sel?'#fef2f2':'#fff'};
+        border:2px solid ${sel?'#dc2626':'#fee2e2'};
+        border-radius:10px;
+        padding:12px 10px;
+        cursor:pointer;
+        position:relative;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        text-align:center;
+        gap:4px;
+        box-shadow:${sel?'0 0 0 3px rgba(220,38,38,0.15)':'none'};
+        transition:all 0.18s ease;
+      ">
+        ${sel ? '<i class="fas fa-check-circle" style="position:absolute;top:6px;right:8px;color:#dc2626;font-size:12px;"></i>' : ''}
+        <div style="font-size:11px;font-weight:700;color:#111;line-height:1.4;word-break:break-word;width:100%;">
+          ${item.meat_cut_details?.name||'Unknown'}
+        </div>
+        <div style="font-size:20px;font-weight:800;color:#dc2626;line-height:1;">
+          ${item.current_weight}<span style="font-size:11px;font-weight:500;color:#9ca3af;"> kg</span>
+        </div>
+        <div style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:${statusBg};color:${statusColor};margin-top:2px;">
+          ${statusLabel}
+        </div>
       </div>`;
   }).join('');
 }
