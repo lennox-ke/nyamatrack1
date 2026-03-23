@@ -262,4 +262,30 @@ function requireAuth() {
 // ─────────────────────────────────────────────────────────────────
 // EXPOSE GLOBALS
 // ─────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────
+// KEEP-ALIVE — pings the backend every 14 min so Render never sleeps.
+// Only runs in production (not on localhost).
+// ─────────────────────────────────────────────────────────────────
+(function keepAlive() {
+  const isProduction = window.location.hostname !== 'localhost'
+                    && window.location.hostname !== '127.0.0.1';
+  if (!isProduction) return;
+
+  async function ping() {
+    try {
+      // Hit the token endpoint with a dummy request — lightweight, no auth needed
+      await fetch(`${CONFIG.PROD_API_URL}/token/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: '_ping_', password: '_ping_' })
+      });
+    } catch {}
+    // Silently ignore — we only care that the server woke up
+  }
+
+  // Ping immediately on page load, then every 14 minutes
+  ping();
+  setInterval(ping, 14 * 60 * 1000);
+})();
+
 window.NyamaTrack = { CONFIG, Auth, apiRequest, Toast, DateUtils, Currency, Loading };

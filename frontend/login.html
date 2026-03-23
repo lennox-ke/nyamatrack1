@@ -111,12 +111,20 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
   const btn = document.getElementById('loginBtn');
   Loading.show(btn, 'Signing in…');
 
+  // Show a friendly message after 4s in case Render is waking up
+  const wakeupTimer = setTimeout(() => {
+    if (btn.disabled) {
+      btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Waking up server…';
+    }
+  }, 4000);
+
   try {
     const res = await fetch(`${CONFIG.API_URL}/token/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password })
     });
+    clearTimeout(wakeupTimer);
     if (res.ok) {
       const data = await res.json();
       Auth.setTokens(data.access, data.refresh);
@@ -129,6 +137,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
       Loading.hide(btn);
     }
   } catch {
+    clearTimeout(wakeupTimer);
     Toast.error('Connection error. Is the server running?');
     Loading.hide(btn);
   }
